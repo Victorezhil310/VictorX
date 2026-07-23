@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "name": "victor-model-dock",
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" }
-  ],
+  "cleanUrls": true,
   "routes": [
-    { "src": "/(.*)", "dest": "/$1" }
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
