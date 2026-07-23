@@ -1025,3 +1025,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// Immediate execution trigger for instantaneous rendering
+try {
+  initAuth();
+  updateStats();
+  renderChips();
+  renderGrid();
+  renderPorts();
+} catch (err) {
+  console.warn("Immediate render init:", err);
+}

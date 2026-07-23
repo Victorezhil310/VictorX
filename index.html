@@ -27,7 +27,7 @@
     <nav class="mainnav" aria-label="Primary">
       <a href="#explore">Explore</a>
       <a href="#ports">Ports</a>
-      <a href="#mydock">My Dock <span class="badge" id="dockBadge">0</span></a>
+      <a href="#mydock">My Dock <span class="badge" id="dockBadge">2</span></a>
       <a href="#playground" id="openPlaygroundNavLink">Playground</a>
       <a href="#pro" id="openUpiModalNavLink">⚡ Pro / Donate</a>
       <a href="#advertise">Advertise</a>
@@ -41,7 +41,7 @@
         <span>API Keys</span>
       </button>
       <button class="btn btn-ghost" id="openConnectedBtn" type="button">
-        <span id="connectedCount">0</span> connected
+        <span id="connectedCount">5</span> connected
       </button>
 
       <!-- Auth area -->
@@ -91,9 +91,9 @@
           <button class="btn btn-ghost" id="heroPlaygroundBtn" type="button">⚡ Open AI Playground</button>
         </div>
         <div class="hero-stats">
-          <div><strong id="statModels">0</strong><span>models indexed</span></div>
-          <div><strong id="statPorts">0</strong><span>ports connected</span></div>
-          <div><strong id="statInstalled">0</strong><span>pulled to dock</span></div>
+          <div><strong id="statModels">17</strong><span>models indexed</span></div>
+          <div><strong id="statPorts">5</strong><span>ports connected</span></div>
+          <div><strong id="statInstalled">2</strong><span>pulled to dock</span></div>
         </div>
       </div>
 
@@ -140,9 +140,65 @@
         </select>
       </div>
 
-      <p class="result-count" id="resultCount" aria-live="polite"></p>
+      <p class="result-count" id="resultCount" aria-live="polite">17 models on manifest</p>
 
-      <div class="grid" id="modelGrid"></div>
+      <div class="grid" id="modelGrid">
+        <article class="card" style="--port-color:#38BDF8">
+          <div class="card-top">
+            <span class="port-tag">OpenRouter</span>
+            <span class="haul-count">920.0k hauled</span>
+          </div>
+          <h3 class="card-name">DeepSeek R1</h3>
+          <p class="card-desc">Open-weights reasoning model with chain-of-thought verification.</p>
+          <div class="tag-row"><span class="tag-pill">reasoning</span><span class="tag-pill">math</span><span class="tag-pill">code</span></div>
+          <div class="card-foot">
+            <span class="card-size">671B</span>
+            <button class="btn-pull" type="button" data-modelid="deepseek-r1">Pull to dock</button>
+          </div>
+        </article>
+
+        <article class="card" style="--port-color:#7C9CFF">
+          <div class="card-top">
+            <span class="port-tag">Meta</span>
+            <span class="haul-count">540.0k hauled</span>
+          </div>
+          <h3 class="card-name">Llama 3.3</h3>
+          <p class="card-desc">State of the art open reasoning model, comparable to top proprietary APIs.</p>
+          <div class="tag-row"><span class="tag-pill">chat</span><span class="tag-pill">reasoning</span></div>
+          <div class="card-foot">
+            <span class="card-size">70B</span>
+            <button class="btn-pull" type="button" data-modelid="llama-3.3-70b">Pull to dock</button>
+          </div>
+        </article>
+
+        <article class="card" style="--port-color:#7C9CFF">
+          <div class="card-top">
+            <span class="port-tag">Meta</span>
+            <span class="haul-count">812.0k hauled</span>
+          </div>
+          <h3 class="card-name">Llama 3.1</h3>
+          <p class="card-desc">Meta's general-purpose chat model, solid default for most tasks.</p>
+          <div class="tag-row"><span class="tag-pill">chat</span><span class="tag-pill">general</span></div>
+          <div class="card-foot">
+            <span class="card-size">8B</span>
+            <button class="btn-pull installed" type="button" data-modelid="llama-3.1-8b">✓ Docked</button>
+          </div>
+        </article>
+
+        <article class="card" style="--port-color:#E5675F">
+          <div class="card-top">
+            <span class="port-tag">Mistral AI</span>
+            <span class="haul-count">690.0k hauled</span>
+          </div>
+          <h3 class="card-name">Mistral</h3>
+          <p class="card-desc">Compact and fast — a common first pull for local chat.</p>
+          <div class="tag-row"><span class="tag-pill">chat</span><span class="tag-pill">general</span></div>
+          <div class="card-foot">
+            <span class="card-size">7B</span>
+            <button class="btn-pull installed" type="button" data-modelid="mistral-7b">✓ Docked</button>
+          </div>
+        </article>
+      </div>
       <p class="empty-state" id="emptyState" hidden>Nothing matches that on the manifest yet. Try a different port or search term.</p>
     </div>
   </section>
@@ -153,12 +209,35 @@
       <div class="section-head">
         <div class="head-with-badge">
           <h2>My Dock</h2>
-          <span class="count-pill" id="installedCountPill">0 Models</span>
+          <span class="count-pill" id="installedCountPill">2 Models</span>
         </div>
         <p>Models you have pulled &amp; docked to your active workstation. Configured and ready for local CLI or API execution.</p>
       </div>
-      <div class="grid" id="installedGrid"></div>
-      <div class="empty-dock" id="emptyDockState">
+      <div class="grid" id="installedGrid">
+        <article class="card" style="--port-color:#7C9CFF">
+          <div class="card-top">
+            <span class="port-tag">Meta · DOCKED</span>
+          </div>
+          <h3 class="card-name">Llama 3.1</h3>
+          <p class="card-desc">Meta's general-purpose chat model, solid default for most tasks.</p>
+          <div class="card-foot">
+            <span class="card-size">8B</span>
+            <button class="btn btn-primary btn-small" data-launchpg="llama-3.1-8b">⚡ Launch Playground</button>
+          </div>
+        </article>
+        <article class="card" style="--port-color:#E5675F">
+          <div class="card-top">
+            <span class="port-tag">Mistral AI · DOCKED</span>
+          </div>
+          <h3 class="card-name">Mistral</h3>
+          <p class="card-desc">Compact and fast — a common first pull for local chat.</p>
+          <div class="card-foot">
+            <span class="card-size">7B</span>
+            <button class="btn btn-primary btn-small" data-launchpg="mistral-7b">⚡ Launch Playground</button>
+          </div>
+        </article>
+      </div>
+      <div class="empty-dock" id="emptyDockState" hidden>
         <div class="empty-dock-icon">⚓</div>
         <h3>Your dock is empty</h3>
         <p>Explore the manifest above and click <strong>"Pull to dock"</strong> to add models to your workstation.</p>
