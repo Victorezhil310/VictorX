@@ -3,638 +3,716 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VictorX v2.0 Hybrid - AI Model Hub & API Testing Workbench</title>
-    <style>
-        :root {
-            --bg-dark: #09090b;
-            --bg-panel: #18181b;
-            --bg-glass: rgba(24, 24, 27, 0.7);
-            --border-subtle: #27272a;
-            --text-main: #f4f4f5;
-            --text-muted: #a1a1aa;
-            --accent-hf: #ffd21e;
-            --accent-api: #10b981;
-            --brand-primary: #3b82f6;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Glassmorphism Utilities */
-        .glass {
-            background: var(--bg-glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-subtle);
-        }
-
-        /* Buttons */
-        button, .btn {
-            background: var(--bg-panel);
-            color: var(--text-main);
-            border: 1px solid var(--border-subtle);
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        button:hover { background: #27272a; }
-        .btn-primary { background: var(--brand-primary); border-color: var(--brand-primary); color: white; }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-hf { background: var(--accent-hf); border-color: var(--accent-hf); color: black; }
-        .btn-api { background: var(--accent-api); border-color: var(--accent-api); color: white; }
-
-        /* Navigation Topbar */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem 1.5rem;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-weight: 700;
-            font-size: 1.25rem;
-            letter-spacing: -0.025em;
-        }
-        .version-badge {
-            font-size: 0.65rem;
-            background: var(--accent-api);
-            color: white;
-            padding: 0.125rem 0.375rem;
-            border-radius: 9999px;
-            text-transform: uppercase;
-        }
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-        .nav-links a { color: inherit; text-decoration: none; transition: color 0.2s; }
-        .nav-links a:hover { color: var(--text-main); }
-        .topbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        /* Hero Section */
-        .hero {
-            padding: 4rem 2rem;
-            text-align: center;
-            background: radial-gradient(circle at top, rgba(59, 130, 246, 0.1), transparent 50%);
-        }
-        .hero h1 { font-size: 3rem; margin-bottom: 1rem; letter-spacing: -0.025em; }
-        .hero p { color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem; font-size: 1.125rem; }
-        .hero-actions { display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; }
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-        }
-        .stat-card {
-            background: var(--bg-panel);
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border-subtle);
-        }
-
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Apidog Workbench */
-        .apidog-workbench {
-            border: 1px solid var(--border-subtle);
-            border-radius: 0.75rem;
-            overflow: hidden;
-            margin-bottom: 3rem;
-        }
-        .workbench-header {
-            background: #1e1e24;
-            padding: 0.5rem 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .req-tabs { display: flex; gap: 0.5rem; }
-        .req-tab { background: var(--bg-panel); padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; }
-        .req-bar {
-            display: flex;
-            padding: 1rem;
-            background: var(--bg-panel);
-            gap: 0.5rem;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .method-sel {
-            background: #064e3b; color: #34d399; border: none; padding: 0.5rem; border-radius: 0.375rem; font-weight: bold;
-        }
-        .url-input {
-            flex: 1; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem;
-        }
-        .workbench-body {
-            display: flex;
-            height: 400px;
-        }
-        .pane-left, .pane-right {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .pane-left { border-right: 1px solid var(--border-subtle); }
-        .pane-tabs {
-            display: flex; border-bottom: 1px solid var(--border-subtle); background: var(--bg-panel);
-        }
-        .pane-tab {
-            padding: 0.5rem 1rem; font-size: 0.875rem; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
-        }
-        .pane-tab:hover { color: var(--text-main); }
-        .pane-tab.active { border-bottom-color: var(--accent-api); color: var(--accent-api); }
-        
-        .pane-content {
-            flex: 1; padding: 1rem; background: var(--bg-dark); overflow: auto;
-        }
-        #apiRequestBody {
-            width: 100%; height: 100%; background: transparent; border: none; color: #a6e22e; font-family: monospace; resize: none; outline: none;
-        }
-        .res-stats {
-            display: flex; gap: 1rem; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;
-        }
-        #apiResponseViewer { font-family: monospace; color: #e5e7eb; white-space: pre-wrap; }
-
-        /* Hugging Face Model Grid */
-        .filters-bar {
-            display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap;
-        }
-        .search-box {
-            flex: 1; min-width: 200px; padding: 0.5rem 1rem; border-radius: 0.375rem; background: var(--bg-panel); border: 1px solid var(--border-subtle); color: white;
-        }
-        .chips { display: flex; gap: 0.5rem; }
-        .chip { padding: 0.25rem 0.75rem; background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: 9999px; font-size: 0.75rem; cursor: pointer; }
-        .grid-3 {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
-        }
-        .model-card {
-            background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: 0.75rem; padding: 1.25rem; border-left: 4px solid var(--accent-hf); transition: transform 0.2s;
-        }
-        .model-card:hover { transform: translateY(-2px); border-color: #3f3f46; }
-        .card-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
-        .org-tag { font-size: 0.75rem; color: var(--text-muted); }
-        .model-name { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem; }
-        .model-meta { display: flex; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.75rem; }
-        .meta-pill { background: #27272a; padding: 0.125rem 0.375rem; border-radius: 0.25rem; }
-
-        /* Modal Overlay Utility */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 999;
-        }
-        .modal-content {
-            background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: 0.75rem; padding: 2rem; width: 100%; max-width: 500px;
-        }
-        .hidden { display: none !important; }
-        
-        /* Inputs & forms inside Modals */
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: var(--text-muted); }
-        .form-group input, .form-group select {
-            width: 100%; padding: 0.5rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: white; border-radius: 0.375rem;
-        }
-
-        /* Empty states */
-        .empty-state { text-align: center; padding: 3rem; background: var(--bg-panel); border-radius: 0.75rem; border: 1px dashed var(--border-subtle); color: var(--text-muted); }
-    </style>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com http://localhost:11434 http://127.0.0.1:11434;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <title>VictorX — Universal Model Registry & API Workbench</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- TOPBAR -->
-    <header class="glass">
-        <div class="brand">
-            VictorX <span class="version-badge">v2.0 Hybrid</span>
-        </div>
-        <nav class="nav-links">
-            <a href="#explore">📦 Models</a>
-            <a href="#apidogWorkbench">⚡ Apidog API</a>
-            <a href="#">📊 Datasets</a>
-            <a href="#dock">⚓ My Dock</a>
-            <a href="#ports">🔌 Ports</a>
-            <a href="#partnership">🤝 Partnership</a>
-        </nav>
-        <div class="topbar-actions">
-            <select class="form-group" style="margin:0; padding:0.25rem; font-size:0.75rem;">
-                <option>OpenRouter Production</option>
-                <option>Local Ollama</option>
-                <option>Custom Gateway</option>
-            </select>
-            <button id="openUpiModalBtn" class="btn">❤️ Support</button>
-            <button id="openApiKeysBtn" class="btn">🔑 API Keys</button>
-            <span id="connectedCount" class="badge">🔌 5</span>
-            <span id="dockBadge" class="badge">⚓ 2</span>
-            
-            <div id="authWrap">
-                <button id="openAuthBtn" class="btn btn-primary">Sign In</button>
-                <div id="userMenu" class="hidden">
-                    <img id="userAvatar" src="" alt="Avatar" style="width:32px;height:32px;border-radius:50%;" />
-                    <span id="userName">User</span>
-                    <div id="userDropdown" class="hidden">
-                        <div id="dropdownEmail">user@example.com</div>
-                        <button id="dropdownDockBtn">My Dock</button>
-                        <button id="dropdownKeysBtn">Keys</button>
-                        <button id="logoutBtn">Logout</button>
+    <!-- TOPBAR NAVIGATION -->
+    <header class="topbar">
+        <div class="wrap">
+            <div class="topbar-brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="#818cf8"/>
+                </svg>
+                <span>VictorX</span>
+                <span class="badge live-badge">v2.0 Hybrid</span>
+            </div>
+
+            <nav class="topbar-nav">
+                <a href="#explore" class="active">📦 Models Hub</a>
+                <a href="#apidogWorkbench">⚡ API Workbench</a>
+                <a href="#mydock">⚓ My Dock</a>
+                <a href="#ports">🔌 Ports</a>
+                <a href="#partnership">🤝 Partnership</a>
+                <a href="#legal">📜 Legal</a>
+            </nav>
+
+            <div class="topbar-actions">
+                <select id="envSelect" class="sort-select" style="height:32px; padding:0 8px; font-size:12px;">
+                    <option value="openrouter">OpenRouter Production</option>
+                    <option value="ollama">Local Ollama (11434)</option>
+                    <option value="custom">Custom Gateway</option>
+                </select>
+
+                <button id="openUpiModalBtn" class="btn btn-sm btn-ghost">❤️ Support</button>
+                <button id="openApiKeysBtn" class="btn btn-sm btn-ghost" title="API Keys">🔑 Keys</button>
+                <button id="openConnectedBtn" class="btn btn-sm btn-ghost"><span id="connectedCount">5</span> Ports</button>
+                
+                <div id="authWrap" class="auth-wrap">
+                    <button id="openAuthBtn" class="btn btn-sm btn-primary">Sign In</button>
+                    
+                    <div id="userMenu" class="user-menu" style="display: none;">
+                        <button class="user-btn" id="userMenuBtn">
+                            <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23818cf8'%3E%3Ccircle cx='12' cy='12' r='12'/%3E%3C/svg%3E" alt="Avatar" class="avatar">
+                            <span id="userName">User</span>
+                        </button>
+                        <div id="userDropdown" class="user-dropdown">
+                            <div style="padding:8px 12px; font-size:12px; color:var(--text-muted); border-bottom:1px solid var(--border);" id="dropdownEmail">user@example.com</div>
+                            <button id="dropdownDockBtn" class="dropdown-item">My Installed Models</button>
+                            <button id="dropdownKeysBtn" class="dropdown-item">Manage API Keys</button>
+                            <button id="logoutBtn" class="dropdown-item danger">Sign Out</button>
+                        </div>
                     </div>
                 </div>
+
+                <button id="adminPinBtn" class="subtle-icon" title="Admin Access">🛡️</button>
             </div>
-            
-            <button id="adminPinBtn" class="btn" title="Admin Access">🛡️</button>
         </div>
     </header>
 
     <!-- HERO SECTION -->
     <section class="hero">
-        <h1>Universal AI Model Hub & API Workbench</h1>
-        <p>Search open-source LLMs like Hugging Face, test endpoints like Apidog, and deploy instantly to your local or cloud dock.</p>
-        <div class="hero-actions">
-            <button class="btn btn-primary" onclick="location.href='#explore'">Explore Manifest</button>
-            <button class="btn btn-api" onclick="location.href='#apidogWorkbench'">⚡ Launch Apidog API Workbench</button>
-            <button id="heroPlaygroundBtn" class="btn">⚡ Open AI Playground</button>
-        </div>
-        <div class="hero-stats">
-            <div class="stat-card">
-                <h3 id="statModels">17</h3>
-                <span style="font-size:0.75rem; color:var(--text-muted)">Models Indexed</span>
+        <div class="wrap">
+            <div class="hero-text-area">
+                <div class="eyebrow">⚡ Open-Source AI Infrastructure</div>
+                <h1>Universal AI Model Registry & API Testing Workbench</h1>
+                <p class="subtitle">Search top open-source LLMs, run API endpoint tests with live response latency, and pull models straight to your local or cloud dock.</p>
+                
+                <div class="hero-actions">
+                    <button class="btn btn-primary" onclick="document.getElementById('explore').scrollIntoView({behavior:'smooth'})">Explore Models Hub</button>
+                    <button class="btn btn-ghost" onclick="document.getElementById('apidogWorkbench').scrollIntoView({behavior:'smooth'})">⚡ API Workbench</button>
+                    <button id="heroPlaygroundBtn" class="btn btn-ghost">⚡ Launch AI Playground</button>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span id="statModels">17</span>
+                        <span>Models Indexed</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>100%</span>
+                        <span>OpenAPI Compliant</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="statPorts">5</span>
+                        <span>Ports Connected</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="statInstalled">2</span>
+                        <span>Pulled to Dock</span>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card">
-                <h3>100%</h3>
-                <span style="font-size:0.75rem; color:var(--text-muted)">OpenAPI Compliant</span>
-            </div>
-            <div class="stat-card">
-                <h3 id="statPorts">5</h3>
-                <span style="font-size:0.75rem; color:var(--text-muted)">Ports Connected</span>
-            </div>
-            <div class="stat-card">
-                <h3 id="statInstalled">2</h3>
-                <span style="font-size:0.75rem; color:var(--text-muted)">Pulled to Dock</span>
+
+            <!-- TERMINAL visual -->
+            <div class="hero-visual">
+                <div class="interactive-shell">
+                    <div class="terminal-header">
+                        <span class="dot close"></span>
+                        <span class="dot min"></span>
+                        <span class="dot max"></span>
+                        <span style="font-size:12px; color:var(--text-muted); margin-left: auto;">victor — interactive web CLI (v1.4.0)</span>
+                        <button id="clearTermBtn" class="btn-close" style="font-size:12px; margin-left:8px;" title="Clear">Clear</button>
+                    </div>
+                    <div class="terminal-body" id="termBody">
+                        <div id="termHistory">
+                            <div class="term-line out">Welcome to VictorX CLI. Type 'help' for commands.</div>
+                            <div class="term-line out">Try: <span class="cmd-chip" onclick="processCliCommand('victor pull llama-3.3-70b')">victor pull llama-3.3-70b</span> or <span class="cmd-chip" onclick="processCliCommand('victor ls')">victor ls</span></div>
+                        </div>
+                        <form id="termForm" class="term-form">
+                            <span class="prompt">$</span>
+                            <input type="text" id="cliInput" autocomplete="off" spellcheck="false" placeholder="type CLI command...">
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <div class="container">
-        
-        <!-- APIDOG WORKBENCH -->
-        <h2 class="section-title">⚡ Apidog Interactive API Workbench</h2>
+    <!-- MAIN CONTAINER -->
+    <main class="wrap">
+
+        <!-- API TESTING WORKBENCH -->
         <section class="apidog-workbench" id="apidogWorkbench">
             <div class="workbench-header">
-                <div class="req-tabs">
-                    <div class="req-tab">Llama 3.3 Chat API</div>
-                    <div class="req-tab" style="opacity: 0.5;">DeepSeek R1 Reasoning</div>
+                <div>
+                    <h2 style="font-size:18px; margin:0;">⚡ API Testing Workbench</h2>
+                    <span class="subtitle" style="font-size:12px;">Interactive HTTP request builder & code snippet generator</span>
                 </div>
-                <div style="font-size:0.75rem; background:#064e3b; color:#34d399; padding:0.25rem 0.75rem; border-radius:9999px;">Production Gateway</div>
+                <div class="status-pill">
+                    <span class="status-dot green"></span>
+                    <span id="activeEnvLabel">Production Gateway</span>
+                </div>
             </div>
-            <div class="req-bar">
-                <select class="method-sel">
-                    <option>POST</option>
-                    <option>GET</option>
+
+            <div class="request-bar">
+                <select id="apiMethod" class="method-select">
+                    <option value="POST">POST</option>
+                    <option value="GET">GET</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
                 </select>
-                <input type="text" class="url-input" id="apiEndpointInput" value="https://openrouter.ai/api/v1/chat/completions">
-                <button id="apiSendBtn" class="btn btn-api">⚡ Send Request</button>
-                <button id="apiSaveBtn" class="btn">💾 Save to DB</button>
+                <input type="text" id="apiEndpointInput" class="url-input" value="https://openrouter.ai/api/v1/chat/completions">
+                <button id="apiSendBtn" class="btn-send">⚡ Send Request</button>
+                <button id="apiSaveBtn" class="btn-save">💾 Save Request</button>
             </div>
-            <div class="workbench-body">
-                <div class="pane-left">
+
+            <div class="workbench-split">
+                <!-- Request Pane -->
+                <div class="request-pane">
                     <div class="pane-tabs">
-                        <div class="pane-tab">Params</div>
-                        <div class="pane-tab">Headers</div>
-                        <div class="pane-tab active">Body (JSON)</div>
-                        <div class="pane-tab">Code Snippet</div>
+                        <button class="pane-tab active" data-tab="body">Body (JSON)</button>
+                        <button class="pane-tab" data-tab="headers">Headers</button>
+                        <button class="pane-tab" data-tab="params">Params</button>
+                        <button class="pane-tab" data-tab="code">Code Snippets</button>
                     </div>
-                    <div class="pane-content">
-                        <textarea id="apiRequestBody">{
+                    
+                    <div id="tabBody" class="tab-panel">
+                        <textarea id="apiRequestBody" class="code-editor" spellcheck="false">{
   "model": "meta-llama/llama-3.3-70b-instruct",
   "messages": [
     {"role": "user", "content": "Explain quantum computing in 2 sentences."}
   ]
 }</textarea>
-                        <!-- snippet hidden normally unless tab active -->
-                        <div id="generatedCodeSnippet" class="hidden">curl -X POST ...</div>
                     </div>
-                </div>
-                <div class="pane-right">
-                    <div class="pane-tabs">
-                        <div class="pane-tab active">Pretty JSON</div>
-                        <div class="pane-tab">Raw Text</div>
-                        <div class="pane-tab">Headers</div>
+
+                    <div id="tabHeaders" class="tab-panel hidden">
+                        <textarea id="apiHeadersInput" class="code-editor" spellcheck="false">{
+  "Content-Type": "application/json",
+  "Authorization": "Bearer YOUR_API_KEY"
+}</textarea>
                     </div>
-                    <div class="pane-content">
-                        <div class="res-stats">
-                            <span id="apiResponseStatus">200 OK</span>
-                            <span id="apiResponseTime">142 ms</span>
-                            <span id="apiResponseSize">1.2 KB</span>
+
+                    <div id="tabParams" class="tab-panel hidden">
+                        <textarea id="apiParamsInput" class="code-editor" spellcheck="false">{
+  "temperature": 0.7,
+  "max_tokens": 150
+}</textarea>
+                    </div>
+
+                    <div id="tabCode" class="tab-panel hidden">
+                        <div class="code-snippet-box">
+                            <pre><code id="generatedCodeSnippet">// Code snippet will be generated here</code></pre>
                         </div>
-                        <pre><code id="apiResponseViewer">// Response will appear here after clicking "Send Request"</code></pre>
+                    </div>
+                </div>
+
+                <!-- Response Pane -->
+                <div class="response-pane">
+                    <div class="response-status-bar">
+                        <span id="apiResponseStatus" class="badge-green">200 OK</span>
+                        <span id="apiResponseTime" class="badge" style="color:var(--accent);">0 ms</span>
+                        <span id="apiResponseSize" class="badge" style="color:var(--text-muted);">0 B</span>
+                    </div>
+
+                    <div class="pane-tabs">
+                        <button class="pane-tab active">Pretty JSON</button>
+                    </div>
+
+                    <div class="code-snippet-box" style="flex:1;">
+                        <pre><code id="apiResponseViewer">// Response payload will appear here after clicking "Send Request"</code></pre>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- HUGGING FACE EXPLORE -->
-        <h2 class="section-title">📦 Model Manifest & Repository</h2>
+        <!-- MODELS HUB / MANIFEST -->
         <section class="explore" id="explore">
-            <div class="filters-bar">
-                <input type="text" class="search-box" id="searchInput" placeholder="Search models, organizations...">
-                <div class="chips" id="portChips">
-                    <span class="chip">All Tasks</span>
-                    <span class="chip">text-generation</span>
-                    <span class="chip">reasoning</span>
-                </div>
-                <select id="sortSelect" class="form-group" style="margin:0; width:auto; padding:0.25rem 1rem;">
-                    <option>Most Hauled</option>
-                    <option>Newest</option>
-                </select>
-                <span id="resultCount" style="font-size:0.875rem; color:var(--text-muted);">17 results</span>
+            <div class="section-head">
+                <h2>📦 Models Hub & Manifest</h2>
+                <p class="subtitle">Explore open-source models, licenses, pipeline tasks, and benchmarks.</p>
             </div>
-            
-            <div id="modelGrid" class="grid-3">
-                <!-- Example Model Card -->
-                <div class="model-card">
-                    <div class="card-header">
-                        <span class="org-tag">meta-llama</span>
-                        <span class="meta-pill">⬇️ 1.2M</span>
+
+            <div class="explore-controls">
+                <div class="controls-row">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search models by name, task or provider...">
                     </div>
-                    <div class="model-name">Llama 3.3 70B Instruct</div>
-                    <div class="model-meta">
-                        <span class="meta-pill">70B</span>
-                        <span class="meta-pill">text-generation</span>
+                    <select id="sortSelect" class="sort-select">
+                        <option value="most_hauled">Most Hauled</option>
+                        <option value="newest">Newest</option>
+                        <option value="name_asc">Name A-Z</option>
+                    </select>
+                </div>
+
+                <div class="controls-row">
+                    <div class="chip-row" id="portChips">
+                        <!-- Chips rendered via JS -->
                     </div>
-                    <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-                        <button class="btn btn-hf" style="flex:1; padding:0.25rem;">Pull</button>
-                        <button class="btn" style="flex:1; padding:0.25rem;">Test API</button>
-                    </div>
+                    <span id="resultCount" class="result-summary">17 models on manifest</span>
                 </div>
             </div>
-            <div id="emptyState" class="empty-state hidden">No models found.</div>
+
+            <div class="model-grid" id="modelGrid">
+                <!-- Dynamic model cards rendered via JS -->
+            </div>
+
+            <div id="emptyState" class="empty-state hidden">
+                <p>No models found matching your search.</p>
+            </div>
         </section>
 
-        <br><br>
-        
         <!-- MY DOCK -->
-        <h2 class="section-title" id="dock">⚓ My Dock <span id="installedCountPill" class="meta-pill" style="margin-left:0.5rem;">2</span></h2>
-        <section>
-            <div id="installedGrid" class="grid-3">
-                <!-- Installed items -->
+        <section class="section mydock" id="mydock">
+            <div class="section-head with-badge">
+                <h2>⚓ My Dock</h2>
+                <span id="installedCountPill" class="badge live-badge">2 Models</span>
             </div>
-            <div id="emptyDockState" class="empty-state">Your dock is empty.</div>
-        </section>
-        
-        <br><br>
 
-        <!-- PORTS -->
-        <h2 class="section-title" id="ports">🔌 Ports</h2>
-        <section id="portGrid" class="grid-3">
-            <!-- ports grid -->
+            <div class="model-grid" id="installedGrid">
+                <!-- Installed models rendered via JS -->
+            </div>
+
+            <div id="emptyDockState" class="empty-state hidden">
+                <p>Your dock is currently empty. Explore the manifest above to pull your first model.</p>
+            </div>
         </section>
 
-        <br><br>
-        
-        <!-- PARTNERSHIP / ADVERTISE / LEGAL -->
-        <h2 class="section-title" id="partnership">🤝 Partnership & Advertise</h2>
-        <section style="display:flex; gap:2rem; flex-wrap:wrap;">
-            <div style="flex:1; background:var(--bg-panel); padding:2rem; border-radius:0.75rem; border:1px solid var(--border-subtle);">
-                <h3>Partner Inquiry</h3>
-                <form id="partnerForm" style="margin-top:1rem;">
-                    <div class="form-group"><input type="text" id="partnerCompany" placeholder="Company Name"></div>
-                    <div class="form-group"><input type="email" id="partnerEmail" placeholder="Email"></div>
+        <!-- PORTS & INTEGRATIONS -->
+        <section class="section ports" id="ports">
+            <div class="section-head">
+                <h2>🔌 Connected Ports</h2>
+                <p class="subtitle">Runtimes and provider integrations available on VictorX.</p>
+            </div>
+            <div class="port-grid" id="portGrid">
+                <!-- Rendered via JS -->
+            </div>
+        </section>
+
+        <!-- PARTNERSHIP -->
+        <section class="section partnership" id="partnership">
+            <div class="section-head">
+                <span class="eyebrow">Strategic Alliances</span>
+                <h2>Partner with VictorX</h2>
+                <p class="subtitle">Join our ecosystem of AI model providers, cloud platforms, and infrastructure builders.</p>
+            </div>
+
+            <div class="partner-grid">
+                <div class="partner-card">
+                    <h3>🥉 Bronze Partner</h3>
+                    <div class="partner-price">₹19,999<span>/mo</span></div>
+                    <ul class="partner-benefits">
+                        <li>Standard listing</li>
+                        <li>Basic analytics</li>
+                        <li>Community support</li>
+                    </ul>
+                    <button class="btn btn-ghost w-full">Get Started</button>
+                </div>
+
+                <div class="partner-card featured-tier">
+                    <span class="badge live-badge" style="position:absolute; top:-12px; right:20px;">POPULAR</span>
+                    <h3>🥈 Silver Partner</h3>
+                    <div class="partner-price">₹49,999<span>/mo</span></div>
+                    <ul class="partner-benefits">
+                        <li>Featured model placement</li>
+                        <li>API access tier</li>
+                        <li>24/7 priority support</li>
+                        <li>Monthly analytics report</li>
+                    </ul>
+                    <button class="btn btn-primary w-full">Become Partner</button>
+                </div>
+
+                <div class="partner-card">
+                    <h3>🥇 Gold Partner</h3>
+                    <div class="partner-price">Custom</div>
+                    <ul class="partner-benefits">
+                        <li>Priority model placement</li>
+                        <li>Co-branded dock section</li>
+                        <li>Dedicated API integration</li>
+                        <li>Custom model indexing</li>
+                    </ul>
+                    <button class="btn btn-ghost w-full">Contact for Pricing</button>
+                </div>
+            </div>
+
+            <div class="partner-form-container">
+                <h3 style="margin-bottom:1rem; text-align:center;">Request Partnership Details</h3>
+                <form id="partnerForm" class="partner-form">
                     <div class="form-group">
-                        <select id="partnerTier">
-                            <option>Gold Tier</option>
-                            <option>Silver Tier</option>
-                            <option>Bronze Tier</option>
+                        <label for="partnerCompany">Company Name</label>
+                        <input type="text" id="partnerCompany" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="partnerEmail">Contact Email</label>
+                        <input type="email" id="partnerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="partnerTier">Partnership Tier</label>
+                        <select id="partnerTier" style="width:100%; padding:10px; border-radius:4px; background:var(--bg-input); border:1px solid var(--border); color:var(--text);">
+                            <option value="Gold Partner">Gold Partner</option>
+                            <option value="Silver Partner">Silver Partner</option>
+                            <option value="Bronze Partner">Bronze Partner</option>
                         </select>
                     </div>
-                    <div class="form-group"><textarea id="partnerMessage" placeholder="Message" style="width:100%; padding:0.5rem; background:var(--bg-dark); border:1px solid var(--border-subtle); color:white; border-radius:0.375rem;"></textarea></div>
-                    <button class="btn btn-primary" type="button">Submit Inquiry</button>
+                    <div class="form-group">
+                        <label for="partnerMessage">Message</label>
+                        <textarea id="partnerMessage" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">Submit Inquiry</button>
                 </form>
-            </div>
-            <div style="flex:1; background:var(--bg-panel); padding:2rem; border-radius:0.75rem; border:1px solid var(--border-subtle);">
-                <h3>Advertise with Us</h3>
-                <p style="color:var(--text-muted); margin-top:1rem; margin-bottom:1rem;">Reach thousands of developers and AI researchers daily.</p>
-                <div class="stat-card" style="margin-bottom:1rem; text-align:center;">
-                    <h3>100K+</h3>
-                    <span style="font-size:0.75rem;">Monthly Impressions</span>
-                </div>
-                <button id="requestSlotBtn" class="btn btn-primary" style="width:100%;">Request Ad Slot</button>
             </div>
         </section>
 
-        <br><br>
-        <footer style="padding:2rem 0; border-top:1px solid var(--border-subtle); display:flex; gap:1rem; justify-content:center; font-size:0.875rem; color:var(--text-muted);">
-            <span id="legalTerms" style="cursor:pointer;">Terms of Service</span> | 
-            <span id="legalPrivacy" style="cursor:pointer;">Privacy Policy</span> | 
-            <span id="legalCookies" style="cursor:pointer;">Cookie Policy</span>
-        </footer>
+        <!-- ADVERTISE -->
+        <section class="section advertise" id="advertise">
+            <div class="advertise-content">
+                <div>
+                    <span class="eyebrow">Reach AI Builders</span>
+                    <h2>Advertise on VictorX</h2>
+                    <p class="subtitle">Put your tool or API in front of thousands of active AI developers and researchers.</p>
+                </div>
 
-        <!-- Hidden CLI / Term elements to preserve IDs -->
-        <div style="display:none;">
-            <div id="termBody"></div>
-            <div id="termHistory"></div>
-            <form id="termForm"><input id="cliInput"></form>
-            <button id="clearTermBtn"></button>
-            <div id="toast"></div>
+                <div class="ad-stats">
+                    <div class="ad-stat-item">
+                        <h3>~120k</h3>
+                        <div class="ad-desc">Est. Monthly Impressions</div>
+                    </div>
+                    <div class="ad-stat-item">
+                        <h3>4.2%</h3>
+                        <div class="ad-desc">Avg. Click Rate</div>
+                    </div>
+                </div>
+
+                <button id="requestSlotBtn" class="btn btn-primary" style="width:fit-content;">Request Ad Slot</button>
+            </div>
+        </section>
+
+        <!-- LEGAL & COMPLIANCE -->
+        <section class="section legal" id="legal">
+            <div class="legal-container">
+                <div class="section-head">
+                    <h2>📜 Legal & Compliance</h2>
+                    <p class="subtitle">Official terms, privacy guidelines, and model licenses.</p>
+                </div>
+
+                <div class="legal-tabs">
+                    <button class="tab-btn active" data-target="legalTerms">Terms of Service</button>
+                    <button class="tab-btn" data-target="legalPrivacy">Privacy Policy</button>
+                    <button class="tab-btn" data-target="legalCookies">Cookie Policy</button>
+                </div>
+
+                <div id="legalTerms" class="legal-panel active">
+                    <span class="last-updated">Last updated: October 2024</span>
+                    <h3>1. Acceptance of Terms</h3>
+                    <p>By accessing or using VictorX, you agree to comply with these terms, model licenses, and acceptable use policies.</p>
+                    <h3>2. Service Description</h3>
+                    <p>VictorX provides a unified registry, execution dock, and API testing workbench for AI models.</p>
+                    <h3>3. Open Source Model Usage</h3>
+                    <p>All model weights and execution endpoints are subject to their respective open-source licenses (Apache 2.0, MIT, Llama Community License).</p>
+                </div>
+
+                <div id="legalPrivacy" class="legal-panel hidden">
+                    <span class="last-updated">Last updated: October 2024</span>
+                    <h3>Privacy Policy</h3>
+                    <p>VictorX respects user privacy. Your API keys and local requests are stored securely in your browser and local workspace database.</p>
+                </div>
+
+                <div id="legalCookies" class="legal-panel hidden">
+                    <span class="last-updated">Last updated: October 2024</span>
+                    <h3>Cookie Policy</h3>
+                    <p>We use local storage and session markers solely to persist your UI preferences and dock state.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="wrap">
+            <div class="footer-grid">
+                <div class="footer-col brand-col">
+                    <h4>VictorX</h4>
+                    <p>Universal AI Model Registry & Execution Dock.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#explore">Models Hub</a></li>
+                        <li><a href="#apidogWorkbench">API Workbench</a></li>
+                        <li><a href="#mydock">My Dock</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#partnership">Partnership</a></li>
+                        <li><a href="#advertise">Advertise</a></li>
+                        <li><a href="#openUpiModalBtn">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#legal">Terms of Service</a></li>
+                        <li><a href="#legal">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 VictorX. All rights reserved.</p>
+            </div>
         </div>
+    </footer>
 
-    </div>
+    <!-- TOAST -->
+    <div id="toast" class="toast"></div>
 
     <!-- MODALS -->
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModalOverlay">
-        <div class="modal-content">
-            <h3 style="margin-bottom:1rem;">Authentication</h3>
-            <div style="display:flex; gap:1rem; margin-bottom:1rem;">
-                <button id="authTabLogin" class="btn btn-primary" style="flex:1;">Login</button>
-                <button id="authTabRegister" class="btn" style="flex:1;">Register</button>
+        <div class="modal auth-modal">
+            <div class="modal-header">
+                <h2>Welcome to VictorX</h2>
+                <button class="btn-close">&times;</button>
             </div>
-            <form id="loginForm">
-                <div class="form-group"><input type="text" id="loginUsername" placeholder="Username"></div>
-                <div class="form-group"><input type="password" id="loginPassword" placeholder="Password"></div>
-                <button id="loginSubmitBtn" class="btn btn-primary" style="width:100%; margin-bottom:0.5rem;" type="button">Log In</button>
-                <button id="googleSignInBtn" class="btn" style="width:100%; margin-bottom:0.5rem;" type="button">Sign in with Google</button>
-                <button id="quickGuestLoginBtn" class="btn" style="width:100%;" type="button">Continue as Guest</button>
-            </form>
-            <form id="registerForm" class="hidden">
-                <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name"></div>
-                <div class="form-group"><input type="text" id="regUsername" placeholder="Username"></div>
-                <div class="form-group"><input type="email" id="regEmail" placeholder="Email"></div>
-                <div class="form-group"><input type="password" id="regPassword" placeholder="Password"></div>
-                <div class="form-group"><input type="password" id="regConfirmPassword" placeholder="Confirm Password"></div>
-                <div class="form-group"><input type="text" id="regApiKey" placeholder="API Key (Optional)"></div>
-                <button id="registerSubmitBtn" class="btn btn-primary" style="width:100%;" type="button">Register</button>
-            </form>
-            <button class="btn" style="width:100%; margin-top:1rem;" onclick="document.getElementById('authModalOverlay').classList.add('hidden')">Cancel</button>
+            <div class="modal-body">
+                <div class="auth-tabs-container">
+                    <button class="auth-tab active" id="authTabLogin">Login</button>
+                    <button class="auth-tab" id="authTabRegister">Register</button>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginUsername">Username or Email</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" id="loginSubmitBtn" class="btn btn-primary w-full">Sign In</button>
+                </form>
+
+                <form id="registerForm" class="hidden">
+                    <div class="form-group">
+                        <label for="regFullName">Full Name</label>
+                        <input type="text" id="regFullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regUsername">Username</label>
+                        <input type="text" id="regUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail">Email</label>
+                        <input type="email" id="regEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regPassword">Password</label>
+                        <input type="password" id="regPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regConfirmPassword">Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" required>
+                    </div>
+                    <button type="submit" id="registerSubmitBtn" class="btn btn-primary w-full">Create Account</button>
+                </form>
+
+                <div class="auth-divider">── OR ──</div>
+
+                <button id="googleSignInBtn" class="btn btn-ghost w-full mb-2">Continue with Google</button>
+                <button id="quickGuestLoginBtn" class="btn btn-ghost w-full">Continue as Guest</button>
+            </div>
         </div>
     </div>
 
     <!-- Admin PIN Modal -->
-    <div class="modal-overlay" id="adminPinOverlay">
-        <div class="modal-content" style="text-align:center;">
-            <h3>Admin Access</h3>
-            <p style="color:var(--text-muted); font-size:0.875rem; margin:1rem 0;">Enter 8-digit PIN</p>
-            <div id="pinInputGroup" style="margin-bottom:1rem;">
-                <input type="password" placeholder="********" style="text-align:center; letter-spacing:0.5em; padding:0.5rem; background:var(--bg-dark); color:white; border:1px solid var(--border-subtle); border-radius:0.375rem;">
+    <div class="pin-overlay" id="adminPinOverlay">
+        <div class="pin-modal">
+            <h2>Admin Access</h2>
+            <p class="subtitle" style="margin-bottom:1rem;">Enter administrator 8-digit PIN</p>
+            <div class="pin-input-group" id="pinInputGroup">
+                <input type="password" class="pin-digit" maxlength="1">
+                <input type="password" class="pin-digit" maxlength="1">
+                <input type="password" class="pin-digit" maxlength="1">
+                <input type="password" class="pin-digit" maxlength="1">
+                <input type="password" class="pin-digit" maxlength="1">
+                <input type="password" class="pin-digit" maxlength="1">
+                <input type="password" class="pin-digit" maxlength="1">
+                <input type="password" class="pin-digit" maxlength="1">
             </div>
-            <div id="pinError" style="color:var(--danger); font-size:0.75rem; margin-bottom:1rem;" class="hidden">Invalid PIN</div>
-            <div style="display:flex; gap:1rem;">
-                <button id="pinCancelBtn" class="btn" style="flex:1;" onclick="document.getElementById('adminPinOverlay').classList.add('hidden')">Cancel</button>
-                <button id="pinVerifyBtn" class="btn btn-primary" style="flex:1;">Verify</button>
+            <div id="pinError" class="badge badge-red hidden" style="margin-bottom:1rem;">Access Denied. Incorrect PIN.</div>
+            <div style="display:flex; gap:8px;">
+                <button id="pinCancelBtn" class="btn btn-ghost style-flex-1">Cancel</button>
+                <button id="pinVerifyBtn" class="btn btn-primary style-flex-1">Verify</button>
             </div>
         </div>
     </div>
 
     <!-- Admin Dashboard Modal -->
     <div class="modal-overlay" id="adminDashboardOverlay">
-        <div class="modal-content" style="max-width:800px; max-height:80vh; overflow:auto;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem;">
-                <h2>Admin Dashboard</h2>
-                <button class="btn" onclick="document.getElementById('adminDashboardOverlay').classList.add('hidden')">Close</button>
+        <div class="modal admin-modal" style="max-width:800px;">
+            <div class="modal-header">
+                <div>
+                    <span class="badge admin-badge">ADMIN CONTROL</span>
+                    <h2>VictorX Admin Dashboard</h2>
+                </div>
+                <button class="btn-close">&times;</button>
             </div>
-            <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
-                <div class="stat-card" style="flex:1;"><h3 id="adminTotalUsers">0</h3><span>Users</span></div>
-                <div class="stat-card" style="flex:1;"><h3 id="adminActiveSessions">0</h3><span>Sessions</span></div>
-                <div class="stat-card" style="flex:1;"><h3 id="adminModelsPulled">0</h3><span>Models Pulled</span></div>
-                <div class="stat-card" style="flex:1;"><h3 id="adminRevenue">$0</h3><span>Revenue</span></div>
-            </div>
-            
-            <div id="adminUsersPanel" style="margin-bottom:2rem;">
-                <h3>Users</h3>
-                <input type="text" id="adminUserSearch" placeholder="Search..." style="margin-bottom:1rem; padding:0.25rem;">
-                <table style="width:100%; text-align:left;">
-                    <tbody id="adminUsersTableBody"></tbody>
-                </table>
-            </div>
-            <div id="adminModelsPanel" style="margin-bottom:2rem;">
-                <h3>Models</h3>
-                <table style="width:100%; text-align:left;">
-                    <tbody id="adminModelsTableBody"></tbody>
-                </table>
-            </div>
-            <div id="adminKeysPanel" style="margin-bottom:2rem;">
-                <h3>API Keys</h3>
-                <table style="width:100%; text-align:left;">
-                    <tbody id="adminKeysTableBody"></tbody>
-                </table>
-            </div>
-            <div id="adminRevenuePanel" style="margin-bottom:2rem;">
-                <h3>Revenue</h3>
-                <p>No recent transactions.</p>
-            </div>
-            <div id="adminSettingsPanel">
-                <h3>Settings</h3>
-                <label style="display:flex; align-items:center; gap:0.5rem; margin-top:1rem;">
-                    <input type="checkbox" id="maintModeToggle"> Maintenance Mode
-                </label>
+            <div class="modal-body">
+                <div class="admin-stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px;">
+                    <div class="stat-card">
+                        <span id="adminTotalUsers" style="font-size:20px; font-weight:bold;">1</span>
+                        <div style="font-size:12px; color:var(--text-muted);">Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <span id="adminActiveSessions" style="font-size:20px; font-weight:bold;">1</span>
+                        <div style="font-size:12px; color:var(--text-muted);">Active Sessions</div>
+                    </div>
+                    <div class="stat-card">
+                        <span id="adminModelsPulled" style="font-size:20px; font-weight:bold;">5</span>
+                        <div style="font-size:12px; color:var(--text-muted);">Models Pulled</div>
+                    </div>
+                    <div class="stat-card">
+                        <span id="adminRevenue" style="font-size:20px; font-weight:bold;">₹0</span>
+                        <div style="font-size:12px; color:var(--text-muted);">Revenue</div>
+                    </div>
+                </div>
+
+                <div class="admin-tabs" style="display:flex; gap:8px; border-bottom:1px solid var(--border); margin-bottom:12px;">
+                    <button class="pane-tab active" data-target="adminUsersPanel">Users</button>
+                    <button class="pane-tab" data-target="adminModelsPanel">Models</button>
+                    <button class="pane-tab" data-target="adminKeysPanel">API Keys</button>
+                    <button class="pane-tab" data-target="adminSettingsPanel">Settings</button>
+                </div>
+
+                <div id="adminUsersPanel" class="admin-panel">
+                    <table class="admin-table" style="width:100%; font-size:12px; text-align:left;">
+                        <thead>
+                            <tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="adminUsersTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="adminModelsPanel" class="admin-panel hidden">
+                    <table class="admin-table" style="width:100%; font-size:12px; text-align:left;">
+                        <thead>
+                            <tr><th>Model ID</th><th>Developer</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="adminModelsTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="adminKeysPanel" class="admin-panel hidden">
+                    <table class="admin-table" style="width:100%; font-size:12px; text-align:left;">
+                        <thead>
+                            <tr><th>Provider</th><th>Key Configured</th></tr>
+                        </thead>
+                        <tbody id="adminKeysTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="adminSettingsPanel" class="admin-panel hidden">
+                    <div class="form-group">
+                        <label for="maintModeToggle">Maintenance Mode</label>
+                        <input type="checkbox" id="maintModeToggle">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- API Keys Modal -->
     <div class="modal-overlay" id="apiKeysModalOverlay">
-        <div class="modal-content">
-            <h3>API Keys</h3>
-            <form id="apiKeysForm" style="margin-top:1rem;">
-                <div class="form-group"><label>OpenRouter</label><input type="password" id="keyOpenRouter"></div>
-                <div class="form-group"><label>OpenAI</label><input type="password" id="keyOpenAI"></div>
-                <div class="form-group"><label>Gemini</label><input type="password" id="keyGemini"></div>
-                <div class="form-group"><label>Ollama URL</label><input type="text" id="urlOllama" value="http://localhost:11434"></div>
-                <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-                    <button id="clearApiKeysBtn" class="btn" style="flex:1;" type="button">Clear</button>
-                    <button id="saveApiKeysBtn" class="btn btn-primary" style="flex:1;" type="button">Save</button>
-                </div>
-            </form>
-            <button class="btn" style="width:100%; margin-top:1rem;" onclick="document.getElementById('apiKeysModalOverlay').classList.add('hidden')">Close</button>
+        <div class="modal">
+            <div class="modal-header">
+                <h2>API Key Manager</h2>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="apiKeysForm">
+                    <div class="form-group">
+                        <label for="keyOpenRouter">OpenRouter API Key</label>
+                        <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-...">
+                    </div>
+                    <div class="form-group">
+                        <label for="keyOpenAI">OpenAI / Claude API Key</label>
+                        <input type="password" id="keyOpenAI" placeholder="sk-...">
+                    </div>
+                    <div class="form-group">
+                        <label for="keyGemini">Google Gemini API Key</label>
+                        <input type="password" id="keyGemini" placeholder="AIza...">
+                    </div>
+                    <div class="form-group">
+                        <label for="urlOllama">Ollama Endpoint URL</label>
+                        <input type="text" id="urlOllama" value="http://localhost:11434">
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" id="clearApiKeysBtn" class="btn btn-ghost w-full">Clear Keys</button>
+                        <button type="button" id="saveApiKeysBtn" class="btn btn-primary w-full">Save Keys</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Pull Modal -->
     <div class="modal-overlay" id="pullModalOverlay">
-        <div class="modal-content">
-            <h3 id="pullModalTitle">Pulling Model...</h3>
-            <p id="pullModalDesc" style="color:var(--text-muted); font-size:0.875rem; margin-bottom:1rem;">Initializing connection to <span id="pullModalPort">Port</span></p>
-            <div style="background:var(--bg-dark); height:8px; border-radius:4px; overflow:hidden; margin-bottom:1rem;">
-                <div id="pullProgressBar" style="background:var(--brand-primary); height:100%; width:0%;"></div>
+        <div class="modal">
+            <div class="modal-header">
+                <span id="pullModalPort" class="provider-tag">Port</span>
+                <h2 id="pullModalTitle">Pulling Model</h2>
+                <button class="btn-close">&times;</button>
             </div>
-            <div id="pullLayers" style="font-family:monospace; font-size:0.75rem; color:var(--text-muted); background:#111; padding:0.5rem; border-radius:0.25rem; height:100px; overflow:auto; margin-bottom:1rem;">
-            </div>
-            <div id="pullCodeSnippet" class="hidden"></div>
-            <div style="display:flex; gap:1rem;">
-                <button id="pullConfirmBtn" class="btn" style="flex:1;">Cancel</button>
-                <button id="pullPlaygroundBtn" class="btn btn-primary hidden" style="flex:1;">Open Playground</button>
+            <div class="modal-body">
+                <p id="pullModalDesc" class="subtitle" style="margin-bottom:12px;"></p>
+                <div style="width:100%; background:var(--bg-input); height:8px; border-radius:4px; overflow:hidden; margin-bottom:12px;">
+                    <div id="pullProgressBar" style="background:var(--accent); height:100%; width:0%; transition:width 0.2s;"></div>
+                </div>
+                <div id="pullLayers" style="font-family:var(--font-mono); font-size:12px; background:#070a12; padding:12px; border-radius:4px; max-height:120px; overflow-y:auto; margin-bottom:12px;">
+                </div>
+                <div id="pullCodeSnippet" class="hidden"></div>
+                <div style="display:flex; gap:8px;">
+                    <button id="pullConfirmBtn" class="btn btn-primary w-full">Start Pull</button>
+                    <button id="pullPlaygroundBtn" class="btn btn-ghost w-full hidden">Launch Playground</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Playground Modal -->
     <div class="modal-overlay" id="playgroundModalOverlay">
-        <div class="modal-content" style="max-width:800px; height:80vh; display:flex; flex-direction:column;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
-                <h3>AI Playground</h3>
-                <select id="pgModelSelect" style="padding:0.25rem;"></select>
-                <button class="btn" onclick="document.getElementById('playgroundModalOverlay').classList.add('hidden')">Close</button>
+        <div class="modal" style="max-width:700px; height:80vh; display:flex; flex-direction:column;">
+            <div class="modal-header">
+                <div>
+                    <span class="badge live-badge">LIVE DOCK</span>
+                    <h2 style="display:inline-block; margin-left:8px;">AI Playground</h2>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <select id="pgModelSelect" class="sort-select" style="height:32px; padding:0 8px; font-size:12px;"></select>
+                    <button id="pgApiKeysBtn" class="btn btn-sm btn-ghost">Keys</button>
+                    <button class="btn-close">&times;</button>
+                </div>
             </div>
-            <div id="pgHistory" style="flex:1; background:var(--bg-dark); border:1px solid var(--border-subtle); border-radius:0.375rem; padding:1rem; overflow:auto; margin-bottom:1rem;">
-                <!-- Chat history -->
+            <div class="modal-body" style="flex:1; display:flex; flex-direction:column;">
+                <div id="pgHistory" style="flex:1; background:#070a12; border:1px solid var(--border); border-radius:4px; padding:12px; overflow-y:auto; margin-bottom:12px;">
+                    <div class="msg system" style="text-align:center; color:var(--text-muted); margin:16px 0;">System: Connected to AI Playground. Type a message below.</div>
+                </div>
+                <form id="pgForm" style="display:flex; gap:8px;">
+                    <input type="text" id="pgInput" placeholder="Type a message... (Press Enter to send)" style="flex:1; padding:10px; background:var(--bg-input); border:1px solid var(--border); border-radius:4px; color:var(--text);">
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
             </div>
-            <form id="pgForm" style="display:flex; gap:0.5rem;">
-                <input type="text" id="pgInput" style="flex:1; padding:0.5rem; background:var(--bg-dark); color:white; border:1px solid var(--border-subtle); border-radius:0.375rem;" placeholder="Send a message...">
-                <button type="submit" class="btn btn-primary">Send</button>
-            </form>
         </div>
     </div>
 
     <!-- UPI Support Modal -->
     <div class="modal-overlay" id="upiModalOverlay">
-        <div class="modal-content" style="text-align:center;">
-            <h3>Support the Developer</h3>
-            <p style="margin:1rem 0; color:var(--text-muted);">UPI ID: <strong>arasu9629hf@okhdfcbank</strong></p>
-            <div style="width:200px; height:200px; background:white; margin:0 auto 1rem; border-radius:0.5rem; display:flex; align-items:center; justify-content:center;">
-                <span style="color:black;">QR Code</span>
+        <div class="modal text-center">
+            <div class="modal-header">
+                <h2>❤️ Support VictorX</h2>
+                <button class="btn-close">&times;</button>
             </div>
-            <div style="display:flex; gap:1rem;">
-                <button class="btn" style="flex:1;" onclick="document.getElementById('upiModalOverlay').classList.add('hidden')">Close</button>
-                <button id="confirmSupportBtn" class="btn btn-primary" style="flex:1;">I've Supported!</button>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary); margin-bottom:16px;">Scan QR or pay via UPI:</p>
+                <div style="background:#fff; padding:16px; border-radius:8px; display:inline-block; margin-bottom:16px;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Support&cu=INR" alt="UPI QR Code" width="160" height="160">
+                </div>
+                <p style="font-family:var(--font-mono); color:var(--accent); font-size:16px; font-weight:bold; margin-bottom:16px;">arasu9629hf@okhdfcbank</p>
+                <button id="confirmSupportBtn" class="btn btn-primary w-full">I've Supported</button>
             </div>
         </div>
     </div>
 
+    <script src="script.js"></script>
 </body>
 </html>

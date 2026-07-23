@@ -37,6 +37,11 @@
 /* ==========================================================================
    Apidog Workbench Styling
    ========================================================================== */
+.hidden { display: none !important; }
+.style-flex-1 { flex: 1 !important; }
+.w-full { width: 100% !important; }
+.mb-2 { margin-bottom: 8px !important; }
+
 .apidog-workbench {
   background: var(--bg-card);
   border: 1px solid var(--border);
