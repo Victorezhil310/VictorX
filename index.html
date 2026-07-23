@@ -1,1161 +1,640 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VictorX — AI Model Registry & Execution Dock</title>
-  
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com http://localhost:11434 http://127.0.0.1:11434;">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="description" content="VictorX is a universal AI model registry and execution dock. Indexing Ollama, HuggingFace, OpenRouter, and more.">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VictorX v2.0 Hybrid - AI Model Hub & API Testing Workbench</title>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-panel: #18181b;
+            --bg-glass: rgba(24, 24, 27, 0.7);
+            --border-subtle: #27272a;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --accent-hf: #ffd21e;
+            --accent-api: #10b981;
+            --brand-primary: #3b82f6;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
 
-  <style>
-    /* Premium Modern Additions */
-    .grid-mesh-bg {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background-image: 
-        linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      z-index: -2;
-      pointer-events: none;
-      animation: bg-pan 20s linear infinite;
-    }
-    @keyframes bg-pan {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(40px); }
-    }
-    
-    .hero { position: relative; }
-    .hero-glow {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      overflow: hidden;
-      z-index: -1;
-      pointer-events: none;
-    }
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(90px);
-      opacity: 0.5;
-      animation: float 10s infinite ease-in-out alternate;
-    }
-    .orb-1 { width: 350px; height: 350px; background: #38bdf8; top: -10%; left: 15%; animation-delay: 0s; }
-    .orb-2 { width: 450px; height: 450px; background: #818cf8; top: 30%; right: 5%; animation-delay: -3s; }
-    .orb-3 { width: 300px; height: 300px; background: #c084fc; bottom: -10%; left: 35%; animation-delay: -6s; }
-    @keyframes float {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(40px, -40px) scale(1.1); }
-    }
-    
-    .hero-stats {
-      display: flex; gap: 16px; margin-top: 40px;
-    }
-    .stat-item {
-      display: flex; align-items: center; gap: 16px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 16px 24px;
-      border-radius: 16px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-    .stat-icon { font-size: 28px; }
-    .stat-content { display: flex; flex-direction: column; text-align: left; }
-    .stat-content strong { font-size: 24px; font-weight: 700; color: #fff; line-height: 1.2; }
-    .stat-content span { font-size: 12px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-    .section-divider {
-      height: 1px;
-      width: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-      margin: 80px 0;
-    }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
 
-    .model-card {
-      position: relative;
-      background: rgba(20, 20, 25, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      backdrop-filter: blur(12px);
-      display: flex; flex-direction: column;
-    }
-    .model-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 12px 40px -10px var(--accent, rgba(0,0,0,0.5));
-    }
-    .card-accent {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      background: var(--accent, #555);
-    }
-    .card-body { padding: 24px; flex-grow: 1; display: flex; flex-direction: column; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .haul-badge { font-size: 12px; font-weight: 600; color: #fbbf24; background: rgba(251, 191, 36, 0.15); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.2); }
-    .model-name { font-size: 20px; font-weight: 600; margin: 0 0 8px; color: #fff; }
-    .model-desc { color: #a1a1aa; font-size: 14px; margin: 0 0 20px; line-height: 1.5; flex-grow: 1; }
-    .card-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-    .size-badge { font-size: 12px; font-weight: 500; color: #fff; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; }
-    
-    .featured-tier { position: relative; border: none; background: rgba(25, 25, 30, 0.8); }
-    .featured-tier.glowing-border::before {
-      content: '';
-      position: absolute;
-      top: -1px; left: -1px; right: -1px; bottom: -1px;
-      background: linear-gradient(45deg, #38bdf8, #c084fc, #38bdf8);
-      z-index: -1;
-      border-radius: inherit;
-      background-size: 200% 200%;
-      animation: glow-border 3s linear infinite;
-    }
-    @keyframes glow-border {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
-    .popular-badge {
-      position: absolute;
-      top: -14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(90deg, #38bdf8, #c084fc);
-      color: #fff;
-      padding: 4px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
-    }
-    .qr-img { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-    
-    /* Socials SVG */
-    .social-links svg { width: 24px; height: 24px; transition: color 0.2s, transform 0.2s; }
-    .social-links a:hover svg { color: #38bdf8; transform: translateY(-2px); }
-  </style>
+        /* Glassmorphism Utilities */
+        .glass {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* Buttons */
+        button, .btn {
+            background: var(--bg-panel);
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        button:hover { background: #27272a; }
+        .btn-primary { background: var(--brand-primary); border-color: var(--brand-primary); color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-hf { background: var(--accent-hf); border-color: var(--accent-hf); color: black; }
+        .btn-api { background: var(--accent-api); border-color: var(--accent-api); color: white; }
+
+        /* Navigation Topbar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.025em;
+        }
+        .version-badge {
+            font-size: 0.65rem;
+            background: var(--accent-api);
+            color: white;
+            padding: 0.125rem 0.375rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        .nav-links a { color: inherit; text-decoration: none; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--text-main); }
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: radial-gradient(circle at top, rgba(59, 130, 246, 0.1), transparent 50%);
+        }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; letter-spacing: -0.025em; }
+        .hero p { color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem; font-size: 1.125rem; }
+        .hero-actions { display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-panel);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Apidog Workbench */
+        .apidog-workbench {
+            border: 1px solid var(--border-subtle);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+        .workbench-header {
+            background: #1e1e24;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .req-tabs { display: flex; gap: 0.5rem; }
+        .req-tab { background: var(--bg-panel); padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; }
+        .req-bar {
+            display: flex;
+            padding: 1rem;
+            background: var(--bg-panel);
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .method-sel {
+            background: #064e3b; color: #34d399; border: none; padding: 0.5rem; border-radius: 0.375rem; font-weight: bold;
+        }
+        .url-input {
+            flex: 1; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem;
+        }
+        .workbench-body {
+            display: flex;
+            height: 400px;
+        }
+        .pane-left, .pane-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .pane-left { border-right: 1px solid var(--border-subtle); }
+        .pane-tabs {
+            display: flex; border-bottom: 1px solid var(--border-subtle); background: var(--bg-panel);
+        }
+        .pane-tab {
+            padding: 0.5rem 1rem; font-size: 0.875rem; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+        }
+        .pane-tab:hover { color: var(--text-main); }
+        .pane-tab.active { border-bottom-color: var(--accent-api); color: var(--accent-api); }
+        
+        .pane-content {
+            flex: 1; padding: 1rem; background: var(--bg-dark); overflow: auto;
+        }
+        #apiRequestBody {
+            width: 100%; height: 100%; background: transparent; border: none; color: #a6e22e; font-family: monospace; resize: none; outline: none;
+        }
+        .res-stats {
+            display: flex; gap: 1rem; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;
+        }
+        #apiResponseViewer { font-family: monospace; color: #e5e7eb; white-space: pre-wrap; }
+
+        /* Hugging Face Model Grid */
+        .filters-bar {
+            display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap;
+        }
+        .search-box {
+            flex: 1; min-width: 200px; padding: 0.5rem 1rem; border-radius: 0.375rem; background: var(--bg-panel); border: 1px solid var(--border-subtle); color: white;
+        }
+        .chips { display: flex; gap: 0.5rem; }
+        .chip { padding: 0.25rem 0.75rem; background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: 9999px; font-size: 0.75rem; cursor: pointer; }
+        .grid-3 {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
+        }
+        .model-card {
+            background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: 0.75rem; padding: 1.25rem; border-left: 4px solid var(--accent-hf); transition: transform 0.2s;
+        }
+        .model-card:hover { transform: translateY(-2px); border-color: #3f3f46; }
+        .card-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .org-tag { font-size: 0.75rem; color: var(--text-muted); }
+        .model-name { font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem; }
+        .model-meta { display: flex; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.75rem; }
+        .meta-pill { background: #27272a; padding: 0.125rem 0.375rem; border-radius: 0.25rem; }
+
+        /* Modal Overlay Utility */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 999;
+        }
+        .modal-content {
+            background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: 0.75rem; padding: 2rem; width: 100%; max-width: 500px;
+        }
+        .hidden { display: none !important; }
+        
+        /* Inputs & forms inside Modals */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: var(--text-muted); }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.5rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); color: white; border-radius: 0.375rem;
+        }
+
+        /* Empty states */
+        .empty-state { text-align: center; padding: 3rem; background: var(--bg-panel); border-radius: 0.75rem; border: 1px dashed var(--border-subtle); color: var(--text-muted); }
+    </style>
 </head>
 <body>
 
-  <!-- Animated Background -->
-  <div class="grid-mesh-bg"></div>
-
-  <!-- Noise Overlay -->
-  <div class="noise" aria-hidden="true"></div>
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar-brand">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="currentColor"/>
-      </svg>
-      <span>VictorX</span>
-    </div>
-    
-    <nav class="topbar-nav">
-      <a href="#explore">Explore</a>
-      <a href="#ports">Ports</a>
-      <a href="#mydock">My Dock <span id="dockBadge" class="badge">2</span></a>
-      <a href="#playground" id="heroPlaygroundBtnNav">Playground</a>
-      <a href="#partnership">Partnership</a>
-      <a href="#advertise">Advertise</a>
-      <a href="#pro" class="pro-link">⚡ Pro</a>
-    </nav>
-
-    <div class="topbar-actions">
-      <button class="btn-icon subtle-icon" id="adminPinBtn" title="Admin">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-      </button>
-      
-      <button class="btn-ghost" id="openUpiModalBtn">❤️ Support</button>
-      
-      <button class="btn-icon" id="openApiKeysBtn" title="API Keys">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-        </svg>
-      </button>
-      
-      <button class="btn-ghost" id="openConnectedBtn">
-        <span class="status-dot green"></span>
-        <span id="connectedCount">5</span> connected
-      </button>
-      
-      <div id="authWrap" class="auth-wrap">
-        <button class="btn-primary" id="openAuthBtn">Sign In</button>
-        
-        <div id="userMenu" class="user-menu" style="display: none;">
-          <button class="user-btn" id="userMenuBtn">
-            <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Ccircle cx='12' cy='12' r='12'/%3E%3C/svg%3E" alt="Avatar" class="avatar">
-            <span id="userName">User</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-          </button>
-          
-          <div id="userDropdown" class="user-dropdown" style="display: none;">
-            <div class="dropdown-header">
-              <span id="dropdownEmail">user@example.com</span>
-              <span class="status-pill">Active</span>
-            </div>
-            <div class="dropdown-divider"></div>
-            <button id="dropdownDockBtn" class="dropdown-item">My Installed Models</button>
-            <button id="dropdownKeysBtn" class="dropdown-item">Manage API Keys</button>
-            <div class="dropdown-divider"></div>
-            <button id="logoutBtn" class="dropdown-item text-danger">Sign Out</button>
-          </div>
+    <!-- TOPBAR -->
+    <header class="glass">
+        <div class="brand">
+            VictorX <span class="version-badge">v2.0 Hybrid</span>
         </div>
-      </div>
-    </div>
-  </header>
+        <nav class="nav-links">
+            <a href="#explore">📦 Models</a>
+            <a href="#apidogWorkbench">⚡ Apidog API</a>
+            <a href="#">📊 Datasets</a>
+            <a href="#dock">⚓ My Dock</a>
+            <a href="#ports">🔌 Ports</a>
+            <a href="#partnership">🤝 Partnership</a>
+        </nav>
+        <div class="topbar-actions">
+            <select class="form-group" style="margin:0; padding:0.25rem; font-size:0.75rem;">
+                <option>OpenRouter Production</option>
+                <option>Local Ollama</option>
+                <option>Custom Gateway</option>
+            </select>
+            <button id="openUpiModalBtn" class="btn">❤️ Support</button>
+            <button id="openApiKeysBtn" class="btn">🔑 API Keys</button>
+            <span id="connectedCount" class="badge">🔌 5</span>
+            <span id="dockBadge" class="badge">⚓ 2</span>
+            
+            <div id="authWrap">
+                <button id="openAuthBtn" class="btn btn-primary">Sign In</button>
+                <div id="userMenu" class="hidden">
+                    <img id="userAvatar" src="" alt="Avatar" style="width:32px;height:32px;border-radius:50%;" />
+                    <span id="userName">User</span>
+                    <div id="userDropdown" class="hidden">
+                        <div id="dropdownEmail">user@example.com</div>
+                        <button id="dropdownDockBtn">My Dock</button>
+                        <button id="dropdownKeysBtn">Keys</button>
+                        <button id="logoutBtn">Logout</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="adminPinBtn" class="btn" title="Admin Access">🛡️</button>
+        </div>
+    </header>
 
-  <main>
     <!-- HERO SECTION -->
     <section class="hero">
-      <div class="hero-glow">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-      </div>
-
-      <div class="hero-content">
-        <span class="eyebrow">Model registry & execution dock</span>
-        <h1 class="text-gradient">Every model.<br>One dock.</h1>
-        <p class="subtitle">VictorX indexing Ollama, HuggingFace, OpenRouter, Meta and more into a unified interface.</p>
-        
+        <h1>Universal AI Model Hub & API Workbench</h1>
+        <p>Search open-source LLMs like Hugging Face, test endpoints like Apidog, and deploy instantly to your local or cloud dock.</p>
         <div class="hero-actions">
-          <a href="#explore" class="btn-primary">Explore Manifest</a>
-          <button class="btn-ghost" id="heroPlaygroundBtn">⚡ Open AI Playground</button>
+            <button class="btn btn-primary" onclick="location.href='#explore'">Explore Manifest</button>
+            <button class="btn btn-api" onclick="location.href='#apidogWorkbench'">⚡ Launch Apidog API Workbench</button>
+            <button id="heroPlaygroundBtn" class="btn">⚡ Open AI Playground</button>
         </div>
-        
         <div class="hero-stats">
-          <div class="stat-item">
-            <div class="stat-icon">📦</div>
-            <div class="stat-content">
-              <strong id="statModels">17</strong>
-              <span>models indexed</span>
+            <div class="stat-card">
+                <h3 id="statModels">17</h3>
+                <span style="font-size:0.75rem; color:var(--text-muted)">Models Indexed</span>
             </div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-icon">🔌</div>
-            <div class="stat-content">
-              <strong id="statPorts">5</strong>
-              <span>ports connected</span>
+            <div class="stat-card">
+                <h3>100%</h3>
+                <span style="font-size:0.75rem; color:var(--text-muted)">OpenAPI Compliant</span>
             </div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-icon">📥</div>
-            <div class="stat-content">
-              <strong id="statInstalled">2</strong>
-              <span>pulled to dock</span>
+            <div class="stat-card">
+                <h3 id="statPorts">5</h3>
+                <span style="font-size:0.75rem; color:var(--text-muted)">Ports Connected</span>
             </div>
-          </div>
+            <div class="stat-card">
+                <h3 id="statInstalled">2</h3>
+                <span style="font-size:0.75rem; color:var(--text-muted)">Pulled to Dock</span>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="hero-visual">
-        <div class="terminal interactive-shell">
-          <div class="terminal-header">
-            <div class="term-dots">
-              <span class="dot red"></span>
-              <span class="dot yellow"></span>
-              <span class="dot green"></span>
+    <div class="container">
+        
+        <!-- APIDOG WORKBENCH -->
+        <h2 class="section-title">⚡ Apidog Interactive API Workbench</h2>
+        <section class="apidog-workbench" id="apidogWorkbench">
+            <div class="workbench-header">
+                <div class="req-tabs">
+                    <div class="req-tab">Llama 3.3 Chat API</div>
+                    <div class="req-tab" style="opacity: 0.5;">DeepSeek R1 Reasoning</div>
+                </div>
+                <div style="font-size:0.75rem; background:#064e3b; color:#34d399; padding:0.25rem 0.75rem; border-radius:9999px;">Production Gateway</div>
             </div>
-            <div class="term-title">victor — interactive web CLI (v1.4.0)</div>
-            <button class="btn-icon" id="clearTermBtn" title="Clear Terminal">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
-          </div>
-          <div class="terminal-body" id="termBody">
-            <div id="termHistory">
-              <div class="term-line">Welcome to VictorX CLI. Type 'help' to see available commands.</div>
-              <div class="cmd-chips">
-                <span class="cmd-chip">help</span>
-                <span class="cmd-chip">list</span>
-                <span class="cmd-chip">status</span>
-              </div>
+            <div class="req-bar">
+                <select class="method-sel">
+                    <option>POST</option>
+                    <option>GET</option>
+                </select>
+                <input type="text" class="url-input" id="apiEndpointInput" value="https://openrouter.ai/api/v1/chat/completions">
+                <button id="apiSendBtn" class="btn btn-api">⚡ Send Request</button>
+                <button id="apiSaveBtn" class="btn">💾 Save to DB</button>
             </div>
-            <form id="termForm" class="term-form">
-              <span class="prompt">$</span>
-              <input type="text" id="cliInput" autocomplete="off" spellcheck="false" autofocus>
-              <button type="submit" class="btn-primary btn-sm">Run</button>
+            <div class="workbench-body">
+                <div class="pane-left">
+                    <div class="pane-tabs">
+                        <div class="pane-tab">Params</div>
+                        <div class="pane-tab">Headers</div>
+                        <div class="pane-tab active">Body (JSON)</div>
+                        <div class="pane-tab">Code Snippet</div>
+                    </div>
+                    <div class="pane-content">
+                        <textarea id="apiRequestBody">{
+  "model": "meta-llama/llama-3.3-70b-instruct",
+  "messages": [
+    {"role": "user", "content": "Explain quantum computing in 2 sentences."}
+  ]
+}</textarea>
+                        <!-- snippet hidden normally unless tab active -->
+                        <div id="generatedCodeSnippet" class="hidden">curl -X POST ...</div>
+                    </div>
+                </div>
+                <div class="pane-right">
+                    <div class="pane-tabs">
+                        <div class="pane-tab active">Pretty JSON</div>
+                        <div class="pane-tab">Raw Text</div>
+                        <div class="pane-tab">Headers</div>
+                    </div>
+                    <div class="pane-content">
+                        <div class="res-stats">
+                            <span id="apiResponseStatus">200 OK</span>
+                            <span id="apiResponseTime">142 ms</span>
+                            <span id="apiResponseSize">1.2 KB</span>
+                        </div>
+                        <pre><code id="apiResponseViewer">// Response will appear here after clicking "Send Request"</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HUGGING FACE EXPLORE -->
+        <h2 class="section-title">📦 Model Manifest & Repository</h2>
+        <section class="explore" id="explore">
+            <div class="filters-bar">
+                <input type="text" class="search-box" id="searchInput" placeholder="Search models, organizations...">
+                <div class="chips" id="portChips">
+                    <span class="chip">All Tasks</span>
+                    <span class="chip">text-generation</span>
+                    <span class="chip">reasoning</span>
+                </div>
+                <select id="sortSelect" class="form-group" style="margin:0; width:auto; padding:0.25rem 1rem;">
+                    <option>Most Hauled</option>
+                    <option>Newest</option>
+                </select>
+                <span id="resultCount" style="font-size:0.875rem; color:var(--text-muted);">17 results</span>
+            </div>
+            
+            <div id="modelGrid" class="grid-3">
+                <!-- Example Model Card -->
+                <div class="model-card">
+                    <div class="card-header">
+                        <span class="org-tag">meta-llama</span>
+                        <span class="meta-pill">⬇️ 1.2M</span>
+                    </div>
+                    <div class="model-name">Llama 3.3 70B Instruct</div>
+                    <div class="model-meta">
+                        <span class="meta-pill">70B</span>
+                        <span class="meta-pill">text-generation</span>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+                        <button class="btn btn-hf" style="flex:1; padding:0.25rem;">Pull</button>
+                        <button class="btn" style="flex:1; padding:0.25rem;">Test API</button>
+                    </div>
+                </div>
+            </div>
+            <div id="emptyState" class="empty-state hidden">No models found.</div>
+        </section>
+
+        <br><br>
+        
+        <!-- MY DOCK -->
+        <h2 class="section-title" id="dock">⚓ My Dock <span id="installedCountPill" class="meta-pill" style="margin-left:0.5rem;">2</span></h2>
+        <section>
+            <div id="installedGrid" class="grid-3">
+                <!-- Installed items -->
+            </div>
+            <div id="emptyDockState" class="empty-state">Your dock is empty.</div>
+        </section>
+        
+        <br><br>
+
+        <!-- PORTS -->
+        <h2 class="section-title" id="ports">🔌 Ports</h2>
+        <section id="portGrid" class="grid-3">
+            <!-- ports grid -->
+        </section>
+
+        <br><br>
+        
+        <!-- PARTNERSHIP / ADVERTISE / LEGAL -->
+        <h2 class="section-title" id="partnership">🤝 Partnership & Advertise</h2>
+        <section style="display:flex; gap:2rem; flex-wrap:wrap;">
+            <div style="flex:1; background:var(--bg-panel); padding:2rem; border-radius:0.75rem; border:1px solid var(--border-subtle);">
+                <h3>Partner Inquiry</h3>
+                <form id="partnerForm" style="margin-top:1rem;">
+                    <div class="form-group"><input type="text" id="partnerCompany" placeholder="Company Name"></div>
+                    <div class="form-group"><input type="email" id="partnerEmail" placeholder="Email"></div>
+                    <div class="form-group">
+                        <select id="partnerTier">
+                            <option>Gold Tier</option>
+                            <option>Silver Tier</option>
+                            <option>Bronze Tier</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><textarea id="partnerMessage" placeholder="Message" style="width:100%; padding:0.5rem; background:var(--bg-dark); border:1px solid var(--border-subtle); color:white; border-radius:0.375rem;"></textarea></div>
+                    <button class="btn btn-primary" type="button">Submit Inquiry</button>
+                </form>
+            </div>
+            <div style="flex:1; background:var(--bg-panel); padding:2rem; border-radius:0.75rem; border:1px solid var(--border-subtle);">
+                <h3>Advertise with Us</h3>
+                <p style="color:var(--text-muted); margin-top:1rem; margin-bottom:1rem;">Reach thousands of developers and AI researchers daily.</p>
+                <div class="stat-card" style="margin-bottom:1rem; text-align:center;">
+                    <h3>100K+</h3>
+                    <span style="font-size:0.75rem;">Monthly Impressions</span>
+                </div>
+                <button id="requestSlotBtn" class="btn btn-primary" style="width:100%;">Request Ad Slot</button>
+            </div>
+        </section>
+
+        <br><br>
+        <footer style="padding:2rem 0; border-top:1px solid var(--border-subtle); display:flex; gap:1rem; justify-content:center; font-size:0.875rem; color:var(--text-muted);">
+            <span id="legalTerms" style="cursor:pointer;">Terms of Service</span> | 
+            <span id="legalPrivacy" style="cursor:pointer;">Privacy Policy</span> | 
+            <span id="legalCookies" style="cursor:pointer;">Cookie Policy</span>
+        </footer>
+
+        <!-- Hidden CLI / Term elements to preserve IDs -->
+        <div style="display:none;">
+            <div id="termBody"></div>
+            <div id="termHistory"></div>
+            <form id="termForm"><input id="cliInput"></form>
+            <button id="clearTermBtn"></button>
+            <div id="toast"></div>
+        </div>
+
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModalOverlay">
+        <div class="modal-content">
+            <h3 style="margin-bottom:1rem;">Authentication</h3>
+            <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+                <button id="authTabLogin" class="btn btn-primary" style="flex:1;">Login</button>
+                <button id="authTabRegister" class="btn" style="flex:1;">Register</button>
+            </div>
+            <form id="loginForm">
+                <div class="form-group"><input type="text" id="loginUsername" placeholder="Username"></div>
+                <div class="form-group"><input type="password" id="loginPassword" placeholder="Password"></div>
+                <button id="loginSubmitBtn" class="btn btn-primary" style="width:100%; margin-bottom:0.5rem;" type="button">Log In</button>
+                <button id="googleSignInBtn" class="btn" style="width:100%; margin-bottom:0.5rem;" type="button">Sign in with Google</button>
+                <button id="quickGuestLoginBtn" class="btn" style="width:100%;" type="button">Continue as Guest</button>
             </form>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- EXPLORE SECTION -->
-    <section class="explore" id="explore">
-      <div class="section-head">
-        <h2>The Manifest</h2>
-        <p>Discover and pull models from across the ecosystem.</p>
-      </div>
-      
-      <div class="explore-controls">
-        <div class="search-box">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" id="searchInput" placeholder="Search models by name, tag or provider...">
-        </div>
-        
-        <div class="controls-row">
-          <div class="chip-row" id="portChips">
-            <button class="chip active" data-port="all">All Ports</button>
-            <button class="chip" data-port="openrouter">OpenRouter</button>
-            <button class="chip" data-port="meta">Meta</button>
-            <button class="chip" data-port="mistral">Mistral AI</button>
-          </div>
-          
-          <select id="sortSelect" class="sort-select">
-            <option value="most_hauled">Most hauled</option>
-            <option value="newest">Newest</option>
-            <option value="size_asc">Size small→large</option>
-            <option value="size_desc">Size large→small</option>
-            <option value="name_asc">Name A→Z</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="result-summary">
-        <span id="resultCount">17 models on manifest</span>
-      </div>
-
-      <div class="model-grid" id="modelGrid">
-        <!-- Pre-rendered Card 1 -->
-        <div class="model-card" style="--accent:#38BDF8">
-          <div class="card-accent"></div>
-          <div class="card-body">
-            <div class="card-header">
-              <span class="provider-tag" style="background: rgba(56, 189, 248, 0.1); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.2);">OpenRouter</span>
-              <span class="haul-badge">🔥 920k</span>
-            </div>
-            <h3 class="model-name">DeepSeek R1</h3>
-            <p class="model-desc">Advanced reasoning model with deep learning capabilities and optimized performance.</p>
-            <div class="card-meta">
-              <span class="size-badge">671B</span>
-              <div class="card-tags">
-                <span class="tag">reasoning</span>
-                <span class="tag">math</span>
-                <span class="tag">code</span>
-              </div>
-            </div>
-            <div class="card-actions mt-auto">
-              <button class="btn-primary w-full open-pull-modal" data-model="deepseek-r1">Pull Model</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pre-rendered Card 2 -->
-        <div class="model-card" style="--accent:#7C9CFF">
-          <div class="card-accent"></div>
-          <div class="card-body">
-            <div class="card-header">
-              <span class="provider-tag" style="background: rgba(124, 156, 255, 0.1); color: #7C9CFF; border: 1px solid rgba(124, 156, 255, 0.2);">Meta</span>
-              <span class="haul-badge">⚡ 540k</span>
-            </div>
-            <h3 class="model-name">Llama 3.3</h3>
-            <p class="model-desc">State of the art language model developed by Meta for versatile chat applications.</p>
-            <div class="card-meta">
-              <span class="size-badge">70B</span>
-              <div class="card-tags">
-                <span class="tag">chat</span>
-                <span class="tag">reasoning</span>
-              </div>
-            </div>
-            <div class="card-actions mt-auto">
-              <button class="btn-primary w-full open-pull-modal" data-model="llama-3.3-70b">Pull Model</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pre-rendered Card 3 -->
-        <div class="model-card installed" style="--accent:#4ADE80">
-          <div class="card-accent"></div>
-          <div class="card-body">
-            <div class="card-header">
-              <span class="provider-tag" style="background: rgba(124, 156, 255, 0.1); color: #7C9CFF; border: 1px solid rgba(124, 156, 255, 0.2);">Meta</span>
-              <span class="haul-badge">🚀 812k</span>
-            </div>
-            <h3 class="model-name">Llama 3.1</h3>
-            <p class="model-desc">Lightweight, highly efficient general purpose language model.</p>
-            <div class="card-meta">
-              <span class="size-badge">8B</span>
-              <div class="card-tags">
-                <span class="tag">chat</span>
-                <span class="tag">general</span>
-              </div>
-            </div>
-            <div class="card-actions mt-auto">
-              <button class="btn-pull installed w-full" disabled>✓ Docked</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pre-rendered Card 4 -->
-        <div class="model-card installed" style="--accent:#E5675F">
-          <div class="card-accent"></div>
-          <div class="card-body">
-            <div class="card-header">
-              <span class="provider-tag" style="background: rgba(229, 103, 95, 0.1); color: #E5675F; border: 1px solid rgba(229, 103, 95, 0.2);">Mistral AI</span>
-              <span class="haul-badge">⭐ 690k</span>
-            </div>
-            <h3 class="model-name">Mistral</h3>
-            <p class="model-desc">Fast open-source model prioritizing efficiency and strong reasoning capabilities.</p>
-            <div class="card-meta">
-              <span class="size-badge">7B</span>
-              <div class="card-tags">
-                <span class="tag">chat</span>
-                <span class="tag">general</span>
-              </div>
-            </div>
-            <div class="card-actions mt-auto">
-              <button class="btn-pull installed w-full" disabled>✓ Docked</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="emptyState" class="empty-state" style="display: none;">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <h3>No models found</h3>
-        <p>Try adjusting your search or filters.</p>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- MY DOCK SECTION -->
-    <section class="mydock" id="mydock">
-      <div class="section-head with-badge">
-        <h2>My Dock</h2>
-        <span id="installedCountPill" class="count-pill">2 Models</span>
-      </div>
-      
-      <div class="model-grid" id="installedGrid">
-        <!-- Pre-rendered Installed Card 1 -->
-        <div class="model-card docked-card" style="--accent:#4ADE80">
-          <div class="card-accent"></div>
-          <div class="card-body">
-            <div class="card-header">
-              <span class="provider-tag" style="background: rgba(124, 156, 255, 0.1); color: #7C9CFF;">Meta</span>
-              <span class="docked-badge" style="background: rgba(74, 222, 128, 0.2); color: #4ADE80; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; letter-spacing: 1px;">DOCKED</span>
-            </div>
-            <h3 class="model-name">Llama 3.1</h3>
-            <div class="card-meta mb-4">
-              <span class="size-badge">8B</span>
-            </div>
-            <div class="card-actions mt-auto">
-              <button class="btn-ghost w-full launch-playground-btn" data-model="llama-3.1-8b">⚡ Launch Playground</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pre-rendered Installed Card 2 -->
-        <div class="model-card docked-card" style="--accent:#4ADE80">
-          <div class="card-accent"></div>
-          <div class="card-body">
-            <div class="card-header">
-              <span class="provider-tag" style="background: rgba(229, 103, 95, 0.1); color: #E5675F;">Mistral AI</span>
-              <span class="docked-badge" style="background: rgba(74, 222, 128, 0.2); color: #4ADE80; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; letter-spacing: 1px;">DOCKED</span>
-            </div>
-            <h3 class="model-name">Mistral</h3>
-            <div class="card-meta mb-4">
-              <span class="size-badge">7B</span>
-            </div>
-            <div class="card-actions mt-auto">
-              <button class="btn-ghost w-full launch-playground-btn" data-model="mistral-7b">⚡ Launch Playground</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="emptyDockState" class="empty-state" style="display: none;">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8M5 12H2a10 10 0 0 0 20 0h-3"></path><circle cx="12" cy="5" r="3"></circle></svg>
-        <h3>Your dock is empty</h3>
-        <p>Pull some models from the manifest to get started.</p>
-        <a href="#explore" class="btn-primary mt-4">Browse Manifest</a>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- PORTS SECTION -->
-    <section class="ports" id="ports">
-      <div class="section-head">
-        <h2>Connected Ports</h2>
-        <p>Data streams and integrations powering VictorX.</p>
-      </div>
-      <div class="port-grid" id="portGrid">
-        <!-- JS rendered -->
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- PARTNERSHIP SECTION -->
-    <section class="partnership" id="partnership">
-      <div class="section-head text-center">
-        <span class="eyebrow">Strategic Alliances</span>
-        <h2>Partner with VictorX</h2>
-        <p class="subtitle max-w-2xl mx-auto">Join our ecosystem of AI model providers, cloud platforms, and infrastructure partners. Together we're building the universal model dock.</p>
-      </div>
-
-      <div class="partner-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 40px 0;">
-        <div class="partner-card" style="background: rgba(20,20,25,0.6); padding: 32px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
-          <div class="partner-header">
-            <h3 style="font-size: 20px; color: #a1a1aa; margin-bottom: 12px;">🥉 Bronze Partner</h3>
-            <div class="partner-price" style="font-size: 28px; font-weight: 700; color: #fff;">₹19,999<span style="font-size: 14px; font-weight: 400; color: #a1a1aa;">/month</span></div>
-          </div>
-          <ul class="partner-benefits" style="list-style: none; padding: 0; margin: 24px 0; text-align: left; display: flex; flex-direction: column; gap: 12px; color: #d4d4d8;">
-            <li>✓ Standard listing</li>
-            <li>✓ Basic analytics</li>
-            <li>✓ Community features</li>
-          </ul>
-          <button class="btn-ghost w-full">Get Started</button>
-        </div>
-
-        <div class="partner-card featured-tier glowing-border" style="padding: 32px; border-radius: 16px; text-align: center; transform: scale(1.05); z-index: 1;">
-          <span class="popular-badge">POPULAR</span>
-          <div class="partner-header">
-            <h3 style="font-size: 24px; color: #fff; margin-bottom: 12px; font-weight: 700;">🥈 Silver Partner</h3>
-            <div class="partner-price" style="font-size: 32px; font-weight: 800; color: #fff; background: linear-gradient(90deg, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">₹49,999<span style="font-size: 14px; font-weight: 400; color: #a1a1aa; -webkit-text-fill-color: initial;">/month</span></div>
-          </div>
-          <ul class="partner-benefits" style="list-style: none; padding: 0; margin: 24px 0; text-align: left; display: flex; flex-direction: column; gap: 12px; color: #f4f4f5;">
-            <li>✓ Featured model listing</li>
-            <li>✓ API access tier</li>
-            <li>✓ Community support</li>
-            <li>✓ Monthly analytics report</li>
-          </ul>
-          <button class="btn-primary w-full" style="background: linear-gradient(90deg, #38bdf8, #c084fc); border: none;">Become Partner</button>
-        </div>
-
-        <div class="partner-card" style="background: rgba(20,20,25,0.6); padding: 32px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
-          <div class="partner-header">
-            <h3 style="font-size: 20px; color: #fbbf24; margin-bottom: 12px;">🥇 Gold Partner</h3>
-            <div class="partner-price" style="font-size: 28px; font-weight: 700; color: #fff;">Custom</div>
-          </div>
-          <ul class="partner-benefits" style="list-style: none; padding: 0; margin: 24px 0; text-align: left; display: flex; flex-direction: column; gap: 12px; color: #d4d4d8;">
-            <li>✓ Priority model placement</li>
-            <li>✓ Co-branded dock section</li>
-            <li>✓ Dedicated API integration</li>
-            <li>✓ 24/7 priority support</li>
-            <li>✓ Custom model indexing</li>
-          </ul>
-          <button class="btn-ghost w-full">Contact for Pricing</button>
-        </div>
-      </div>
-
-      <div class="partner-form-container" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 32px; border-radius: 16px; max-width: 600px; margin: 0 auto;">
-        <h3 style="margin-top: 0; margin-bottom: 24px; font-size: 20px; text-align: center;">Request Partnership Details</h3>
-        <form id="partnerForm" class="partner-form">
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label for="partnerCompany" style="display: block; margin-bottom: 8px; font-size: 14px; color: #a1a1aa;">Company Name</label>
-            <input type="text" id="partnerCompany" required style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
-          </div>
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label for="partnerEmail" style="display: block; margin-bottom: 8px; font-size: 14px; color: #a1a1aa;">Contact Email</label>
-            <input type="email" id="partnerEmail" required style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
-          </div>
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label for="partnerTier" style="display: block; margin-bottom: 8px; font-size: 14px; color: #a1a1aa;">Partnership Tier</label>
-            <select id="partnerTier" style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
-              <option value="gold">Gold Partner</option>
-              <option value="silver">Silver Partner</option>
-              <option value="bronze">Bronze Partner</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom: 24px;">
-            <label for="partnerMessage" style="display: block; margin-bottom: 8px; font-size: 14px; color: #a1a1aa;">Message</label>
-            <textarea id="partnerMessage" rows="4" style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; resize: vertical;"></textarea>
-          </div>
-          <button type="submit" class="btn-primary w-full">Submit Inquiry</button>
-        </form>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ADVERTISE SECTION -->
-    <section class="advertise" id="advertise">
-      <div class="advertise-content">
-        <span class="eyebrow">Reach AI Builders</span>
-        <h2>Advertise on VictorX</h2>
-        <p class="subtitle">Put your API, tool, or service in front of thousands of developers actively pulling and testing AI models.</p>
-        
-        <ul class="feature-list">
-          <li>Highly targeted developer audience</li>
-          <li>Native integration in the Manifest</li>
-          <li>Transparent performance analytics</li>
-        </ul>
-
-        <div class="ad-stats">
-          <div class="ad-stat-item">
-            <strong>~120k</strong><span>Est. Monthly Impressions</span>
-          </div>
-          <div class="ad-stat-item">
-            <strong>4.2%</strong><span>Avg. Click Rate</span>
-          </div>
-        </div>
-        
-        <button class="btn-primary" id="requestSlotBtn">Request Ad Slot</button>
-      </div>
-
-      <div class="advertise-preview">
-        <div class="model-card sponsored-card" style="--accent:#f59e0b; padding: 24px;">
-          <div class="card-accent"></div>
-          <div class="card-header">
-            <span class="provider-tag sponsor-tag" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2);">Sponsored</span>
-            <h3 class="model-name">Your Awesome AI Tool</h3>
-          </div>
-          <p class="ad-desc" style="color: #a1a1aa; margin: 12px 0 24px; line-height: 1.5;">The fastest way to deploy AI in production. Get 100k free tokens on signup.</p>
-          <div class="card-actions mt-auto">
-            <button class="btn-primary w-full" style="background: #f59e0b; color: #000; font-weight: 600;">Learn More</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- LEGAL SECTION -->
-    <section class="legal" id="legal">
-      <div class="section-head">
-        <h2>Legal & Compliance</h2>
-      </div>
-
-      <div class="legal-container">
-        <div class="legal-tabs">
-          <button class="tab-btn active" data-target="legalTerms">Terms of Service</button>
-          <button class="tab-btn" data-target="legalPrivacy">Privacy Policy</button>
-          <button class="tab-btn" data-target="legalCookies">Cookie Policy</button>
-        </div>
-
-        <div class="legal-content">
-          <!-- Terms of Service -->
-          <div id="legalTerms" class="legal-panel active">
-            <p class="last-updated">Last updated: October 24, 2023</p>
-            <h4>1. Acceptance</h4>
-            <p>By accessing or using VictorX, you agree to be bound by these Terms of Service.</p>
-            <h4>2. Service Description</h4>
-            <p>VictorX provides a unified registry and execution environment for AI models. We act as an interface to various third-party model providers.</p>
-            <h4>3. User Accounts</h4>
-            <p>You are responsible for safeguarding your password and API keys. VictorX cannot and will not be liable for any loss or damage arising from your failure to comply.</p>
-            <h4>4. API Usage</h4>
-            <p>You agree to adhere to the terms of service of any third-party APIs you connect through VictorX. Excessive usage or abuse may result in account termination.</p>
-            <h4>5. Intellectual Property</h4>
-            <p>The VictorX service, original content, features, and functionality are owned by VictorX and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.</p>
-            <h4>6. Limitation of Liability</h4>
-            <p>In no event shall VictorX, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages.</p>
-            <h4>7. Termination</h4>
-            <p>We may terminate or suspend access to our service immediately, without prior notice or liability, for any reason whatsoever.</p>
-          </div>
-
-          <!-- Privacy Policy -->
-          <div id="legalPrivacy" class="legal-panel" style="display: none;">
-            <p class="last-updated">Last updated: October 24, 2023</p>
-            <h4>Data Collection</h4>
-            <p>We collect information you provide directly to us when you create an account, use our services, or communicate with us.</p>
-            <h4>Data Usage</h4>
-            <p>We use the information we collect to operate, maintain, and provide the features and functionality of VictorX.</p>
-            <h4>Data Storage</h4>
-            <p>Your API keys are stored securely. We do not log your interactions with AI models in the Playground.</p>
-            <h4>Third-Party Services</h4>
-            <p>We may share your information with third-party vendors and service providers that perform services on our behalf.</p>
-            <h4>User Rights</h4>
-            <p>You have the right to access, update, or delete your personal information.</p>
-            <h4>Contact Info</h4>
-            <p>For any privacy-related questions, contact us at privacy@victorx.com.</p>
-          </div>
-
-          <!-- Cookie Policy -->
-          <div id="legalCookies" class="legal-panel" style="display: none;">
-            <p class="last-updated">Last updated: October 24, 2023</p>
-            <h4>Types of Cookies</h4>
-            <p>We use essential cookies to maintain your session and preferences.</p>
-            <h4>Purposes</h4>
-            <p>Cookies help us understand how you use the site and improve your experience.</p>
-            <h4>Management</h4>
-            <p>You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.</p>
-            <h4>Consent</h4>
-            <p>By using VictorX, you consent to the use of cookies in accordance with this policy.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-col brand-col">
-        <div class="footer-brand">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="currentColor"/>
-          </svg>
-          <span>VictorX</span>
-        </div>
-        <p class="footer-desc">The universal model registry and execution dock for AI builders.</p>
-      </div>
-      
-      <div class="footer-col">
-        <h4>Product</h4>
-        <ul>
-          <li><a href="#explore">Explore</a></li>
-          <li><a href="#mydock">My Dock</a></li>
-          <li><a href="#playground">Playground</a></li>
-          <li><a href="#">CLI</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Company</h4>
-        <ul>
-          <li><a href="#partnership">Partnership</a></li>
-          <li><a href="#advertise">Advertise</a></li>
-          <li><a href="#pro">Pro</a></li>
-          <li><a href="#" id="footerSupportBtn">Support</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="#legal">Terms</a></li>
-          <li><a href="#legal">Privacy</a></li>
-          <li><a href="#legal">Cookies</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="footer-bottom">
-      <p>&copy; 2024 VictorX. All rights reserved.</p>
-      <div class="social-links" style="display: flex; gap: 16px;">
-        <!-- Twitter / X -->
-        <a href="#" aria-label="Twitter">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
-        </a>
-        <!-- GitHub -->
-        <a href="#" aria-label="GitHub">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-        </a>
-        <!-- Discord -->
-        <a href="#" aria-label="Discord">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2z"></path><path d="M5.4 6.2a14.7 14.7 0 018.3-2.6c3.2 0 6.2 1 8.3 2.6A19.8 19.8 0 0122 17a14.6 14.6 0 01-6 2.5l-1-1.6c1.6-.4 3.1-1.2 4.4-2.3-2 1.3-4.5 2-7.1 2s-5.1-.7-7.1-2c1.3 1.1 2.8 1.9 4.4 2.3l-1 1.6A14.6 14.6 0 012 17c0-4 1.2-7.8 3.4-10.8z"></path></svg>
-        </a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- TOAST -->
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <!-- AUTH MODAL -->
-  <div class="modal-overlay" id="authModalOverlay" style="display: none;">
-    <div class="modal auth-modal">
-      <div class="modal-header text-center">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-2">
-          <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="currentColor"/>
-        </svg>
-        <h2>Welcome to VictorX</h2>
-        <button class="btn-close" aria-label="Close modal">&times;</button>
-      </div>
-      
-      <div class="modal-body">
-        <div class="auth-tabs">
-          <button class="auth-tab active" data-target="loginForm" id="authTabLogin">Login</button>
-          <button class="auth-tab" data-target="registerForm" id="authTabRegister">Register</button>
-        </div>
-
-        <form id="loginForm" class="auth-form active">
-          <div class="form-group">
-            <label for="loginUsername">Username or Email</label>
-            <input type="text" id="loginUsername" required>
-          </div>
-          <div class="form-group">
-            <label for="loginPassword">Password</label>
-            <div class="input-with-icon">
-              <input type="password" id="loginPassword" required>
-              <button type="button" class="toggle-password">👁</button>
-            </div>
-          </div>
-          <div class="form-group checkbox-group">
-            <input type="checkbox" id="rememberMe">
-            <label for="rememberMe">Remember me</label>
-          </div>
-          <button type="submit" class="btn-primary w-full" id="loginSubmitBtn">Sign In</button>
-          
-          <div class="auth-divider">── OR ──</div>
-          
-          <button type="button" class="btn-ghost w-full" id="googleSignInBtn">
-            <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-            Continue with Google
-          </button>
-        </form>
-
-        <form id="registerForm" class="auth-form" style="display: none;">
-          <div class="form-group">
-            <label for="regFullName">Full Name</label>
-            <input type="text" id="regFullName" required>
-          </div>
-          <div class="form-group">
-            <label for="regUsername">Username</label>
-            <input type="text" id="regUsername" required>
-          </div>
-          <div class="form-group">
-            <label for="regEmail">Email</label>
-            <input type="email" id="regEmail" required>
-          </div>
-          <div class="form-group">
-            <label for="regPassword">Password</label>
-            <div class="input-with-icon">
-              <input type="password" id="regPassword" required>
-              <button type="button" class="toggle-password">👁</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="regConfirmPassword">Confirm Password</label>
-            <div class="input-with-icon">
-              <input type="password" id="regConfirmPassword" required>
-              <button type="button" class="toggle-password">👁</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="regApiKey">Default API Key (Optional)</label>
-            <input type="text" id="regApiKey">
-          </div>
-          <div class="form-group checkbox-group">
-            <input type="checkbox" id="regTerms" required>
-            <label for="regTerms">I agree to the Terms of Service and Privacy Policy</label>
-          </div>
-          <button type="submit" class="btn-primary w-full" id="registerSubmitBtn">Create Account</button>
-        </form>
-      </div>
-      
-      <div class="modal-footer">
-        <button class="btn-ghost w-full" id="quickGuestLoginBtn">Or continue as Guest (Instant)</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADMIN PIN MODAL -->
-  <div class="pin-overlay" id="adminPinOverlay" style="display: none;">
-    <div class="pin-modal">
-      <div class="pin-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-      </div>
-      <h2>Admin Access</h2>
-      <p class="subtitle">Enter the administrator PIN to access the control panel</p>
-      
-      <div class="pin-input-group" id="pinInputGroup">
-        <input type="password" class="pin-digit" maxlength="1">
-        <input type="password" class="pin-digit" maxlength="1">
-        <input type="password" class="pin-digit" maxlength="1">
-        <input type="password" class="pin-digit" maxlength="1">
-        <input type="password" class="pin-digit" maxlength="1">
-        <input type="password" class="pin-digit" maxlength="1">
-        <input type="password" class="pin-digit" maxlength="1">
-        <input type="password" class="pin-digit" maxlength="1">
-      </div>
-      
-      <div class="pin-error" id="pinError" style="display: none;">Incorrect PIN. Access denied.</div>
-      
-      <div class="pin-actions">
-        <button class="btn-ghost" id="pinCancelBtn">Cancel</button>
-        <button class="btn-primary" id="pinVerifyBtn">Verify</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADMIN DASHBOARD MODAL -->
-  <div class="modal-overlay" id="adminDashboardOverlay" style="display: none;">
-    <div class="modal admin-modal">
-      <div class="modal-header">
-        <div>
-          <span class="admin-badge">Admin</span>
-          <h2>VictorX Admin Dashboard</h2>
-          <p class="subtitle">Logged in as Administrator</p>
-        </div>
-        <button class="btn-close" aria-label="Close modal">&times;</button>
-      </div>
-      
-      <div class="modal-body">
-        <div class="admin-stats-grid">
-          <div class="stat-card">
-            <span class="stat-icon">👥</span>
-            <div class="stat-details">
-              <span class="stat-value" id="adminTotalUsers">1,248</span>
-              <span class="stat-label">Total Users</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">🟢</span>
-            <div class="stat-details">
-              <span class="stat-value" id="adminActiveSessions">42</span>
-              <span class="stat-label">Active Sessions</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">📦</span>
-            <div class="stat-details">
-              <span class="stat-value" id="adminModelsPulled">8,932</span>
-              <span class="stat-label">Models Pulled</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">💰</span>
-            <div class="stat-details">
-              <span class="stat-value" id="adminRevenue">₹1,24,500</span>
-              <span class="stat-label">Revenue</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="admin-tabs">
-          <button class="tab-btn active" data-target="adminUsersPanel">Users</button>
-          <button class="tab-btn" data-target="adminModelsPanel">Models</button>
-          <button class="tab-btn" data-target="adminKeysPanel">API Keys</button>
-          <button class="tab-btn" data-target="adminRevenuePanel">Revenue</button>
-          <button class="tab-btn" data-target="adminSettingsPanel">Settings</button>
-        </div>
-
-        <div class="admin-panels">
-          <div id="adminUsersPanel" class="admin-panel active">
-            <div class="panel-toolbar">
-              <input type="text" id="adminUserSearch" placeholder="Search users...">
-            </div>
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Models</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="adminUsersTableBody"></tbody>
-            </table>
-          </div>
-
-          <div id="adminModelsPanel" class="admin-panel" style="display: none;">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>#</th><th>Model</th><th>Size</th><th>Port</th><th>Pulls</th><th>Status</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="adminModelsTableBody"></tbody>
-            </table>
-          </div>
-
-          <div id="adminKeysPanel" class="admin-panel" style="display: none;">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>#</th><th>User</th><th>Provider</th><th>Key (masked)</th><th>Status</th><th>Last Used</th>
-                </tr>
-              </thead>
-              <tbody id="adminKeysTableBody"></tbody>
-            </table>
-          </div>
-
-          <div id="adminRevenuePanel" class="admin-panel" style="display: none;">
-            <div class="revenue-summary">
-              <h3>Revenue Breakdown</h3>
-              <p>Detailed view of platform revenue.</p>
-            </div>
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Date</th><th>Source</th><th>Amount</th><th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Today</td><td>Ad Slot - TechCorp</td><td>₹5,000</td><td><span class="status-pill green">Paid</span></td></tr>
-                <tr><td>Yesterday</td><td>Silver Partner - AI Startup</td><td>₹49,999</td><td><span class="status-pill green">Paid</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div id="adminSettingsPanel" class="admin-panel" style="display: none;">
-            <form class="admin-settings-form">
-              <div class="form-group">
-                <label>Site Name</label>
-                <input type="text" value="VictorX">
-              </div>
-              <div class="form-group checkbox-group">
-                <input type="checkbox" id="maintModeToggle">
-                <label for="maintModeToggle">Enable Maintenance Mode</label>
-              </div>
-              <div class="form-group">
-                <label>Max Users</label>
-                <input type="number" value="10000">
-              </div>
-              <button type="button" class="btn-primary">Save Settings</button>
+            <form id="registerForm" class="hidden">
+                <div class="form-group"><input type="text" id="regFullName" placeholder="Full Name"></div>
+                <div class="form-group"><input type="text" id="regUsername" placeholder="Username"></div>
+                <div class="form-group"><input type="email" id="regEmail" placeholder="Email"></div>
+                <div class="form-group"><input type="password" id="regPassword" placeholder="Password"></div>
+                <div class="form-group"><input type="password" id="regConfirmPassword" placeholder="Confirm Password"></div>
+                <div class="form-group"><input type="text" id="regApiKey" placeholder="API Key (Optional)"></div>
+                <button id="registerSubmitBtn" class="btn btn-primary" style="width:100%;" type="button">Register</button>
             </form>
-          </div>
+            <button class="btn" style="width:100%; margin-top:1rem;" onclick="document.getElementById('authModalOverlay').classList.add('hidden')">Cancel</button>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- API KEYS MODAL -->
-  <div class="modal-overlay" id="apiKeysModalOverlay" style="display: none;">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="eyebrow">Configuration</span>
-        <h2>API Keys</h2>
-        <p class="subtitle">Connect your preferred providers to run models.</p>
-        <button class="btn-close" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="apiKeysForm">
-          <div class="form-group">
-            <label>OpenRouter</label>
-            <div class="input-with-icon">
-              <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-...">
-              <button type="button" class="toggle-password">👁</button>
+    <!-- Admin PIN Modal -->
+    <div class="modal-overlay" id="adminPinOverlay">
+        <div class="modal-content" style="text-align:center;">
+            <h3>Admin Access</h3>
+            <p style="color:var(--text-muted); font-size:0.875rem; margin:1rem 0;">Enter 8-digit PIN</p>
+            <div id="pinInputGroup" style="margin-bottom:1rem;">
+                <input type="password" placeholder="********" style="text-align:center; letter-spacing:0.5em; padding:0.5rem; background:var(--bg-dark); color:white; border:1px solid var(--border-subtle); border-radius:0.375rem;">
             </div>
-          </div>
-          <div class="form-group">
-            <label>OpenAI</label>
-            <div class="input-with-icon">
-              <input type="password" id="keyOpenAI" placeholder="sk-...">
-              <button type="button" class="toggle-password">👁</button>
+            <div id="pinError" style="color:var(--danger); font-size:0.75rem; margin-bottom:1rem;" class="hidden">Invalid PIN</div>
+            <div style="display:flex; gap:1rem;">
+                <button id="pinCancelBtn" class="btn" style="flex:1;" onclick="document.getElementById('adminPinOverlay').classList.add('hidden')">Cancel</button>
+                <button id="pinVerifyBtn" class="btn btn-primary" style="flex:1;">Verify</button>
             </div>
-          </div>
-          <div class="form-group">
-            <label>Gemini</label>
-            <div class="input-with-icon">
-              <input type="password" id="keyGemini" placeholder="AIza...">
-              <button type="button" class="toggle-password">👁</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal -->
+    <div class="modal-overlay" id="adminDashboardOverlay">
+        <div class="modal-content" style="max-width:800px; max-height:80vh; overflow:auto;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem;">
+                <h2>Admin Dashboard</h2>
+                <button class="btn" onclick="document.getElementById('adminDashboardOverlay').classList.add('hidden')">Close</button>
             </div>
-          </div>
-          <div class="form-group">
-            <label>Ollama (Local URL)</label>
-            <input type="text" id="urlOllama" placeholder="http://localhost:11434">
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-ghost" id="clearApiKeysBtn">Clear All</button>
-        <button class="btn-primary" id="saveApiKeysBtn">Save Keys</button>
-      </div>
+            <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
+                <div class="stat-card" style="flex:1;"><h3 id="adminTotalUsers">0</h3><span>Users</span></div>
+                <div class="stat-card" style="flex:1;"><h3 id="adminActiveSessions">0</h3><span>Sessions</span></div>
+                <div class="stat-card" style="flex:1;"><h3 id="adminModelsPulled">0</h3><span>Models Pulled</span></div>
+                <div class="stat-card" style="flex:1;"><h3 id="adminRevenue">$0</h3><span>Revenue</span></div>
+            </div>
+            
+            <div id="adminUsersPanel" style="margin-bottom:2rem;">
+                <h3>Users</h3>
+                <input type="text" id="adminUserSearch" placeholder="Search..." style="margin-bottom:1rem; padding:0.25rem;">
+                <table style="width:100%; text-align:left;">
+                    <tbody id="adminUsersTableBody"></tbody>
+                </table>
+            </div>
+            <div id="adminModelsPanel" style="margin-bottom:2rem;">
+                <h3>Models</h3>
+                <table style="width:100%; text-align:left;">
+                    <tbody id="adminModelsTableBody"></tbody>
+                </table>
+            </div>
+            <div id="adminKeysPanel" style="margin-bottom:2rem;">
+                <h3>API Keys</h3>
+                <table style="width:100%; text-align:left;">
+                    <tbody id="adminKeysTableBody"></tbody>
+                </table>
+            </div>
+            <div id="adminRevenuePanel" style="margin-bottom:2rem;">
+                <h3>Revenue</h3>
+                <p>No recent transactions.</p>
+            </div>
+            <div id="adminSettingsPanel">
+                <h3>Settings</h3>
+                <label style="display:flex; align-items:center; gap:0.5rem; margin-top:1rem;">
+                    <input type="checkbox" id="maintModeToggle"> Maintenance Mode
+                </label>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- PULL MODAL -->
-  <div class="modal-overlay" id="pullModalOverlay" style="display: none;">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="provider-tag" id="pullModalPort">Port</span>
-        <h2 id="pullModalTitle">Pull Model</h2>
-        <p class="subtitle" id="pullModalDesc">Description</p>
-        <button class="btn-close" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="pull-action-card">
-          <div class="progress-bar-container">
-            <div class="progress-bar" id="pullProgressBar"></div>
-          </div>
-          <div class="layers-breakdown" id="pullLayers"></div>
+    <!-- API Keys Modal -->
+    <div class="modal-overlay" id="apiKeysModalOverlay">
+        <div class="modal-content">
+            <h3>API Keys</h3>
+            <form id="apiKeysForm" style="margin-top:1rem;">
+                <div class="form-group"><label>OpenRouter</label><input type="password" id="keyOpenRouter"></div>
+                <div class="form-group"><label>OpenAI</label><input type="password" id="keyOpenAI"></div>
+                <div class="form-group"><label>Gemini</label><input type="password" id="keyGemini"></div>
+                <div class="form-group"><label>Ollama URL</label><input type="text" id="urlOllama" value="http://localhost:11434"></div>
+                <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                    <button id="clearApiKeysBtn" class="btn" style="flex:1;" type="button">Clear</button>
+                    <button id="saveApiKeysBtn" class="btn btn-primary" style="flex:1;" type="button">Save</button>
+                </div>
+            </form>
+            <button class="btn" style="width:100%; margin-top:1rem;" onclick="document.getElementById('apiKeysModalOverlay').classList.add('hidden')">Close</button>
         </div>
-        <div class="code-tabs">
-          <button class="tab-btn active">CLI</button>
-          <button class="tab-btn">Python</button>
-          <button class="tab-btn">JS</button>
-          <button class="tab-btn">cURL</button>
-        </div>
-        <div class="code-block">
-          <pre><code id="pullCodeSnippet">victor pull model-name</code></pre>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-primary w-full" id="pullConfirmBtn">Start Pull</button>
-        <button class="btn-ghost w-full launch-playground-btn" id="pullPlaygroundBtn" style="display: none;">⚡ Launch Playground</button>
-      </div>
     </div>
-  </div>
 
-  <!-- PLAYGROUND MODAL -->
-  <div class="modal-overlay" id="playgroundModalOverlay" style="display: none;">
-    <div class="modal playground-modal">
-      <div class="modal-header">
-        <div>
-          <span class="live-badge">LIVE DOCK</span>
-          <h2>Playground</h2>
+    <!-- Pull Modal -->
+    <div class="modal-overlay" id="pullModalOverlay">
+        <div class="modal-content">
+            <h3 id="pullModalTitle">Pulling Model...</h3>
+            <p id="pullModalDesc" style="color:var(--text-muted); font-size:0.875rem; margin-bottom:1rem;">Initializing connection to <span id="pullModalPort">Port</span></p>
+            <div style="background:var(--bg-dark); height:8px; border-radius:4px; overflow:hidden; margin-bottom:1rem;">
+                <div id="pullProgressBar" style="background:var(--brand-primary); height:100%; width:0%;"></div>
+            </div>
+            <div id="pullLayers" style="font-family:monospace; font-size:0.75rem; color:var(--text-muted); background:#111; padding:0.5rem; border-radius:0.25rem; height:100px; overflow:auto; margin-bottom:1rem;">
+            </div>
+            <div id="pullCodeSnippet" class="hidden"></div>
+            <div style="display:flex; gap:1rem;">
+                <button id="pullConfirmBtn" class="btn" style="flex:1;">Cancel</button>
+                <button id="pullPlaygroundBtn" class="btn btn-primary hidden" style="flex:1;">Open Playground</button>
+            </div>
         </div>
-        <div class="pg-controls">
-          <select id="pgModelSelect"></select>
-          <button class="btn-icon" id="pgApiKeysBtn" title="API Keys">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
-          </button>
-        </div>
-        <button class="btn-close" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body pg-body">
-        <div class="pg-chat-history" id="pgHistory">
-          <div class="msg system">Ready. Start typing below.</div>
-        </div>
-      </div>
-      <div class="modal-footer pg-footer">
-        <form id="pgForm" class="pg-input-form">
-          <textarea id="pgInput" rows="1" placeholder="Type a message... (Shift+Enter for newline)"></textarea>
-          <button type="submit" class="btn-primary btn-sm">Send</button>
-        </form>
-      </div>
     </div>
-  </div>
 
-  <!-- UPI MODAL -->
-  <div class="modal-overlay" id="upiModalOverlay" style="display: none;">
-    <div class="modal text-center">
-      <div class="modal-header">
-        <span class="support-badge mx-auto mb-2">❤️ Support VictorX</span>
-        <h2>Support the Project</h2>
-        <p class="subtitle">Your support helps keep VictorX servers running and models indexing.</p>
-        <button class="btn-close" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="upi-box" style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 24px; border-radius: 16px; margin-bottom: 20px;">
-          <p style="margin-bottom: 16px; color: #a1a1aa;">Scan to pay via any UPI app</p>
-          <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Model%20Dock&cu=INR" alt="UPI QR" width="180" height="180">
-          <p class="upi-id" style="margin-top: 16px; font-size: 18px; color: #38bdf8;"><strong>arasu9629hf@okhdfcbank</strong></p>
+    <!-- Playground Modal -->
+    <div class="modal-overlay" id="playgroundModalOverlay">
+        <div class="modal-content" style="max-width:800px; height:80vh; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                <h3>AI Playground</h3>
+                <select id="pgModelSelect" style="padding:0.25rem;"></select>
+                <button class="btn" onclick="document.getElementById('playgroundModalOverlay').classList.add('hidden')">Close</button>
+            </div>
+            <div id="pgHistory" style="flex:1; background:var(--bg-dark); border:1px solid var(--border-subtle); border-radius:0.375rem; padding:1rem; overflow:auto; margin-bottom:1rem;">
+                <!-- Chat history -->
+            </div>
+            <form id="pgForm" style="display:flex; gap:0.5rem;">
+                <input type="text" id="pgInput" style="flex:1; padding:0.5rem; background:var(--bg-dark); color:white; border:1px solid var(--border-subtle); border-radius:0.375rem;" placeholder="Send a message...">
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
         </div>
-        <div class="tier-cards" style="display: flex; gap: 12px; margin-top: 20px;">
-          <div class="tier-card" style="flex: 1; padding: 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(0,0,0,0.2); transition: background 0.2s;">
-            <h4 style="margin: 0 0 4px; color: #fff;">Coffee</h4>
-            <p style="margin: 0; color: #a1a1aa; font-weight: 600;">₹100</p>
-          </div>
-          <div class="tier-card" style="flex: 1; padding: 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(0,0,0,0.2); transition: background 0.2s;">
-            <h4 style="margin: 0 0 4px; color: #fff;">Server</h4>
-            <p style="margin: 0; color: #a1a1aa; font-weight: 600;">₹500</p>
-          </div>
-          <div class="tier-card" style="flex: 1; padding: 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(0,0,0,0.2); transition: background 0.2s;">
-            <h4 style="margin: 0 0 4px; color: #fff;">Pro</h4>
-            <p style="margin: 0; color: #a1a1aa; font-weight: 600;">₹1000</p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-primary w-full" id="confirmSupportBtn">I've made a payment</button>
-      </div>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <!-- UPI Support Modal -->
+    <div class="modal-overlay" id="upiModalOverlay">
+        <div class="modal-content" style="text-align:center;">
+            <h3>Support the Developer</h3>
+            <p style="margin:1rem 0; color:var(--text-muted);">UPI ID: <strong>arasu9629hf@okhdfcbank</strong></p>
+            <div style="width:200px; height:200px; background:white; margin:0 auto 1rem; border-radius:0.5rem; display:flex; align-items:center; justify-content:center;">
+                <span style="color:black;">QR Code</span>
+            </div>
+            <div style="display:flex; gap:1rem;">
+                <button class="btn" style="flex:1;" onclick="document.getElementById('upiModalOverlay').classList.add('hidden')">Close</button>
+                <button id="confirmSupportBtn" class="btn btn-primary" style="flex:1;">I've Supported!</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* VictorX CSS - HuggingFace Inspired Minimal Design */
+/* VictorX CSS - HuggingFace & Apidog Hybrid Design */
 
 :root {
   /* Colors */
@@ -32,6 +32,183 @@
   
   /* Motion */
   --transition: all 0.2s ease-in-out;
+}
+
+/* ==========================================================================
+   Apidog Workbench Styling
+   ========================================================================== */
+.apidog-workbench {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 48px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.workbench-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.request-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.method-select {
+  height: 42px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--green);
+  font-weight: 700;
+  padding: 0 16px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.url-input {
+  flex: 1;
+  height: 42px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.url-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.btn-send {
+  height: 42px;
+  padding: 0 24px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-send:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-save {
+  height: 42px;
+  padding: 0 16px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-save:hover {
+  background: var(--bg-card-hover);
+  color: var(--text);
+}
+
+.workbench-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.request-pane, .response-pane {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 380px;
+}
+
+.pane-tabs {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+
+.pane-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+}
+.pane-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.code-editor {
+  flex: 1;
+  width: 100%;
+  background: #070a12;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  resize: none;
+  outline: none;
+}
+
+.response-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.badge-green {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--green);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 12px;
+}
+.badge-red {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--red);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.code-snippet-box {
+  background: #070a12;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow-x: auto;
+  flex: 1;
 }
 
 /* ==========================================================================
