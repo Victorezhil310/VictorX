@@ -18,12 +18,14 @@ const PORTS = [
 ];
 
 const MODELS = [
-  { id: "llama3.3-70b",  name: "LLAMA 3.3 70B", size: "70B",  port: "meta",     tags: ["reasoning","tools"], haul: 5400000, added: 1, desc: "State of the art open reasoning model.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
-  { id: "deepseek-r1",   name: "DEEPSEEK R1",   size: "671B", port: "deepseek", tags: ["thinking","code"],  haul: 90300000, added: 2, desc: "Open reasoning model approaching top proprietary APIs.", apiModel: "deepseek/deepseek-r1" },
-  { id: "gemma3-12b",    name: "GEMMA 3 12B",   size: "12B",  port: "google",   tags: ["vision","chat"],    haul: 38800000, added: 3, desc: "Google DeepMind frontier model for single GPU.", apiModel: "google/gemma-2-27b-it" },
-  { id: "qwen2.5-14b",   name: "QWEN 2.5 14B",  size: "14B",  port: "qwen",     tags: ["tools","code"],     haul: 35200000, added: 4, desc: "Multilingual model with 128K context window.", apiModel: "qwen/qwen-2.5-72b-instruct" },
-  { id: "mistral-7b",    name: "MISTRAL 7B",    size: "7B",   port: "mistral",  tags: ["chat","general"],   haul: 31300000, added: 5, desc: "High performance compact model v0.3.", apiModel: "mistralai/mistral-7b-instruct" },
-  { id: "glm4-9b",       name: "GLM 4 9B",      size: "9B",   port: "ollama",   tags: ["chat","tools"],     haul: 12000000, added: 6, desc: "General language model fine tuned for instructions.", apiModel: "glm-4-9b" }
+  { id: "gemma3-12b",    name: "GEMMA 3 12B",   size: "12B",  port: "google",   tags: ["vision","chat"],    haul: 38800000, added: 1, desc: "Google DeepMind frontier model for single GPU.", apiModel: "google/gemma-2-27b-it" },
+  { id: "qwen2.5-14b",   name: "QWEN 2.5 14B",  size: "14B",  port: "qwen",     tags: ["tools","code"],     haul: 35200000, added: 2, desc: "Multilingual model with 128K context window.", apiModel: "qwen/qwen-2.5-72b-instruct" },
+  { id: "llama3.3-70b",  name: "LLAMA 3.3 70B", size: "70B",  port: "meta",     tags: ["reasoning","tools"], haul: 5400000, added: 3, desc: "State of the art open reasoning model.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
+  { id: "deepseek-r1",   name: "DEEPSEEK R1",   size: "671B", port: "deepseek", tags: ["thinking","code"],  haul: 90300000, added: 4, desc: "Open reasoning model approaching top proprietary APIs.", apiModel: "deepseek/deepseek-r1" },
+  { id: "glm4-9b",       name: "GLM 4 9B",      size: "9B",   port: "ollama",   tags: ["chat","tools"],     haul: 12000000, added: 5, desc: "General language model fine tuned for instructions.", apiModel: "glm-4-9b" },
+  { id: "mistral-7b",    name: "MISTRAL 7B",    size: "7B",   port: "mistral",  tags: ["chat","general"],   haul: 31300000, added: 6, desc: "High performance compact model v0.3.", apiModel: "mistralai/mistral-7b-instruct" },
+  { id: "llama3.1-8b",   name: "LLAMA 3.1 8B",  size: "8B",   port: "meta",     tags: ["tools","chat"],     haul: 81200000, added: 7, desc: "Meta general purpose fast model.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
+  { id: "codellama-13b", name: "CODELLAMA 13B", size: "13B",  port: "meta",     tags: ["code"],             haul: 5800000,  added: 8, desc: "Code generation and completion model.", apiModel: "meta-llama/codellama-13b-instruct" }
 ];
 
 const ADMIN_VERIFICATION_PIN = '20032004';
@@ -98,9 +100,11 @@ function startHudTimers() {
   setInterval(() => {
     const now = new Date();
     const clockEl = document.getElementById("hudClock");
+    if(clockEl) {
       const dayName = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
       const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
       clockEl.innerText = `${dateStr} | ${dayName} | ${now.toLocaleTimeString()}`;
+    }
 
     // Uptime
     state.uptimeSeconds++;
@@ -133,7 +137,7 @@ function updateMetric(valId, barId, pct) {
 // Voice Toggle
 function toggleVoiceListening() {
   state.isListening = !state.isListening;
-  const stateText = document.getElementById("listeningState");
+  const stateText = document.getElementById("listeningText");
   const micBtn = document.getElementById("micBtn");
 
   if(state.isListening) {
@@ -158,7 +162,6 @@ function handleConsoleSubmit(e) {
   input.value = "";
   addConsoleLine("YOU", cmd);
 
-  // Command Processing
   const lower = cmd.toLowerCase();
   let reply = "Understood Boss. Executing task...";
 
@@ -190,8 +193,8 @@ function addConsoleLine(sender, text) {
   const out = document.getElementById("consoleOutput");
   if(!out) return;
   const line = document.createElement("div");
-  line.className = `console-line ${sender === 'YOU' ? 'usr' : 'sys'}`;
-  line.innerHTML = `<span class="${sender === 'YOU' ? 'tag-usr' : 'tag-sys'}">${sender}:</span> ${escapeHtml(text)}`;
+  line.className = `c-line ${sender === 'YOU' ? 'usr' : 'sys'}`;
+  line.innerHTML = `<span class="c-tag">${sender}:</span> ${escapeHtml(text)}`;
   out.appendChild(line);
   out.scrollTop = out.scrollHeight;
 }
@@ -263,18 +266,18 @@ function renderGrid() {
       <div class="model-card" style="border-left-color:${p.color};">
         <div class="card-header">
           <div>
-            <span class="provider-tag">${escapeHtml(p.name)}</span>
+            <span class="provider-tag" style="color:${p.color};">${escapeHtml(p.name)}</span>
             <h3 class="model-name">${escapeHtml(m.name)} <span>(${m.size})</span></h3>
           </div>
-          <span class="hud-status-badge green">⬇ ${fmt(m.haul)}</span>
+          <span class="hud-badge green">⬇ ${fmt(m.haul)}</span>
         </div>
-        <p style="font-size:12px; color:var(--hud-text-sub); margin-bottom:8px;">${escapeHtml(m.desc)}</p>
+        <p style="font-size:11px; color:#78a6b8; margin-bottom:8px;">${escapeHtml(m.desc)}</p>
         <div class="card-actions">
           ${isInstalled 
-            ? `<button class="hud-btn hud-btn-outline launch-playground-btn" data-model="${m.id}">⚡ PLAYGROUND</button>`
-            : `<button class="hud-btn hud-btn-primary open-pull-modal" data-model="${m.id}">PULL MODEL</button>`
+            ? `<button class="hud-action-btn launch-playground-btn" data-model="${m.id}">⚡ PLAYGROUND</button>`
+            : `<button class="hud-action-btn primary open-pull-modal" data-model="${m.id}">PULL MODEL</button>`
           }
-          <button class="hud-btn hud-btn-outline test-api-btn" data-model="${m.apiModel}">⚡ TEST API</button>
+          <button class="hud-action-btn test-api-btn" data-model="${m.apiModel}">⚡ TEST API</button>
         </div>
       </div>
     `;
@@ -295,16 +298,16 @@ function renderInstalledGrid() {
 
   g.innerHTML = "";
   Array.from(state.installed).forEach(id => {
-    const m = MODELS.find(x => x.id === id) || { id, name: id, size: "14B" };
+    const m = MODELS.find(x => x.id === id) || { id, name: id.toUpperCase(), size: "14B" };
     g.innerHTML += `
       <div class="model-card">
         <div class="card-header">
           <h3 class="model-name">${escapeHtml(m.name)}</h3>
-          <span class="hud-status-badge green">RUNNING</span>
+          <span class="hud-badge green">RUNNING</span>
         </div>
         <div class="card-actions" style="margin-top:10px;">
-          <button class="hud-btn hud-btn-primary launch-playground-btn" data-model="${m.id}">⚡ LAUNCH CHAT</button>
-          <button class="hud-btn hud-btn-outline remove-dock-btn" data-model="${m.id}">REMOVE</button>
+          <button class="hud-action-btn primary launch-playground-btn" data-model="${m.id}">⚡ LAUNCH CHAT</button>
+          <button class="hud-action-btn remove-dock-btn" data-model="${m.id}">REMOVE</button>
         </div>
       </div>
     `;
@@ -321,7 +324,7 @@ function renderPorts() {
         <div class="port-icon">🔌</div>
         <div>
           <strong style="color:#fff; font-family:var(--font-orbitron);">${escapeHtml(p.name)}</strong>
-          <div style="font-size:11px; color:var(--hud-text-sub);">${escapeHtml(p.desc)}</div>
+          <div style="font-size:11px; color:#78a6b8;">${escapeHtml(p.desc)}</div>
         </div>
       </div>
     `;
@@ -333,12 +336,12 @@ function initApidogWorkbench() {
   document.getElementById("apiSendBtn")?.addEventListener("click", handleSendApiRequest);
   document.getElementById("apiSaveBtn")?.addEventListener("click", () => toast("API Request saved to database", "success"));
 
-  document.querySelectorAll(".request-pane .pane-tab").forEach(tab => {
+  document.querySelectorAll(".pane-tab-bar .pane-tab").forEach(tab => {
     tab.addEventListener("click", (e) => {
-      document.querySelectorAll(".request-pane .pane-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".pane-tab-bar .pane-tab").forEach(t => t.classList.remove("active"));
       e.target.classList.add("active");
       const targetTab = e.target.dataset.tab;
-      document.querySelectorAll(".request-pane .tab-panel").forEach(p => p.classList.add("hidden"));
+      document.querySelectorAll(".pane-panel").forEach(p => p.classList.add("hidden"));
       if(targetTab === 'body') document.getElementById("tabBody")?.classList.remove("hidden");
       if(targetTab === 'headers') document.getElementById("tabHeaders")?.classList.remove("hidden");
       if(targetTab === 'params') document.getElementById("tabParams")?.classList.remove("hidden");
@@ -396,7 +399,7 @@ function generateCodeSnippets() {
 
 // Pull Simulator
 function openPullModal(modelId) {
-  const m = MODELS.find(x => x.id === modelId) || { id: modelId, name: modelId, size: "70B", desc: "Model download" };
+  const m = MODELS.find(x => x.id === modelId) || { id: modelId, name: modelId.toUpperCase(), size: "70B", desc: "Model download" };
   document.getElementById("pullModalTitle").innerText = `PULLING ${m.name}`;
   document.getElementById("pullModalDesc").innerText = m.desc;
   openModal("pullModalOverlay");
@@ -412,7 +415,7 @@ function startPullSimulation(m) {
   const timer = setInterval(() => {
     pct += 25;
     if(progressBar) progressBar.style.width = `${pct}%`;
-    layersEl.innerHTML += `<div style="color:var(--hud-green);">✔ PULLED SHARD: layer-${pct/25}.safetensors</div>`;
+    layersEl.innerHTML += `<div style="color:var(--green);">✔ PULLED SHARD: layer-${pct/25}.safetensors</div>`;
 
     if(pct >= 100) {
       clearInterval(timer);
@@ -473,11 +476,17 @@ function initApp() {
   initApidogWorkbench();
   setupAdminPIN();
 
+  // Search filter
+  document.getElementById("searchInput")?.addEventListener("input", (e) => {
+    state.search = e.target.value;
+    renderGrid();
+  });
+
   document.getElementById("consoleForm")?.addEventListener("submit", handleConsoleSubmit);
   document.getElementById("pinVerifyBtn")?.addEventListener("click", checkPIN);
   document.getElementById("pinCancelBtn")?.addEventListener("click", () => closeModal("adminPinOverlay"));
 
-  // Modal delegation
+  // Event Delegation
   document.addEventListener("click", (e) => {
     if(e.target.closest(".btn-close")) {
       e.target.closest(".modal-overlay, .pin-overlay").style.display = "none";
@@ -492,6 +501,19 @@ function initApp() {
     if(testBtn) {
       scrollToSection("apidogWorkbench");
       toast("Loaded endpoint into API Workbench", "info");
+    }
+
+    const removeBtn = e.target.closest(".remove-dock-btn");
+    if(removeBtn) {
+      const modelId = removeBtn.dataset.model;
+      if(modelId && confirm(`Remove ${modelId} from dock?`)) {
+        state.installed.delete(modelId);
+        saveState();
+        updateStats();
+        renderInstalledGrid();
+        renderGrid();
+        toast(`Removed ${modelId}`);
+      }
     }
   });
 }

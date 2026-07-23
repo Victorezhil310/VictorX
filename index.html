@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICTOR OG — YOUR AI ASSISTANT</title>
+    <title>VICTOR OG — ULTIMATE AI ASSISTANT & COMMAND CENTER</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -43,7 +43,7 @@
                     <button class="nav-btn active" onclick="switchModule('dashboard')">
                         <span class="nav-icon">🏠</span> DASHBOARD <span class="nav-arr">›</span>
                     </button>
-                    <button class="nav-btn" onclick="openPlayground()">
+                    <button class="nav-btn" onclick="openPlayground('llama3.3-70b')">
                         <span class="nav-icon">💬</span> AI CHAT <span class="nav-arr">›</span>
                     </button>
                     <button class="nav-btn" onclick="toggleVoiceListening()">
@@ -64,7 +64,7 @@
                     <button class="nav-btn" onclick="scrollToSection('apidogWorkbench')">
                         <span class="nav-icon">🌐</span> WEB BROWSER <span class="nav-arr">›</span>
                     </button>
-                    <button class="nav-btn" onclick="toast('Notepad Saved', 'info')">
+                    <button class="nav-btn" onclick="toast('Notepad Active', 'info')">
                         <span class="nav-icon">📝</span> NOTE PAD <span class="nav-arr">›</span>
                     </button>
                     <button class="nav-btn" onclick="openModal('apiKeysModalOverlay')">
@@ -426,7 +426,7 @@
         </div>
         <div class="b-center-icons">
             <button class="b-icon" onclick="scrollToSection('explore')">🧠</button>
-            <button class="b-icon" onclick="openPlayground()">💬</button>
+            <button class="b-icon" onclick="openPlayground('llama3.3-70b')">💬</button>
             <button class="b-icon" onclick="toast('Camera Active', 'success')">📷</button>
             <button class="b-icon" onclick="toggleVoiceListening()">🎙️</button>
             <button class="b-icon" onclick="toast('Hand Gestures Active', 'info')">🖐️</button>
