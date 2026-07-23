@@ -93,14 +93,21 @@
         </div>
       </div>
 
-      <div class="terminal" role="group" aria-label="Example pull command">
+      <div class="terminal interactive-shell" role="region" aria-label="Victor Interactive Terminal">
         <div class="terminal-bar">
           <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-          <span class="terminal-title">victor — interactive CLI</span>
+          <span class="terminal-title">victor — interactive web CLI (v1.4.0)</span>
+          <button class="btn-clear-term" id="clearTermBtn" title="Clear Terminal">Clear</button>
         </div>
-        <div class="terminal-body">
-          <p class="term-line"><span class="prompt">$</span> <span id="typedCmd"></span><span class="cursor" aria-hidden="true"></span></p>
-          <p class="term-out" id="termOut"></p>
+        <div class="terminal-body" id="termBody">
+          <div class="term-history" id="termHistory">
+            <p class="term-welcome">Victor Shell Ready. Try running <code class="cmd-chip">victor pull llama-3.3-70b</code> or <code class="cmd-chip">victor help</code>.</p>
+          </div>
+          <form class="term-prompt-row" id="termForm">
+            <span class="prompt">$</span>
+            <input type="text" id="cliInput" placeholder="victor pull meta-llama/llama-3.3-70b-instruct..." autocomplete="off" spellcheck="false">
+            <button type="submit" class="btn-term-run" title="Run command">Run</button>
+          </form>
         </div>
       </div>
     </div>
@@ -333,6 +340,9 @@
       <div class="progress-bar-wrap" id="pullProgressWrap" hidden>
         <div class="progress-bar" id="pullProgressBar"></div>
         <span class="progress-label" id="pullProgressLabel">0% - Fetching manifests...</span>
+        
+        <!-- Multi-layer breakdown -->
+        <div class="layers-breakdown" id="layersBreakdownContainer"></div>
       </div>
     </div>
 

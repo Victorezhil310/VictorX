@@ -399,6 +399,59 @@ function updateCodeSnippetDisplay() {
   codeEl.textContent = generateCodeSnippet(state.currentPullingModel, state.activeTab);
 }
 
+/* ===== IndexedDB Secure Database Engine ===== */
+const VictorDatabase = {
+  db: null,
+  init() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) {
+        console.warn("IndexedDB not supported, falling back to localStorage.");
+        return resolve(false);
+      }
+      const req = window.indexedDB.open("VictorDockDB", 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("models")) db.createObjectStore("models", { keyPath: "id" });
+        if (!db.objectStoreNames.contains("chats")) db.createObjectStore("chats", { keyPath: "id", autoIncrement: true });
+        if (!db.objectStoreNames.contains("vault")) db.createObjectStore("vault", { keyPath: "key" });
+      };
+      req.onsuccess = (e) => {
+        VictorDatabase.db = e.target.result;
+        console.log("VictorDockDB IndexedDB initialized successfully.");
+        resolve(true);
+      };
+      req.onerror = () => resolve(false);
+    });
+  },
+  saveModel(modelObj) {
+    if (!this.db) return;
+    const tx = this.db.transaction("models", "readwrite");
+    tx.objectStore("models").put({ ...modelObj, dockedAt: new Date().toISOString() });
+  },
+  removeModel(id) {
+    if (!this.db) return;
+    const tx = this.db.transaction("models", "readwrite");
+    tx.objectStore("models").delete(id);
+  }
+};
+
+/* ===== Layer Hash Generator ===== */
+function generateLayerHashes(modelName, sizeStr) {
+  const hash = (str) => {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    return Math.abs(h).toString(16).padEnd(12, '0').slice(0, 12);
+  };
+  const base = hash(modelName + sizeStr);
+  return [
+    { name: "Layer 1/4: config.json & manifest", hash: `sha256:${base}a1`, size: "512 KB" },
+    { name: "Layer 2/4: model.safetensors.index.json", hash: `sha256:${base}b2`, size: "1.2 MB" },
+    { name: `Layer 3/4: model weight tensor shard (part 1)`, hash: `sha256:${base}c3`, size: `${sizeStr} Weights` },
+    { name: "Layer 4/4: tokenizer & vocab embeddings", hash: `sha256:${base}d4`, size: "24 MB" },
+  ];
+}
+
+/* Layer-by-Layer Modal Pull Installer */
 function startPullSimulation() {
   const m = state.currentPullingModel;
   if (!m) return;
@@ -408,31 +461,63 @@ function startPullSimulation() {
   const progressWrap = document.getElementById("pullProgressWrap");
   const progressBar = document.getElementById("pullProgressBar");
   const progressLabel = document.getElementById("pullProgressLabel");
+  const layersContainer = document.getElementById("layersBreakdownContainer");
 
   startPullBtn.disabled = true;
   progressWrap.hidden = false;
-  statusText.textContent = "Pulling manifest & model weights...";
+  statusText.textContent = "Connecting to registry & pulling layer manifests...";
 
-  let pct = 0;
-  const timer = setInterval(() => {
-    pct += Math.floor(Math.random() * 20) + 10;
-    if (pct > 100) pct = 100;
+  const layers = generateLayerHashes(m.name, m.size);
+  layersContainer.innerHTML = layers.map((l, idx) => `
+    <div class="layer-item" id="modalLayer_${idx}">
+      <div class="layer-info-row">
+        <span>${l.name}</span>
+        <span class="layer-status" id="modalLayerStatus_${idx}">Waiting</span>
+      </div>
+      <div class="layer-hash">${l.hash} · ${l.size}</div>
+      <div class="layer-bar-bg"><div class="layer-bar-fill" id="modalLayerFill_${idx}"></div></div>
+    </div>
+  `).join("");
 
-    progressBar.style.width = `${pct}%`;
-    progressLabel.textContent = `${pct}% — Downloading layers for ${m.name}...`;
+  let currentLayerIdx = 0;
+  let layerPct = 0;
+  let overallPct = 0;
 
-    if (pct >= 100) {
-      clearInterval(timer);
-      state.installed.add(m.id);
-      localStorage.setItem("victor_installed", JSON.stringify([...state.installed]));
+  const layerTimer = setInterval(() => {
+    layerPct += Math.floor(Math.random() * 25) + 15;
+    if (layerPct > 100) layerPct = 100;
 
-      statusText.textContent = "Successfully Docked! ✓";
-      startPullBtn.textContent = "✓ Docked";
-      startPullBtn.disabled = false;
-      renderGrid();
-      toast(`${m.name} ${m.size} pulled & added to My Dock!`);
+    const layerFill = document.getElementById(`modalLayerFill_${currentLayerIdx}`);
+    const layerStatus = document.getElementById(`modalLayerStatus_${currentLayerIdx}`);
+    if (layerFill) layerFill.style.width = `${layerPct}%`;
+    if (layerStatus) layerStatus.textContent = `${layerPct}%`;
+
+    overallPct = Math.floor(((currentLayerIdx + (layerPct / 100)) / layers.length) * 100);
+    progressBar.style.width = `${overallPct}%`;
+    progressLabel.textContent = `${overallPct}% — Pulling layer ${currentLayerIdx + 1} of ${layers.length} for ${m.name}...`;
+
+    if (layerPct >= 100) {
+      if (layerStatus) {
+        layerStatus.textContent = "Complete ✓";
+        layerStatus.style.color = "var(--success)";
+      }
+      currentLayerIdx++;
+      layerPct = 0;
+
+      if (currentLayerIdx >= layers.length) {
+        clearInterval(layerTimer);
+        state.installed.add(m.id);
+        localStorage.setItem("victor_installed", JSON.stringify([...state.installed]));
+        VictorDatabase.saveModel(m);
+
+        statusText.textContent = "Successfully Docked to Local Storage! ✓";
+        startPullBtn.textContent = "✓ Docked";
+        startPullBtn.disabled = false;
+        renderGrid();
+        toast(`${m.name} ${m.size} pulled & saved to IndexedDB dock!`);
+      }
     }
-  }, 220);
+  }, 180);
 }
 
 /* Ports Section */
@@ -481,33 +566,156 @@ function updateStats() {
   PORTS.forEach(p => { p.models = MODELS.filter(m => m.port === p.id).length; });
 }
 
-/* CLI Typewriter Hero Animation */
-const COMMANDS = [
-  { cmd: "victor pull deepseek-r1",  out: "→ found on OpenRouter · 671B · ready" },
-  { cmd: "victor pull llama3.3:70b", out: "→ found on Meta · 70B · docked" },
-  { cmd: "victor search reasoning",  out: "→ 5 matches across Hugging Face, OpenRouter, Meta" },
-  { cmd: "victor pull mixtral:8x7b", out: "→ found on Mistral AI · 26 GB · ready" },
-];
-let cmdIdx = 0;
-function typewriter() {
-  const el = document.getElementById("typedCmd");
-  const out = document.getElementById("termOut");
-  if (!el || !out) return;
-  const { cmd, out: outText } = COMMANDS[cmdIdx];
-  let i = 0;
-  out.textContent = "";
-  const typeTimer = setInterval(() => {
-    el.textContent = cmd.slice(0, i + 1);
-    i++;
-    if (i === cmd.length) {
-      clearInterval(typeTimer);
-      setTimeout(() => { out.textContent = outText; }, 300);
-      setTimeout(() => {
-        cmdIdx = (cmdIdx + 1) % COMMANDS.length;
-        typewriter();
-      }, 2800);
+/* Interactive Web Terminal CLI Processor */
+function appendTermLine(text, type = "info") {
+  const history = document.getElementById("termHistory");
+  if (!history) return;
+  const p = document.createElement("p");
+  p.className = `term-line-out ${type}`;
+  p.textContent = text;
+  history.appendChild(p);
+  history.scrollTop = history.scrollHeight;
+}
+
+function processCliCommand(rawCmd) {
+  const cmd = rawCmd.trim();
+  if (!cmd) return;
+
+  appendTermLine(`$ ${cmd}`, "cmd");
+
+  const parts = cmd.split(/\s+/);
+  let main = parts[0].toLowerCase();
+  let action = parts[1] ? parts[1].toLowerCase() : "";
+  let arg = parts.slice(2).join(" ");
+
+  if (main !== "victor" && main !== "clear" && main !== "cls" && main !== "help") {
+    // If user types 'pull llama3.3' directly without 'victor' prefix
+    arg = parts.slice(1).join(" ");
+    action = main;
+    main = "victor";
+  }
+
+  if (main === "clear" || main === "cls" || action === "clear" || action === "cls") {
+    const history = document.getElementById("termHistory");
+    if (history) history.innerHTML = '<p class="term-welcome">Terminal output cleared.</p>';
+    return;
+  }
+
+  if (action === "help" || main === "help" || (!action && main === "victor")) {
+    appendTermLine("VICTOR CLI COMMAND REFERENCE:", "info");
+    appendTermLine("  victor pull <model-id>   Pull & dock model weights (e.g. victor pull llama-3.3-70b)", "info");
+    appendTermLine("  victor run <model-id>    Launch AI Playground for docked model", "info");
+    appendTermLine("  victor ls                List all currently docked models in IndexedDB", "info");
+    appendTermLine("  victor search <query>    Search manifest models", "info");
+    appendTermLine("  victor keys              Check API connection status", "info");
+    appendTermLine("  clear                    Clear terminal history", "info");
+    return;
+  }
+
+  if (action === "ls" || action === "list") {
+    const installedList = MODELS.filter(m => state.installed.has(m.id));
+    if (installedList.length === 0) {
+      appendTermLine("No models currently docked. Run 'victor pull <model>' to install.", "info");
+      return;
     }
-  }, 50);
+    appendTermLine(`DOCKED MODELS (${installedList.length}):`, "success");
+    installedList.forEach(m => {
+      appendTermLine(` - ${m.name} (${m.size}) [${m.port.toUpperCase()}] -> ID: ${m.id}`, "info");
+    });
+    return;
+  }
+
+  if (action === "keys") {
+    appendTermLine("API KEY INTEGRATION STATUS:", "info");
+    appendTermLine(` OpenRouter : ${state.keys.openrouter ? 'Connected ✓' : 'Not set'}`, state.keys.openrouter ? 'success' : 'info');
+    appendTermLine(` OpenAI     : ${state.keys.openai ? 'Connected ✓' : 'Not set'}`, state.keys.openai ? 'success' : 'info');
+    appendTermLine(` Gemini     : ${state.keys.gemini ? 'Connected ✓' : 'Not set'}`, state.keys.gemini ? 'success' : 'info');
+    appendTermLine(` Ollama Local: ${state.keys.ollama || 'http://localhost:11434'}`, 'info');
+    return;
+  }
+
+  if (action === "search") {
+    if (!arg) {
+      appendTermLine("Usage: victor search <query> (e.g. victor search reasoning)", "info");
+      return;
+    }
+    const matches = MODELS.filter(m => m.name.toLowerCase().includes(arg.toLowerCase()) || m.tags.some(t => t.includes(arg.toLowerCase())));
+    if (!matches.length) {
+      appendTermLine(`No models matching '${arg}' found on manifest.`, "info");
+      return;
+    }
+    appendTermLine(`FOUND ${matches.length} MATCHES:`, "success");
+    matches.forEach(m => {
+      appendTermLine(` • ${m.name} (${m.size}) - ${m.desc} [${m.port.toUpperCase()}]`, "info");
+    });
+    return;
+  }
+
+  if (action === "run") {
+    if (!arg) {
+      appendTermLine("Usage: victor run <model-id> (e.g. victor run deepseek-r1)", "info");
+      return;
+    }
+    const q = arg.toLowerCase();
+    const m = MODELS.find(x => x.id === q || x.name.toLowerCase().includes(q));
+    if (m) {
+      appendTermLine(`Launching AI Playground for ${m.name}...`, "success");
+      openPlayground(m.id);
+    } else {
+      appendTermLine(`Model '${arg}' not found. Run 'victor search' or check name.`, "info");
+    }
+    return;
+  }
+
+  if (action === "pull") {
+    if (!arg) {
+      appendTermLine("Usage: victor pull <model-id> (e.g. victor pull meta-llama/llama-3.3-70b-instruct)", "info");
+      return;
+    }
+
+    // Clean user query (e.g. 'meta-llama/llama-3.3-70b-instruct' -> 'llama-3.3-70b')
+    const query = arg.toLowerCase().replace("meta-llama/", "").replace("-instruct", "");
+    let m = MODELS.find(x => x.id === query || x.name.toLowerCase().includes(query) || x.apiModel.toLowerCase().includes(query));
+
+    if (!m) {
+      // Create dynamically recognized model if user inputs an exact custom HF / Ollama tag!
+      m = {
+        id: query.replace(/[^a-z0-9-]/g, '-'),
+        name: arg,
+        size: "Custom",
+        port: "hf",
+        tags: ["custom"],
+        haul: 1000,
+        added: 1,
+        desc: `Custom pulled model layer manifest: ${arg}`,
+        apiModel: arg
+      };
+      MODELS.push(m);
+    }
+
+    appendTermLine(`Pulling ${m.name} (${m.size}) from ${m.port.toUpperCase()}...`, "info");
+    const layers = generateLayerHashes(m.name, m.size);
+
+    let lIdx = 0;
+    const termPullInterval = setInterval(() => {
+      if (lIdx < layers.length) {
+        appendTermLine(`  → ${layers[lIdx].name} [${layers[lIdx].hash}] 100% COMPLETE`, "layer");
+        lIdx++;
+      } else {
+        clearInterval(termPullInterval);
+        state.installed.add(m.id);
+        localStorage.setItem("victor_installed", JSON.stringify([...state.installed]));
+        VictorDatabase.saveModel(m);
+        renderGrid();
+        appendTermLine(`✓ Successfully pulled & docked ${m.name} to IndexedDB workspace!`, "success");
+        appendTermLine(`  Run 'victor run ${m.id}' to launch inference playground.`, "info");
+        toast(`Pulled ${m.name} via terminal!`);
+      }
+    }, 450);
+    return;
+  }
+
+  appendTermLine(`Unknown command: '${cmd}'. Type 'victor help' for available commands.`, "info");
 }
 
 /* Interactive AI Playground */
@@ -595,12 +803,35 @@ function escapeHtml(str) {
 
 /* Event Listeners Setup */
 document.addEventListener("DOMContentLoaded", () => {
+  VictorDatabase.init();
   initAuth();
   updateStats();
   renderChips();
   renderGrid();
   renderPorts();
-  typewriter();
+
+  // Terminal form handlers
+  const termForm = document.getElementById("termForm");
+  const cliInput = document.getElementById("cliInput");
+  const clearTermBtn = document.getElementById("clearTermBtn");
+
+  if (termForm && cliInput) {
+    termForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = cliInput.value.trim();
+      if (val) {
+        processCliCommand(val);
+        cliInput.value = "";
+      }
+    });
+  }
+
+  if (clearTermBtn) {
+    clearTermBtn.addEventListener("click", () => {
+      const history = document.getElementById("termHistory");
+      if (history) history.innerHTML = '<p class="term-welcome">Terminal cleared. Try <code class="cmd-chip">victor help</code>.</p>';
+    });
+  }
 
   // Search & Filter
   document.getElementById("searchInput").addEventListener("input", (e) => {
