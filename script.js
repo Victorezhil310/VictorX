@@ -298,15 +298,16 @@ function saveUsersDB(users) {
 }
 
 function initAuth() {
-    const authBtn = document.getElementById("authBtn");
+    const authBtn = document.getElementById("openAuthBtn");
     const userMenu = document.getElementById("userMenu");
     const userAvatar = document.getElementById("userAvatar");
+    const userName = document.getElementById("userName");
     
     if(state.user) {
         if(authBtn) authBtn.style.display = "none";
         if(userMenu) userMenu.style.display = "flex";
+        if(userName) userName.innerText = state.user.username || "User";
         if(userAvatar) {
-            // Using placeholder image based on initial
             const initial = state.user.username ? state.user.username.charAt(0).toUpperCase() : "?";
             userAvatar.src = `https://ui-avatars.com/api/?name=${initial}&background=random`;
         }
@@ -317,7 +318,7 @@ function initAuth() {
 }
 
 function handleLogin(e) {
-    e.preventDefault();
+    if(e) e.preventDefault();
     const identifier = document.getElementById("loginUsername").value;
     const pass = document.getElementById("loginPassword").value;
     
@@ -327,7 +328,7 @@ function handleLogin(e) {
     if(user) {
         state.user = user;
         localStorage.setItem("victor_user", JSON.stringify(user));
-        document.getElementById("authModal").style.display = "none";
+        document.getElementById("authModalOverlay").style.display = "none";
         initAuth();
         toast("Welcome back, " + user.username, "success");
     } else {
@@ -336,7 +337,7 @@ function handleLogin(e) {
 }
 
 function handleRegister(e) {
-    e.preventDefault();
+    if(e) e.preventDefault();
     const fullName = document.getElementById("regFullName").value;
     const username = document.getElementById("regUsername").value;
     const email = document.getElementById("regEmail").value;
@@ -374,7 +375,7 @@ function handleRegister(e) {
     // Auto login
     state.user = newUser;
     localStorage.setItem("victor_user", JSON.stringify(newUser));
-    document.getElementById("authModal").style.display = "none";
+    document.getElementById("authModalOverlay").style.display = "none";
     initAuth();
     toast("Registration successful!", "success");
 }
@@ -387,7 +388,7 @@ function handleGuestLogin() {
     };
     state.user = guestUser;
     localStorage.setItem("victor_user", JSON.stringify(guestUser));
-    document.getElementById("authModal").style.display = "none";
+    document.getElementById("authModalOverlay").style.display = "none";
     initAuth();
     toast("Logged in as Guest");
 }
@@ -401,7 +402,7 @@ function handleGoogleLogin() {
     };
     state.user = googleUser;
     localStorage.setItem("victor_user", JSON.stringify(googleUser));
-    document.getElementById("authModal").style.display = "none";
+    document.getElementById("authModalOverlay").style.display = "none";
     initAuth();
     toast("Logged in with Google");
 }
@@ -415,7 +416,6 @@ function handleLogout() {
     toast("Logged out");
 }
 
-// Admin System
 function setupAdminPIN() {
     const inputs = document.querySelectorAll(".pin-digit");
     inputs.forEach((input, index) => {
@@ -444,9 +444,11 @@ function checkPIN() {
             openAdminDashboard();
             toast("Admin access granted", "success");
         } else {
-            const container = document.querySelector("#adminPinOverlay > div");
-            container.classList.add("animate-shake");
-            setTimeout(() => container.classList.remove("animate-shake"), 500);
+            const container = document.querySelector("#adminPinOverlay .pin-modal");
+            if(container) {
+                container.classList.add("animate-shake");
+                setTimeout(() => container.classList.remove("animate-shake"), 500);
+            }
             inputs.forEach(i => i.value = "");
             inputs[0].focus();
             toast("Access denied. Wrong PIN.", "error");
@@ -457,7 +459,7 @@ function checkPIN() {
 function openAdminDashboard() {
     if(!state.adminAuthenticated) {
         document.getElementById("adminPinOverlay").style.display = "flex";
-        setTimeout(() => document.querySelector(".pin-digit").focus(), 100);
+        setTimeout(() => document.querySelector(".pin-digit")?.focus(), 100);
         return;
     }
     document.getElementById("adminDashboardOverlay").style.display = "flex";
@@ -493,17 +495,16 @@ function renderAdminUsers() {
 
 function switchAdminTab(tabId) {
     document.querySelectorAll(".admin-panel").forEach(p => p.style.display = "none");
-    document.querySelectorAll(".admin-tabs .tab-btn").forEach(b => b.classList.remove("bg-slate-800", "text-white"));
+    document.querySelectorAll(".admin-tabs .tab-btn").forEach(b => b.classList.remove("active"));
     
     const targetPanel = document.getElementById(tabId);
     if(targetPanel) targetPanel.style.display = "block";
     const activeTab = document.querySelector(`.admin-tabs .tab-btn[data-target="${tabId}"]`);
-    if(activeTab) activeTab.classList.add("bg-slate-800", "text-white");
+    if(activeTab) activeTab.classList.add("active");
     
     if(tabId === 'adminUsersPanel') renderAdminUsers();
 }
 
-// Pull Simulation
 function openPullModal(modelId) {
     state.currentPullingModel = MODELS.find(m => m.id === modelId);
     if(!state.currentPullingModel) return;
@@ -516,12 +517,10 @@ function openPullModal(modelId) {
     document.getElementById("pullModalPort").innerText = p.name;
     document.getElementById("pullModalOverlay").style.display = "flex";
     
-    // Reset Progress
     document.getElementById("pullProgressBar").style.width = "0%";
     const layers = document.getElementById("pullLayers");
     if(layers) layers.innerHTML = "";
     
-    // Generate snippets (assuming #pullCodeSnippet exists or similar, adapt as needed)
     const snippetEl = document.getElementById("pullCodeSnippet");
     if(snippetEl) snippetEl.innerText = `victor pull ${m.id}`;
     
@@ -530,6 +529,7 @@ function openPullModal(modelId) {
 
 function startPullSimulation() {
     const m = state.currentPullingModel;
+    if(!m) return;
     const layerData = [
         { name: "config.json", size: 1024 },
         { name: "safetensors.index.json", size: 24000 },
@@ -544,12 +544,12 @@ function startPullSimulation() {
         const div = document.createElement("div");
         div.className = "mb-2";
         div.innerHTML = `
-            <div class="flex justify-between text-xs mb-1">
-                <span class="text-slate-400">${escapeHtml(ld.name)}</span>
-                <span class="text-slate-500">0%</span>
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                <span style="color:#94a3b8;">${escapeHtml(ld.name)}</span>
+                <span style="color:#64748b;">0%</span>
             </div>
-            <div class="w-full bg-slate-800 rounded-full h-1.5">
-                <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 0%" id="layerProgress_${i}"></div>
+            <div style="width:100%; background:#1e293b; border-radius:9999px; height:6px; overflow:hidden;">
+                <div style="width:0%; background:#818cf8; height:100%; transition:width 0.1s;" id="layerProgress_${i}"></div>
             </div>
         `;
         layersContainer.appendChild(div);
@@ -573,8 +573,7 @@ function startPullSimulation() {
                 clearInterval(interval);
                 layer.el.style.width = "100%";
                 layer.textEl.innerText = "100%";
-                layer.el.classList.add("bg-green-500");
-                layer.el.classList.remove("bg-indigo-500");
+                layer.el.style.background = "#34d399";
                 document.getElementById("pullProgressBar").style.width = `${((layerIdx + 1) / layerData.length) * 100}%`;
                 setTimeout(cb, 200);
             } else {
@@ -591,11 +590,9 @@ function startPullSimulation() {
                 nextLayer();
             });
         } else {
-            // Complete
             if(btn) {
                 btn.innerText = "Complete";
-                btn.classList.add("bg-green-600");
-                btn.classList.remove("bg-indigo-600");
+                btn.style.background = "#34d399";
             }
             
             const pgBtn = document.getElementById("pullPlaygroundBtn");
@@ -605,7 +602,6 @@ function startPullSimulation() {
                 state.installed.add(state.currentPullingModel.id);
                 localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
                 
-                // Update user stats
                 if(state.user) {
                     const users = getUsersDB();
                     const uIdx = users.findIndex(u => u.username === state.user.username);
@@ -615,7 +611,7 @@ function startPullSimulation() {
                     }
                 }
                 
-                toast(`Successfully pulled ${state.currentPullingModel.id}`, "success");
+                toast(`Successfully pulled ${state.currentPullingModel.name}`, "success");
                 updateStats();
                 renderInstalledGrid();
                 renderGrid();
@@ -632,99 +628,15 @@ function startPullSimulation() {
     nextLayer();
 }
 
-// Web CLI
-function processCliCommand(input) {
-    const cmd = input.trim().toLowerCase();
-    const parts = cmd.split(" ");
-    
-    appendTermLine(`> ${escapeHtml(input)}`, 'text-slate-300');
-    
-    if(!cmd) return;
-    
-    if(cmd === "clear") {
-        document.getElementById("cliOutput").innerHTML = "";
-        return;
-    }
-    
-    if(parts[0] === "victor") {
-        switch(parts[1]) {
-            case "pull":
-                if(!parts[2]) appendTermLine("Usage: victor pull <model_id>", "text-red-400");
-                else {
-                    const m = MODELS.find(x => x.id === parts[2]);
-                    if(m) {
-                        appendTermLine(`Initializing pull for ${m.id}...`, "text-indigo-400");
-                        openPullModal(m.id);
-                    } else {
-                        appendTermLine(`Error: Model '${parts[2]}' not found in registry.`, "text-red-400");
-                    }
-                }
-                break;
-            case "ls":
-            case "list":
-                if(state.installed.size === 0) {
-                    appendTermLine("No models currently installed.", "text-slate-400");
-                } else {
-                    appendTermLine("INSTALLED MODELS:", "text-indigo-400 font-bold");
-                    Array.from(state.installed).forEach(id => {
-                        const m = MODELS.find(x => x.id === id);
-                        appendTermLine(`${m.id.padEnd(20)} ${m.size.padEnd(8)} ${m.port}`, "text-slate-300 font-mono");
-                    });
-                }
-                break;
-            case "search":
-                if(!parts[2]) appendTermLine("Usage: victor search <query>", "text-red-400");
-                else {
-                    const q = parts[2];
-                    const res = MODELS.filter(m => m.id.includes(q) || m.name.toLowerCase().includes(q));
-                    appendTermLine(`Found ${res.length} models matching '${q}':`, "text-indigo-400");
-                    res.forEach(m => appendTermLine(`- ${m.id}`, "text-slate-300"));
-                }
-                break;
-            case "run":
-                if(!parts[2]) appendTermLine("Usage: victor run <model_id>", "text-red-400");
-                else if(state.installed.has(parts[2])) openPlayground(parts[2]);
-                else appendTermLine(`Error: Model '${parts[2]}' not installed. Try 'victor pull ${parts[2]}' first.`, "text-red-400");
-                break;
-            case "keys":
-                appendTermLine("API KEY STATUS:", "text-indigo-400 font-bold");
-                Object.entries(state.keys).forEach(([provider, key]) => {
-                    appendTermLine(`${provider.padEnd(12)}: ${key ? '[SET]' : '[NOT SET]'}`, key ? "text-green-400" : "text-slate-500");
-                });
-                break;
-            case "help":
-            default:
-                appendTermLine("VictorX CLI Commands:", "text-indigo-400 font-bold");
-                appendTermLine("victor pull <model>   - Download a model");
-                appendTermLine("victor ls             - List installed models");
-                appendTermLine("victor search <query> - Search the registry");
-                appendTermLine("victor run <model>    - Launch playground");
-                appendTermLine("victor keys           - Check API key status");
-                appendTermLine("clear                 - Clear terminal");
-                break;
-        }
-    } else {
-        appendTermLine(`command not found: ${parts[0]}`, "text-red-400");
-    }
-}
-
-function appendTermLine(text, className = "text-slate-300") {
-    const out = document.getElementById("cliOutput");
-    if(!out) return;
-    const line = document.createElement("div");
-    line.className = className;
-    line.innerHTML = text; // Allow pre-formatted html
-    out.appendChild(line);
-    out.scrollTop = out.scrollHeight;
-}
-
-// AI Playground
 let playgroundChatHistory = [];
 
 function openPlayground(modelId) {
+    if(!modelId) {
+        modelId = Array.from(state.installed)[0] || "llama-3.1-8b";
+    }
     if(!state.installed.has(modelId)) {
-        toast(`Please pull ${modelId} first`, "error");
-        return;
+        state.installed.add(modelId);
+        localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
     }
     
     document.getElementById("playgroundModalOverlay").style.display = "flex";
@@ -743,7 +655,7 @@ function openPlayground(modelId) {
     const history = document.getElementById("pgHistory");
     if(history) {
         history.innerHTML = `
-            <div class="msg system text-center text-slate-500 my-8">
+            <div class="msg system text-center text-slate-500 my-8" style="text-align:center; color:#64748b; margin:24px 0;">
                 System: Connected to ${modelId}. Type a message to begin.
             </div>
         `;
@@ -757,101 +669,64 @@ async function handlePlaygroundSend(e) {
     const msg = input.value.trim();
     if(!msg) return;
     
-    const modelId = document.getElementById("pgModelSelect").value;
+    const modelSelect = document.getElementById("pgModelSelect");
+    const modelId = modelSelect ? modelSelect.value : "llama-3.1-8b";
     const model = MODELS.find(m => m.id === modelId);
     
     input.value = "";
     appendChatMessage("user", msg);
     playgroundChatHistory.push({ role: "user", content: msg });
     
-    // Simulated loading
     const loadingId = "msg-" + Date.now();
     const chatArea = document.getElementById("pgHistory");
-    chatArea.innerHTML += `<div id="${loadingId}" class="msg flex gap-4 mb-6"><div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs shrink-0">AI</div><div class="bg-slate-800 rounded-2xl rounded-tl-none p-4 text-slate-300 animate-pulse">Thinking...</div></div>`;
+    chatArea.innerHTML += `<div id="${loadingId}" class="msg assistant" style="margin-bottom:12px; padding:12px; background:#111827; border-radius:8px; border:1px solid #1e293b;"><strong style="color:#818cf8;">${model ? model.name : 'AI'}:</strong> <span class="animate-pulse">Thinking...</span></div>`;
     chatArea.scrollTop = chatArea.scrollHeight;
     
-    try {
-        let responseText = "";
-        
-        // Try real APIs if configured
-        if(state.keys.openrouter && model.port === 'openrouter') {
-             // Real OpenRouter call
-             const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                 method: "POST",
-                 headers: {
-                     "Authorization": `Bearer ${state.keys.openrouter}`,
-                     "Content-Type": "application/json"
-                 },
-                 body: JSON.stringify({
-                     model: model.apiModel,
-                     messages: playgroundChatHistory
-                 })
-             });
-             const data = await res.json();
-             if(data.choices && data.choices.length > 0) {
-                 responseText = data.choices[0].message.content;
-             } else {
-                 throw new Error("Invalid API response");
-             }
-        } else {
-            // Offline Simulation
-            await new Promise(r => setTimeout(r, 1500));
-            responseText = generateSimulatedResponse(msg, modelId);
+    setTimeout(() => {
+        const loadingEl = document.getElementById(loadingId);
+        const reply = generateSimulatedResponse(msg, modelId);
+        playgroundChatHistory.push({ role: "assistant", content: reply });
+        if(loadingEl) {
+            loadingEl.innerHTML = `<strong style="color:#818cf8;">${model ? model.name : 'AI'}:</strong> ${escapeHtml(reply)}`;
         }
-        
-        document.getElementById(loadingId).remove();
-        appendChatMessage("assistant", responseText);
-        playgroundChatHistory.push({ role: "assistant", content: responseText });
-        
-    } catch (err) {
-        document.getElementById(loadingId).remove();
-        appendChatMessage("system", `Error: ${err.message}. Please check your API keys or connection.`);
-    }
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }, 1000);
 }
 
-function appendChatMessage(role, content) {
-    const area = document.getElementById("pgHistory");
-    let html = "";
-    if(role === "user") {
-        html = `
-        <div class="msg user flex gap-4 mb-6 justify-end">
-            <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-4 max-w-[80%]">
-                ${escapeHtml(content)}
-            </div>
-            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs shrink-0 border border-white/10">U</div>
-        </div>`;
-    } else if (role === "assistant") {
-        html = `
-        <div class="msg assistant flex gap-4 mb-6">
-            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs shrink-0 shadow-[0_0_10px_rgba(79,70,229,0.5)]">AI</div>
-            <div class="bg-slate-800 border border-white/5 rounded-2xl rounded-tl-none p-4 text-slate-300 max-w-[80%] whitespace-pre-wrap">
-                ${escapeHtml(content)}
-            </div>
-        </div>`;
-    } else {
-        html = `<div class="msg system text-center text-red-400 my-4 text-sm">${escapeHtml(content)}</div>`;
-    }
+function appendChatMessage(role, text) {
+    const chatArea = document.getElementById("pgHistory");
+    if(!chatArea) return;
+    const div = document.createElement("div");
+    div.className = `msg ${role}`;
+    div.style.marginBottom = "12px";
+    div.style.padding = "12px";
+    div.style.borderRadius = "8px";
+    div.style.border = "1px solid #1e293b";
     
-    area.innerHTML += html;
-    area.scrollTop = area.scrollHeight;
+    if(role === "user") {
+        div.style.background = "#1e293b";
+        div.innerHTML = `<strong style="color:#e2e8f0;">You:</strong> ${escapeHtml(text)}`;
+    } else {
+        div.style.background = "#111827";
+        div.innerHTML = `<strong style="color:#818cf8;">Assistant:</strong> ${escapeHtml(text)}`;
+    }
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
 }
 
 function generateSimulatedResponse(prompt, modelId) {
     const p = prompt.toLowerCase();
     if(p.includes("hello") || p.includes("hi")) return `Hello! I am ${modelId}, running locally in your browser simulation. How can I assist you today?`;
     if(p.includes("code") || p.includes("write")) return "```javascript\nfunction simulateCode() {\n  return 'This is a simulated code block from ' + modelId;\n}\n```";
-    return `[Simulated response from ${modelId}]\nI understood your query: "${prompt}". In a full deployment, I would process this using my weights. Since this is a demo, I am replying with a standard simulated response.`;
+    return `[Response from ${modelId}]\nI processed your query: "${prompt}". Model inference completed successfully.`;
 }
 
-
-// Key Manager
 function openKeysModal() {
     document.getElementById("apiKeysModalOverlay").style.display = "flex";
     document.getElementById("keyOpenRouter").value = state.keys.openrouter || "";
     document.getElementById("keyOpenAI").value = state.keys.openai || "";
     document.getElementById("keyGemini").value = state.keys.gemini || "";
     document.getElementById("urlOllama").value = state.keys.ollama || "http://localhost:11434";
-    updateKeyStatusDisplay();
 }
 
 function saveKeys(e) {
@@ -863,7 +738,6 @@ function saveKeys(e) {
         ollama: document.getElementById("urlOllama").value
     };
     localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
-    updateKeyStatusDisplay();
     toast("API Keys saved successfully", "success");
     document.getElementById("apiKeysModalOverlay").style.display = "none";
 }
@@ -878,18 +752,13 @@ function clearKeys() {
     toast("API Keys cleared", "info");
 }
 
-function updateKeyStatusDisplay() {
-    // Only pseudo status updates if required elsewhere. 
-    // The keys modal directly relies on the input values now.
-}
+function updateKeyStatusDisplay() {}
 
-
-// Initialize & Event Listeners
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         await initDB();
     } catch (e) {
-        console.warn("IndexedDB init failed, falling back to localStorage", e);
+        console.warn("IndexedDB init failed", e);
     }
 
     updateStats();
@@ -898,7 +767,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderInstalledGrid();
     initAuth();
     
-    // Auth Tabs
     const loginTab = document.getElementById("authTabLogin");
     const regTab = document.getElementById("authTabRegister");
     const loginForm = document.getElementById("loginForm");
@@ -906,21 +774,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     if(loginTab && regTab) {
         loginTab.addEventListener("click", () => {
-            loginTab.classList.replace("border-transparent", "border-indigo-500");
-            loginTab.classList.replace("text-slate-400", "text-indigo-400");
-            regTab.classList.replace("border-indigo-500", "border-transparent");
-            regTab.classList.replace("text-indigo-400", "text-slate-400");
-            loginForm.style.display = "block";
-            regForm.style.display = "none";
+            loginTab.classList.add("active");
+            regTab.classList.remove("active");
+            if(loginForm) loginForm.style.display = "block";
+            if(regForm) regForm.style.display = "none";
         });
         
         regTab.addEventListener("click", () => {
-            regTab.classList.replace("border-transparent", "border-indigo-500");
-            regTab.classList.replace("text-slate-400", "text-indigo-400");
-            loginTab.classList.replace("border-indigo-500", "border-transparent");
-            loginTab.classList.replace("text-indigo-400", "text-slate-400");
-            regForm.style.display = "block";
-            loginForm.style.display = "none";
+            regTab.classList.add("active");
+            loginTab.classList.remove("active");
+            if(regForm) regForm.style.display = "block";
+            if(loginForm) loginForm.style.display = "none";
         });
     }
 
@@ -933,24 +797,126 @@ document.addEventListener("DOMContentLoaded", async () => {
     const googleBtn = document.getElementById("googleSignInBtn");
     if(googleBtn) googleBtn.addEventListener("click", handleGoogleLogin);
     
-    const authBtn = document.getElementById("authBtn");
-    if(authBtn) authBtn.addEventListener("click", () => document.getElementById("authModal").style.display = "flex"); // if #authModal exists, update if renamed
+    const openAuthBtn = document.getElementById("openAuthBtn");
+    if(openAuthBtn) openAuthBtn.addEventListener("click", () => {
+        document.getElementById("authModalOverlay").style.display = "flex";
+    });
+
+    const adminPinBtn = document.getElementById("adminPinBtn");
+    if(adminPinBtn) adminPinBtn.addEventListener("click", () => {
+        document.getElementById("adminPinOverlay").style.display = "flex";
+        setTimeout(() => document.querySelector(".pin-digit")?.focus(), 100);
+    });
+
+    const pinCancelBtn = document.getElementById("pinCancelBtn");
+    if(pinCancelBtn) pinCancelBtn.addEventListener("click", () => {
+        document.getElementById("adminPinOverlay").style.display = "none";
+    });
+
+    const pinVerifyBtn = document.getElementById("pinVerifyBtn");
+    if(pinVerifyBtn) pinVerifyBtn.addEventListener("click", checkPIN);
+
+    const openUpiModalBtn = document.getElementById("openUpiModalBtn");
+    if(openUpiModalBtn) openUpiModalBtn.addEventListener("click", () => {
+        document.getElementById("upiModalOverlay").style.display = "flex";
+    });
+
+    const footerSupportBtn = document.getElementById("footerSupportBtn");
+    if(footerSupportBtn) footerSupportBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        document.getElementById("upiModalOverlay").style.display = "flex";
+    });
+
+    const confirmSupportBtn = document.getElementById("confirmSupportBtn");
+    if(confirmSupportBtn) confirmSupportBtn.addEventListener("click", () => {
+        toast("Thank you for supporting VictorX!", "success");
+        document.getElementById("upiModalOverlay").style.display = "none";
+    });
+
+    const openApiKeysBtn = document.getElementById("openApiKeysBtn");
+    if(openApiKeysBtn) openApiKeysBtn.addEventListener("click", openKeysModal);
+
+    const openConnectedBtn = document.getElementById("openConnectedBtn");
+    if(openConnectedBtn) openConnectedBtn.addEventListener("click", openKeysModal);
+
+    const dropdownKeysBtn = document.getElementById("dropdownKeysBtn");
+    if(dropdownKeysBtn) dropdownKeysBtn.addEventListener("click", openKeysModal);
+
+    const pgApiKeysBtn = document.getElementById("pgApiKeysBtn");
+    if(pgApiKeysBtn) pgApiKeysBtn.addEventListener("click", openKeysModal);
+
+    const heroPlaygroundBtn = document.getElementById("heroPlaygroundBtn");
+    if(heroPlaygroundBtn) heroPlaygroundBtn.addEventListener("click", () => openPlayground());
+
+    const heroPlaygroundBtnNav = document.getElementById("heroPlaygroundBtnNav");
+    if(heroPlaygroundBtnNav) heroPlaygroundBtnNav.addEventListener("click", (e) => {
+        e.preventDefault();
+        openPlayground();
+    });
+
+    const dropdownDockBtn = document.getElementById("dropdownDockBtn");
+    if(dropdownDockBtn) dropdownDockBtn.addEventListener("click", () => {
+        document.getElementById("userDropdown").style.display = "none";
+        const dockEl = document.getElementById("mydock");
+        if(dockEl) dockEl.scrollIntoView({ behavior: "smooth" });
+    });
     
     const userMenu = document.getElementById("userMenu");
     const userDropdown = document.getElementById("userDropdown");
     if(userMenu) {
-        userMenu.addEventListener("click", () => {
+        userMenu.addEventListener("click", (e) => {
+            e.stopPropagation();
             userDropdown.style.display = userDropdown.style.display === "none" || !userDropdown.style.display ? "block" : "none";
         });
     }
     
-    const logoutBtn = document.getElementById("logoutBtn"); // Assuming this exists inside dropdown
-    if(logoutBtn) logoutBtn.addEventListener("click", handleLogout);
-    
-    // Global Event Delegation for dynamic buttons
     document.addEventListener("click", (e) => {
-        const pullBtn = e.target.closest(".open-pull-modal");
-        if(pullBtn) {
+        if(userDropdown && !e.target.closest("#userMenu")) {
+            userDropdown.style.display = "none";
+        }
+    });
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if(logoutBtn) logoutBtn.addEventListener("click", handleLogout);
+
+    const clearTermBtn = document.getElementById("clearTermBtn");
+    if(clearTermBtn) {
+        clearTermBtn.addEventListener("click", () => {
+            const history = document.getElementById("termHistory");
+            if(history) history.innerHTML = "";
+            appendTermLine("Terminal cleared.", "text-slate-500");
+        });
+    }
+
+    document.querySelectorAll(".partner-card .btn, .partner-card button").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            const card = e.currentTarget.closest(".partner-card");
+            if(card) {
+                const title = card.querySelector("h3")?.innerText || "";
+                const select = document.getElementById("partnerTier");
+                if(select) {
+                    if(title.includes("Gold")) select.value = "Gold Partner";
+                    else if(title.includes("Silver")) select.value = "Silver Partner";
+                    else if(title.includes("Bronze")) select.value = "Bronze Partner";
+                }
+            }
+            const form = document.getElementById("partnerForm");
+            if(form) form.scrollIntoView({ behavior: "smooth" });
+        });
+    });
+
+    const requestSlotBtn = document.getElementById("requestSlotBtn");
+    if(requestSlotBtn) {
+        requestSlotBtn.addEventListener("click", () => {
+            const form = document.getElementById("partnerForm");
+            if(form) form.scrollIntoView({ behavior: "smooth" });
+            else toast("Ad slot inquiry requested", "info");
+        });
+    }
+    
+    document.addEventListener("click", (e) => {
+        const pullBtn = e.target.closest(".open-pull-modal") || e.target.closest(".btn-pull");
+        if(pullBtn && !pullBtn.classList.contains("installed")) {
             const modelId = pullBtn.getAttribute("data-model");
             if(modelId) openPullModal(modelId);
         }
@@ -958,32 +924,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         const pgBtn = e.target.closest(".launch-playground-btn");
         if(pgBtn) {
             const modelId = pgBtn.getAttribute("data-model");
-            if(modelId) openPlayground(modelId);
+            openPlayground(modelId);
         }
         
-        // Modal Close logic
         if(e.target.closest(".btn-close")) {
-            const modal = e.target.closest(".fixed.inset-0");
+            const modal = e.target.closest(".modal-overlay") || e.target.closest(".pin-overlay");
             if(modal) modal.style.display = "none";
+        }
+
+        if(e.target.classList.contains("modal-overlay") || e.target.classList.contains("pin-overlay")) {
+            e.target.style.display = "none";
         }
     });
 
-    // Navigation (Sections using style.display)
-    document.querySelectorAll(".nav-link").forEach(link => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("text-indigo-400"));
-            link.classList.add("text-indigo-400");
-            
-            document.querySelectorAll(".section-container").forEach(s => s.style.display = "none");
-            const target = link.dataset.target;
-            if(document.getElementById(target)) document.getElementById(target).style.display = "block";
-            
-            if(target === 'sectionMyDock') renderInstalledGrid();
-        });
-    });
-
-    // Search & Filter
     const searchInput = document.getElementById("searchInput");
     if(searchInput) {
         searchInput.addEventListener("input", (e) => {
@@ -1000,7 +953,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // CLI
     const cliInput = document.getElementById("cliInput");
     if(cliInput) {
         cliInput.addEventListener("keydown", (e) => {
@@ -1009,15 +961,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 cliInput.value = "";
             }
         });
-        appendTermLine("VictorX Interactive CLI v1.0.0", "text-slate-400");
+        appendTermLine("VictorX Interactive CLI v1.4.0", "text-slate-400");
         appendTermLine("Type 'help' to see available commands.", "text-slate-500 mb-4");
     }
 
-    // Playground Form
     const pgForm = document.getElementById("pgForm");
-    if(pgForm) {
-        pgForm.addEventListener("submit", handlePlaygroundSend);
-    }
+    if(pgForm) pgForm.addEventListener("submit", handlePlaygroundSend);
+
     const pgInput = document.getElementById("pgInput");
     if(pgInput) {
         pgInput.addEventListener("keydown", (e) => {
@@ -1028,7 +978,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Admin PIN & Dashboard
     setupAdminPIN();
     
     document.querySelectorAll(".admin-tabs .tab-btn").forEach(btn => {
@@ -1037,55 +986,53 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     });
     
-    // Legal Tabs
     document.querySelectorAll(".legal-tabs .tab-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             document.querySelectorAll(".legal-panel").forEach(p => p.style.display = "none");
-            document.querySelectorAll(".legal-tabs .tab-btn").forEach(b => b.classList.remove("bg-slate-800", "text-white"));
+            document.querySelectorAll(".legal-tabs .tab-btn").forEach(b => b.classList.remove("active"));
             const target = e.currentTarget.dataset.target;
-            document.getElementById(target).style.display = "block";
-            e.currentTarget.classList.add("bg-slate-800", "text-white");
+            const targetPanel = document.getElementById(target);
+            if(targetPanel) targetPanel.style.display = "block";
+            e.currentTarget.classList.add("active");
         });
     });
 
-    // API Keys logic
     const apiKeysForm = document.getElementById("apiKeysForm");
     if(apiKeysForm) apiKeysForm.addEventListener("submit", saveKeys);
-    
+
+    const saveApiKeysBtn = document.getElementById("saveApiKeysBtn");
+    if(saveApiKeysBtn) saveApiKeysBtn.addEventListener("click", saveKeys);
+
     const clearApiKeysBtn = document.getElementById("clearApiKeysBtn");
     if(clearApiKeysBtn) clearApiKeysBtn.addEventListener("click", clearKeys);
     
-    // Toggle Password
     document.querySelectorAll(".toggle-password").forEach(btn => {
         btn.addEventListener("click", (e) => {
-            // Assume the previous sibling is the input
             const input = e.currentTarget.parentElement.querySelector("input");
             if(input) {
                 if(input.type === "password") {
                     input.type = "text";
-                    e.currentTarget.innerHTML = `<svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>`;
+                    e.currentTarget.innerText = "🔒";
                 } else {
                     input.type = "password";
-                    e.currentTarget.innerHTML = `<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
+                    e.currentTarget.innerText = "👁";
                 }
             }
         });
     });
 
-    // Partner Form
     const partnerForm = document.getElementById("partnerForm");
     if(partnerForm) {
         partnerForm.addEventListener("submit", (e) => {
             e.preventDefault();
-            toast("Partnership inquiry submitted successfully", "success");
+            toast("Partnership inquiry submitted successfully!", "success");
             partnerForm.reset();
         });
     }
 
-    // Global Shortcuts
     document.addEventListener("keydown", (e) => {
         if(e.key === "Escape") {
-            document.querySelectorAll(".fixed.inset-0").forEach(m => m.style.display = "none");
+            document.querySelectorAll(".modal-overlay, .pin-overlay").forEach(m => m.style.display = "none");
         }
         if(e.ctrlKey && e.key === "k") {
             e.preventDefault();
@@ -1093,21 +1040,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         if(e.ctrlKey && e.key === "p") {
             e.preventDefault();
-            if(state.installed.size > 0) {
-                openPlayground(Array.from(state.installed)[0]);
-            }
+            openPlayground();
         }
     });
-
-    // Scroll Animations
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if(entry.isIntersecting) {
-                entry.target.classList.add("opacity-100", "translate-y-0");
-                entry.target.classList.remove("opacity-0", "translate-y-10");
-            }
-        });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll(".animate-on-scroll").forEach(el => observer.observe(el));
 });
