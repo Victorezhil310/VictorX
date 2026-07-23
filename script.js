@@ -32,8 +32,12 @@ const MODELS = [
   { id: "gpt-oss",         name: "GPT-OSS", size: "20B / 120B", port: "ollama", tags: ["tools", "thinking"], haul: 11100000, added: 12, desc: "Open-weight models designed for reasoning and agentic tasks.", apiModel: "openai/gpt-oss-120b" },
   { id: "phi4",            name: "Phi-4", size: "14B", port: "microsoft", tags: ["reasoning"], haul: 7600000, added: 13, desc: "14B parameter state-of-the-art open reasoning model from Microsoft.", apiModel: "microsoft/phi-4" },
   { id: "codellama",       name: "CodeLlama", size: "7B - 70B", port: "meta", tags: ["code"], haul: 5800000, added: 14, desc: "Meta's code completion model for text-to-code generation.", apiModel: "meta-llama/codellama-13b-instruct" },
-  { id: "deepseek-v3",     name: "DeepSeek V3", size: "671B MoE", port: "deepseek", tags: ["thinking", "code"], haul: 3800000, added: 15, desc: "Strong Mixture-of-Experts model with 37B activated parameters per token.", apiModel: "deepseek/deepseek-v3" },
-  { id: "mixtral",         name: "Mixtral 8x7B", size: "8x7B / 8x22B", port: "mistral", tags: ["tools", "reasoning"], haul: 2700000, added: 16, desc: "Sparse mixture of experts open weight model by Mistral AI.", apiModel: "mistralai/mixtral-8x7b-instruct" }
+  { id: "llama3.3",        name: "Llama 3.3", size: "70B", port: "meta", tags: ["reasoning", "tools"], haul: 5400000, added: 17, desc: "State of the art open reasoning model comparable to top proprietary APIs.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
+  { id: "command-r",       name: "Command R+", size: "104B", port: "ollama", tags: ["tools", "enterprise"], haul: 1500000, added: 18, desc: "Cohere's open model optimized for RAG and enterprise tool use.", apiModel: "cohere/command-r-plus" },
+  { id: "starcoder2",      name: "StarCoder 2", size: "15B", port: "ollama", tags: ["code"], haul: 2900000, added: 19, desc: "Transparently trained code LLM family by BigCode.", apiModel: "bigcode/starcoder2-15b" },
+  { id: "whisper-v3",      name: "Whisper V3", size: "Large", port: "google", tags: ["audio"], haul: 3100000, added: 20, desc: "State of the art speech-to-text multilingual transcription model.", apiModel: "openai/whisper-large-v3" },
+  { id: "minimax-m2.5",    name: "MiniMax M2.5", size: "Cloud", port: "ollama", tags: ["thinking", "code"], haul: 2300000, added: 21, desc: "State-of-the-art model for real-world productivity & coding.", apiModel: "minimax/minimax-m2.5" },
+  { id: "qwen2.5-vl",      name: "Qwen 2.5 VL", size: "72B Vision", port: "qwen", tags: ["vision", "multimodal"], haul: 3400000, added: 22, desc: "Flagship vision-language model of Qwen family.", apiModel: "qwen/qwen-2.5-vl-72b-instruct" }
 ];
 
 const ADMIN_VERIFICATION_PIN = '20032004';
@@ -692,7 +696,7 @@ function openAdminDashboard() {
 }
 
 // Event Binding Master
-document.addEventListener("DOMContentLoaded", () => {
+function initApp() {
   updateStats();
   renderChips();
   renderGrid();
@@ -701,6 +705,15 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuth();
   initApidogWorkbench();
   setupAdminPIN();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initApp);
+} else {
+  initApp();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
 
   // Topbar Buttons
   document.getElementById("openAuthBtn")?.addEventListener("click", () => openModal("authModalOverlay"));
