@@ -22,5 +22,7 @@
   ],
   "author": "Victor Dock Engine <arasu9629hf@okhdfcbank>",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
 }
