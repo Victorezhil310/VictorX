@@ -288,13 +288,27 @@ function startPullSimulation(m) {
 
     if(pct >= 100) {
       clearInterval(timer);
-      state.installed.add(m.id);
-      saveState();
-      updateStats();
-      renderInstalledGrid();
-      renderGrid();
-      toast(`Successfully docked ${m.name}`, "success");
-      closeModal("pullModalOverlay");
+      fetch('/api/pull', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modelId: m.id })
+      }).then(res => {
+        if(res.ok) {
+          state.installed.add(m.id);
+          saveState();
+          updateStats();
+          renderInstalledGrid();
+          renderGrid();
+          toast(`Successfully docked ${m.name}`, "success");
+          closeModal("pullModalOverlay");
+        } else {
+          toast("Failed to pull weights.", "error");
+          if(btn) { btn.disabled = false; btn.innerText = "Retry Pull"; }
+        }
+      }).catch(e => {
+        toast("Error pulling weights.", "error");
+        if(btn) { btn.disabled = false; btn.innerText = "Retry Pull"; }
+      });
     }
   }, 250);
 }
@@ -347,7 +361,6 @@ function initApp() {
   initApidogWorkbench();
   setupAdminPIN();
 
-  // Search filter
   document.getElementById("searchInput")?.addEventListener("input", (e) => {
     state.search = e.target.value;
     renderGrid();
@@ -358,6 +371,41 @@ function initApp() {
   document.getElementById("openApiKeysBtn")?.addEventListener("click", () => openModal("apiKeysModalOverlay"));
   document.getElementById("pinVerifyBtn")?.addEventListener("click", checkPIN);
   document.getElementById("pinCancelBtn")?.addEventListener("click", () => closeModal("adminPinOverlay"));
+
+  // API Playground Form Submit
+  document.getElementById("pgForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const inputEl = document.getElementById("pgInput");
+    const historyEl = document.getElementById("pgHistory");
+    const modelSelect = document.getElementById("pgModelSelect");
+    const prompt = inputEl.value.trim();
+    if(!prompt) return;
+    
+    historyEl.innerHTML += `<div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);"><strong>You:</strong> ${escapeHtml(prompt)}</div>`;
+    inputEl.value = "";
+    
+    const loadingId = 'loading-' + Date.now();
+    historyEl.innerHTML += `<div id="${loadingId}" style="margin-bottom:8px; color:var(--text-secondary);"><strong>VictorX:</strong> Thinking...</div>`;
+    historyEl.scrollTop = historyEl.scrollHeight;
+    
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: modelSelect.value,
+          messages: [{ role: 'user', content: prompt }],
+          apiKey: state.keys.openrouter || ""
+        })
+      });
+      const data = await res.json();
+      const aiReply = data.choices ? data.choices[0].message.content : (data.error || "Error");
+      document.getElementById(loadingId).innerHTML = `<strong>VictorX:</strong> ${escapeHtml(aiReply).replace(/\\n/g, '<br>')}`;
+    } catch(e) {
+      document.getElementById(loadingId).innerHTML = `<strong>VictorX:</strong> Error connecting to API`;
+    }
+    historyEl.scrollTop = historyEl.scrollHeight;
+  });
 
   // Event Delegation
   document.addEventListener("click", (e) => {
