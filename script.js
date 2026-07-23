@@ -38,12 +38,11 @@ const ADMIN_VERIFICATION = '20032004';
 const state = {
   search: "",
   port: "all",
-  sort: "popular",
+  sort: "most_hauled",
   connected: new Set(JSON.parse(localStorage.getItem("victor_connected") || '["ollama","hf","openrouter","meta"]')),
   user: JSON.parse(localStorage.getItem("victor_user") || 'null'),
   keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","ollama":"http://localhost:11434"}'),
   installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["llama-3.1-8b","mistral-7b"]')),
-  activeTab: "cli",
   currentPullingModel: null,
   isAdmin: false,
   adminAuthenticated: false
@@ -161,15 +160,17 @@ function renderGrid() {
   });
 
   filtered.sort((a,b) => {
-    if(state.sort === "popular") return b.haul - a.haul;
-    if(state.sort === "new") return a.added - b.added;
-    if(state.sort === "size") return parseFloat(a.size) - parseFloat(b.size); // Naive sort
-    return a.name.localeCompare(b.name);
+    if(state.sort === "most_hauled") return b.haul - a.haul;
+    if(state.sort === "newest") return a.added - b.added;
+    if(state.sort === "size_asc") return parseFloat(a.size) - parseFloat(b.size); // Naive sort
+    if(state.sort === "size_desc") return parseFloat(b.size) - parseFloat(a.size); // Naive sort
+    if(state.sort === "name_asc") return a.name.localeCompare(b.name);
+    return b.haul - a.haul;
   });
 
   g.innerHTML = "";
   if(filtered.length === 0) {
-    g.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500">No models found matching your criteria.</div>`;
+    g.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">No models found matching your criteria.</div>`;
     return;
   }
 
@@ -178,7 +179,7 @@ function renderGrid() {
     if(i > 0 && i % 6 === 0 && sIdx < SPONSORS.length) {
       const s = SPONSORS[sIdx++];
       g.innerHTML += `
-        <div class="bg-gradient-to-br from-indigo-900/40 to-slate-900/60 border border-indigo-500/20 rounded-2xl p-6 hover:border-indigo-500/40 transition-all flex flex-col justify-between group">
+        <div class="model-card bg-gradient-to-br from-indigo-900/40 to-slate-900/60 border border-indigo-500/20 rounded-2xl p-6 hover:border-indigo-500/40 transition-all flex flex-col justify-between group">
           <div>
             <div class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Sponsored</div>
             <h3 class="text-xl font-semibold text-white mb-2">${escapeHtml(s.sponsor)}</h3>
@@ -195,7 +196,7 @@ function renderGrid() {
     const isInstalled = state.installed.has(m.id);
     
     g.innerHTML += `
-      <div class="bg-slate-900/50 border border-white/5 rounded-2xl p-6 hover:bg-slate-800/60 transition-all flex flex-col justify-between group opacity-0 animate-fade-in" style="animation-delay: ${i*50}ms">
+      <div class="model-card bg-slate-900/50 border border-white/5 rounded-2xl p-6 hover:bg-slate-800/60 transition-all flex flex-col justify-between group opacity-0 animate-fade-in" data-model="${m.id}" style="animation-delay: ${i*50}ms">
         <div>
           <div class="flex justify-between items-start mb-3">
             <div class="flex items-center gap-2">
@@ -216,10 +217,10 @@ function renderGrid() {
         </div>
         <div class="flex gap-2">
           ${isInstalled 
-            ? `<button onclick="openPlayground('${m.id}')" class="flex-1 py-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-lg transition-colors font-medium text-sm flex justify-center items-center gap-2">
+            ? `<button data-model="${m.id}" class="launch-playground-btn flex-1 py-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-lg transition-colors font-medium text-sm flex justify-center items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Run
                </button>`
-            : `<button onclick="openPullModal('${m.id}')" class="flex-1 py-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white rounded-lg transition-colors font-medium text-sm flex justify-center items-center gap-2">
+            : `<button data-model="${m.id}" class="open-pull-modal flex-1 py-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white rounded-lg transition-colors font-medium text-sm flex justify-center items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Pull
                </button>`
           }
@@ -234,13 +235,13 @@ function renderInstalledGrid() {
     
     if(state.installed.size === 0) {
         g.innerHTML = `
-            <div class="col-span-full py-16 text-center">
+            <div class="col-span-full py-16 text-center" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
                 <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-700">
                     <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                 </div>
                 <h3 class="text-xl font-bold text-slate-300 mb-2">No models installed</h3>
                 <p class="text-slate-500 mb-6">Explore the registry to pull your first model.</p>
-                <button onclick="document.getElementById('navRegistry').click()" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors">Browse Registry</button>
+                <button onclick="document.querySelector('.nav-link[data-target=\\'sectionRegistry\\']')?.click()" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors">Browse Registry</button>
             </div>
         `;
         return;
@@ -252,7 +253,7 @@ function renderInstalledGrid() {
         if(!m) return;
         const p = portInfo(m.port);
         g.innerHTML += `
-            <div class="bg-slate-900/50 border border-indigo-500/20 rounded-2xl p-6 flex flex-col justify-between group">
+            <div class="model-card bg-slate-900/50 border border-indigo-500/20 rounded-2xl p-6 flex flex-col justify-between group" data-model="${m.id}">
                 <div>
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex items-center gap-2">
@@ -267,7 +268,7 @@ function renderInstalledGrid() {
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="openPlayground('${m.id}')" class="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors text-sm font-medium">Launch</button>
+                    <button data-model="${m.id}" class="launch-playground-btn flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors text-sm font-medium">Launch</button>
                     <button onclick="removeModel('${m.id}')" class="p-2 bg-slate-800 text-red-400 rounded-lg hover:bg-red-900/50 transition-colors" title="Remove model">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
@@ -304,7 +305,11 @@ function initAuth() {
     if(state.user) {
         if(authBtn) authBtn.style.display = "none";
         if(userMenu) userMenu.style.display = "flex";
-        if(userAvatar) userAvatar.innerText = state.user.username ? state.user.username.charAt(0).toUpperCase() : "?";
+        if(userAvatar) {
+            // Using placeholder image based on initial
+            const initial = state.user.username ? state.user.username.charAt(0).toUpperCase() : "?";
+            userAvatar.src = `https://ui-avatars.com/api/?name=${initial}&background=random`;
+        }
     } else {
         if(authBtn) authBtn.style.display = "flex";
         if(userMenu) userMenu.style.display = "none";
@@ -313,7 +318,7 @@ function initAuth() {
 
 function handleLogin(e) {
     e.preventDefault();
-    const identifier = document.getElementById("loginEmail").value;
+    const identifier = document.getElementById("loginUsername").value;
     const pass = document.getElementById("loginPassword").value;
     
     const users = getUsersDB();
@@ -332,9 +337,16 @@ function handleLogin(e) {
 
 function handleRegister(e) {
     e.preventDefault();
+    const fullName = document.getElementById("regFullName").value;
     const username = document.getElementById("regUsername").value;
     const email = document.getElementById("regEmail").value;
     const pass = document.getElementById("regPassword").value;
+    const passConfirm = document.getElementById("regConfirmPassword").value;
+    
+    if(pass !== passConfirm) {
+        toast("Passwords do not match", "error");
+        return;
+    }
     
     const users = getUsersDB();
     if(users.find(u => u.username === username)) {
@@ -347,6 +359,7 @@ function handleRegister(e) {
     }
     
     const newUser = {
+        fullName,
         username,
         email,
         password: btoa(pass),
@@ -379,11 +392,25 @@ function handleGuestLogin() {
     toast("Logged in as Guest");
 }
 
+function handleGoogleLogin() {
+    const googleUser = {
+        username: "GoogleUser_" + Math.floor(Math.random() * 1000),
+        email: "user@gmail.com",
+        role: "user",
+        provider: "google"
+    };
+    state.user = googleUser;
+    localStorage.setItem("victor_user", JSON.stringify(googleUser));
+    document.getElementById("authModal").style.display = "none";
+    initAuth();
+    toast("Logged in with Google");
+}
+
 function handleLogout() {
     state.user = null;
     localStorage.removeItem("victor_user");
     state.adminAuthenticated = false;
-    document.getElementById("userDropdown").classList.add("hidden");
+    document.getElementById("userDropdown").style.display = "none";
     initAuth();
     toast("Logged out");
 }
@@ -417,7 +444,7 @@ function checkPIN() {
             openAdminDashboard();
             toast("Admin access granted", "success");
         } else {
-            const container = document.querySelector("#adminPinOverlay .bg-slate-900");
+            const container = document.querySelector("#adminPinOverlay > div");
             container.classList.add("animate-shake");
             setTimeout(() => container.classList.remove("animate-shake"), 500);
             inputs.forEach(i => i.value = "");
@@ -442,8 +469,10 @@ function renderAdminUsers() {
     if(!tbody) return;
     const users = getUsersDB();
     
-    document.getElementById("adminTotalUsers").innerText = users.length;
-    document.getElementById("adminActiveSessions").innerText = state.user ? "1" : "0";
+    const countTotal = document.getElementById("adminTotalUsers");
+    const countActive = document.getElementById("adminActiveSessions");
+    if(countTotal) countTotal.innerText = users.length;
+    if(countActive) countActive.innerText = state.user ? "1" : "0";
     
     tbody.innerHTML = "";
     users.forEach((u, i) => {
@@ -463,14 +492,15 @@ function renderAdminUsers() {
 }
 
 function switchAdminTab(tabId) {
-    document.querySelectorAll(".admin-panel").forEach(p => p.classList.add("hidden"));
-    document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.remove("bg-slate-800", "text-white"));
+    document.querySelectorAll(".admin-panel").forEach(p => p.style.display = "none");
+    document.querySelectorAll(".admin-tabs .tab-btn").forEach(b => b.classList.remove("bg-slate-800", "text-white"));
     
-    document.getElementById(tabId).classList.remove("hidden");
-    document.querySelector(`[data-target="${tabId}"]`).classList.add("bg-slate-800", "text-white");
+    const targetPanel = document.getElementById(tabId);
+    if(targetPanel) targetPanel.style.display = "block";
+    const activeTab = document.querySelector(`.admin-tabs .tab-btn[data-target="${tabId}"]`);
+    if(activeTab) activeTab.classList.add("bg-slate-800", "text-white");
     
     if(tabId === 'adminUsersPanel') renderAdminUsers();
-    // Add logic for other admin tabs as needed
 }
 
 // Pull Simulation
@@ -479,28 +509,58 @@ function openPullModal(modelId) {
     if(!state.currentPullingModel) return;
     
     const m = state.currentPullingModel;
-    document.getElementById("pullModalTitle").innerText = `Pulling ${m.name} (${m.size})`;
-    document.getElementById("pullModal").style.display = "flex";
+    const p = portInfo(m.port);
     
-    // Generate snippets
-    document.getElementById("snippetCli").innerText = `victor pull ${m.id}`;
-    document.getElementById("snippetPython").innerText = `import victor\n\nmodel = victor.pull("${m.id}")\nprint(f"Loaded {model.name}")`;
-    document.getElementById("snippetJs").innerText = `import { pull } from 'victorx';\n\nconst model = await pull('${m.id}');`;
+    document.getElementById("pullModalTitle").innerText = `Pulling ${m.name} (${m.size})`;
+    document.getElementById("pullModalDesc").innerText = m.desc;
+    document.getElementById("pullModalPort").innerText = p.name;
+    document.getElementById("pullModalOverlay").style.display = "flex";
+    
+    // Reset Progress
+    document.getElementById("pullProgressBar").style.width = "0%";
+    const layers = document.getElementById("pullLayers");
+    if(layers) layers.innerHTML = "";
+    
+    // Generate snippets (assuming #pullCodeSnippet exists or similar, adapt as needed)
+    const snippetEl = document.getElementById("pullCodeSnippet");
+    if(snippetEl) snippetEl.innerText = `victor pull ${m.id}`;
     
     startPullSimulation();
 }
 
 function startPullSimulation() {
-    const layers = [
-        { name: "config.json", size: 1024, el: document.getElementById("layer1Progress") },
-        { name: "safetensors.index.json", size: 24000, el: document.getElementById("layer2Progress") },
-        { name: "weight_shards.bin", size: 1024 * 1024 * 100, el: document.getElementById("layer3Progress") }, // pseudo size
-        { name: "tokenizer.model", size: 1024 * 500, el: document.getElementById("layer4Progress") }
+    const m = state.currentPullingModel;
+    const layerData = [
+        { name: "config.json", size: 1024 },
+        { name: "safetensors.index.json", size: 24000 },
+        { name: "weight_shards.bin", size: 1024 * 1024 * 100 }, 
+        { name: "tokenizer.model", size: 1024 * 500 }
     ];
     
+    const layersContainer = document.getElementById("pullLayers");
+    layersContainer.innerHTML = "";
+    
+    const layerEls = layerData.map((ld, i) => {
+        const div = document.createElement("div");
+        div.className = "mb-2";
+        div.innerHTML = `
+            <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">${escapeHtml(ld.name)}</span>
+                <span class="text-slate-500">0%</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-1.5">
+                <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 0%" id="layerProgress_${i}"></div>
+            </div>
+        `;
+        layersContainer.appendChild(div);
+        return { ...ld, el: document.getElementById(`layerProgress_${i}`), textEl: div.querySelector("span:nth-child(2)") };
+    });
+    
     const btn = document.getElementById("pullConfirmBtn");
-    btn.disabled = true;
-    btn.innerText = "Pulling...";
+    if(btn) {
+        btn.disabled = true;
+        btn.innerText = "Pulling...";
+    }
     
     let layerIdx = 0;
     
@@ -512,26 +572,34 @@ function startPullSimulation() {
                 p = 100;
                 clearInterval(interval);
                 layer.el.style.width = "100%";
+                layer.textEl.innerText = "100%";
                 layer.el.classList.add("bg-green-500");
                 layer.el.classList.remove("bg-indigo-500");
+                document.getElementById("pullProgressBar").style.width = `${((layerIdx + 1) / layerData.length) * 100}%`;
                 setTimeout(cb, 200);
             } else {
                 layer.el.style.width = `${p}%`;
+                layer.textEl.innerText = `${Math.floor(p)}%`;
             }
         }, 100);
     }
     
     function nextLayer() {
-        if(layerIdx < layers.length) {
-            animateLayer(layers[layerIdx], () => {
+        if(layerIdx < layerEls.length) {
+            animateLayer(layerEls[layerIdx], () => {
                 layerIdx++;
                 nextLayer();
             });
         } else {
             // Complete
-            btn.innerText = "Complete";
-            btn.classList.add("bg-green-600");
-            btn.classList.remove("bg-indigo-600");
+            if(btn) {
+                btn.innerText = "Complete";
+                btn.classList.add("bg-green-600");
+                btn.classList.remove("bg-indigo-600");
+            }
+            
+            const pgBtn = document.getElementById("pullPlaygroundBtn");
+            if(pgBtn) pgBtn.style.display = "inline-block";
             
             setTimeout(() => {
                 state.installed.add(state.currentPullingModel.id);
@@ -548,22 +616,16 @@ function startPullSimulation() {
                 }
                 
                 toast(`Successfully pulled ${state.currentPullingModel.id}`, "success");
-                document.getElementById("pullModal").style.display = "none";
                 updateStats();
                 renderInstalledGrid();
                 renderGrid();
                 
-                // reset modal state
-                layers.forEach(l => {
-                    l.el.style.width = "0%";
-                    l.el.classList.add("bg-indigo-500");
-                    l.el.classList.remove("bg-green-500");
-                });
-                btn.disabled = false;
-                btn.innerText = "Pulling...";
-                btn.classList.add("bg-indigo-600");
-                btn.classList.remove("bg-green-600");
-            }, 1000);
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Close";
+                    btn.onclick = () => document.getElementById("pullModalOverlay").style.display = "none";
+                }
+            }, 500);
         }
     }
     
@@ -648,6 +710,7 @@ function processCliCommand(input) {
 
 function appendTermLine(text, className = "text-slate-300") {
     const out = document.getElementById("cliOutput");
+    if(!out) return;
     const line = document.createElement("div");
     line.className = className;
     line.innerHTML = text; // Allow pre-formatted html
@@ -664,26 +727,32 @@ function openPlayground(modelId) {
         return;
     }
     
-    document.getElementById("playgroundModal").style.display = "flex";
+    document.getElementById("playgroundModalOverlay").style.display = "flex";
     
     const select = document.getElementById("pgModelSelect");
-    select.innerHTML = "";
-    Array.from(state.installed).forEach(id => {
-        const m = MODELS.find(x => x.id === id);
-        if(m) {
-            select.innerHTML += `<option value="${m.id}" ${m.id === modelId ? 'selected' : ''}>${m.name} (${m.size})</option>`;
-        }
-    });
+    if(select) {
+        select.innerHTML = "";
+        Array.from(state.installed).forEach(id => {
+            const m = MODELS.find(x => x.id === id);
+            if(m) {
+                select.innerHTML += `<option value="${m.id}" ${m.id === modelId ? 'selected' : ''}>${m.name} (${m.size})</option>`;
+            }
+        });
+    }
     
-    document.getElementById("pgChatArea").innerHTML = `
-        <div class="text-center text-slate-500 my-8">
-            System: Connected to ${modelId}. Type a message to begin.
-        </div>
-    `;
+    const history = document.getElementById("pgHistory");
+    if(history) {
+        history.innerHTML = `
+            <div class="msg system text-center text-slate-500 my-8">
+                System: Connected to ${modelId}. Type a message to begin.
+            </div>
+        `;
+    }
     playgroundChatHistory = [];
 }
 
-async function handlePlaygroundSend() {
+async function handlePlaygroundSend(e) {
+    if(e) e.preventDefault();
     const input = document.getElementById("pgInput");
     const msg = input.value.trim();
     if(!msg) return;
@@ -695,13 +764,10 @@ async function handlePlaygroundSend() {
     appendChatMessage("user", msg);
     playgroundChatHistory.push({ role: "user", content: msg });
     
-    const btn = document.getElementById("pgSendBtn");
-    btn.disabled = true;
-    
     // Simulated loading
     const loadingId = "msg-" + Date.now();
-    const chatArea = document.getElementById("pgChatArea");
-    chatArea.innerHTML += `<div id="${loadingId}" class="flex gap-4 mb-6"><div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs shrink-0">AI</div><div class="bg-slate-800 rounded-2xl rounded-tl-none p-4 text-slate-300 animate-pulse">Thinking...</div></div>`;
+    const chatArea = document.getElementById("pgHistory");
+    chatArea.innerHTML += `<div id="${loadingId}" class="msg flex gap-4 mb-6"><div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs shrink-0">AI</div><div class="bg-slate-800 rounded-2xl rounded-tl-none p-4 text-slate-300 animate-pulse">Thinking...</div></div>`;
     chatArea.scrollTop = chatArea.scrollHeight;
     
     try {
@@ -741,16 +807,14 @@ async function handlePlaygroundSend() {
         document.getElementById(loadingId).remove();
         appendChatMessage("system", `Error: ${err.message}. Please check your API keys or connection.`);
     }
-    
-    btn.disabled = false;
 }
 
 function appendChatMessage(role, content) {
-    const area = document.getElementById("pgChatArea");
+    const area = document.getElementById("pgHistory");
     let html = "";
     if(role === "user") {
         html = `
-        <div class="flex gap-4 mb-6 justify-end">
+        <div class="msg user flex gap-4 mb-6 justify-end">
             <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-4 max-w-[80%]">
                 ${escapeHtml(content)}
             </div>
@@ -758,14 +822,14 @@ function appendChatMessage(role, content) {
         </div>`;
     } else if (role === "assistant") {
         html = `
-        <div class="flex gap-4 mb-6">
+        <div class="msg assistant flex gap-4 mb-6">
             <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs shrink-0 shadow-[0_0_10px_rgba(79,70,229,0.5)]">AI</div>
             <div class="bg-slate-800 border border-white/5 rounded-2xl rounded-tl-none p-4 text-slate-300 max-w-[80%] whitespace-pre-wrap">
                 ${escapeHtml(content)}
             </div>
         </div>`;
     } else {
-        html = `<div class="text-center text-red-400 my-4 text-sm">${escapeHtml(content)}</div>`;
+        html = `<div class="msg system text-center text-red-400 my-4 text-sm">${escapeHtml(content)}</div>`;
     }
     
     area.innerHTML += html;
@@ -782,40 +846,41 @@ function generateSimulatedResponse(prompt, modelId) {
 
 // Key Manager
 function openKeysModal() {
-    document.getElementById("keysModal").style.display = "flex";
+    document.getElementById("apiKeysModalOverlay").style.display = "flex";
     document.getElementById("keyOpenRouter").value = state.keys.openrouter || "";
     document.getElementById("keyOpenAI").value = state.keys.openai || "";
     document.getElementById("keyGemini").value = state.keys.gemini || "";
-    document.getElementById("keyOllama").value = state.keys.ollama || "http://localhost:11434";
+    document.getElementById("urlOllama").value = state.keys.ollama || "http://localhost:11434";
     updateKeyStatusDisplay();
 }
 
-function saveKeys() {
+function saveKeys(e) {
+    if(e) e.preventDefault();
     state.keys = {
         openrouter: document.getElementById("keyOpenRouter").value,
         openai: document.getElementById("keyOpenAI").value,
         gemini: document.getElementById("keyGemini").value,
-        ollama: document.getElementById("keyOllama").value
+        ollama: document.getElementById("urlOllama").value
     };
     localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
     updateKeyStatusDisplay();
     toast("API Keys saved successfully", "success");
-    document.getElementById("keysModal").style.display = "none";
+    document.getElementById("apiKeysModalOverlay").style.display = "none";
+}
+
+function clearKeys() {
+    document.getElementById("keyOpenRouter").value = "";
+    document.getElementById("keyOpenAI").value = "";
+    document.getElementById("keyGemini").value = "";
+    document.getElementById("urlOllama").value = "http://localhost:11434";
+    state.keys = { openrouter:"", openai:"", gemini:"", ollama:"http://localhost:11434" };
+    localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
+    toast("API Keys cleared", "info");
 }
 
 function updateKeyStatusDisplay() {
-    ['openrouter', 'openai', 'gemini'].forEach(k => {
-        const badge = document.getElementById(`status${k.charAt(0).toUpperCase() + k.slice(1)}`);
-        if(badge) {
-            if(state.keys[k]) {
-                badge.className = "text-xs px-2 py-1 rounded bg-green-900/30 text-green-400 border border-green-500/20";
-                badge.innerText = "Connected";
-            } else {
-                badge.className = "text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 border border-white/5";
-                badge.innerText = "Not set";
-            }
-        }
-    });
+    // Only pseudo status updates if required elsewhere. 
+    // The keys modal directly relies on the input values now.
 }
 
 
@@ -845,8 +910,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             loginTab.classList.replace("text-slate-400", "text-indigo-400");
             regTab.classList.replace("border-indigo-500", "border-transparent");
             regTab.classList.replace("text-indigo-400", "text-slate-400");
-            loginForm.classList.remove("hidden");
-            regForm.classList.add("hidden");
+            loginForm.style.display = "block";
+            regForm.style.display = "none";
         });
         
         regTab.addEventListener("click", () => {
@@ -854,39 +919,65 @@ document.addEventListener("DOMContentLoaded", async () => {
             regTab.classList.replace("text-slate-400", "text-indigo-400");
             loginTab.classList.replace("border-indigo-500", "border-transparent");
             loginTab.classList.replace("text-indigo-400", "text-slate-400");
-            regForm.classList.remove("hidden");
-            loginForm.classList.add("hidden");
+            regForm.style.display = "block";
+            loginForm.style.display = "none";
         });
     }
 
     if(loginForm) loginForm.addEventListener("submit", handleLogin);
     if(regForm) regForm.addEventListener("submit", handleRegister);
     
-    const guestBtn = document.getElementById("guestLoginBtn");
+    const guestBtn = document.getElementById("quickGuestLoginBtn");
     if(guestBtn) guestBtn.addEventListener("click", handleGuestLogin);
     
+    const googleBtn = document.getElementById("googleSignInBtn");
+    if(googleBtn) googleBtn.addEventListener("click", handleGoogleLogin);
+    
     const authBtn = document.getElementById("authBtn");
-    if(authBtn) authBtn.addEventListener("click", () => document.getElementById("authModal").style.display = "flex");
+    if(authBtn) authBtn.addEventListener("click", () => document.getElementById("authModal").style.display = "flex"); // if #authModal exists, update if renamed
     
     const userMenu = document.getElementById("userMenu");
     const userDropdown = document.getElementById("userDropdown");
     if(userMenu) {
-        userMenu.addEventListener("click", () => userDropdown.classList.toggle("hidden"));
+        userMenu.addEventListener("click", () => {
+            userDropdown.style.display = userDropdown.style.display === "none" || !userDropdown.style.display ? "block" : "none";
+        });
     }
     
-    const logoutBtn = document.getElementById("logoutBtn");
+    const logoutBtn = document.getElementById("logoutBtn"); // Assuming this exists inside dropdown
     if(logoutBtn) logoutBtn.addEventListener("click", handleLogout);
     
-    // Navigation
+    // Global Event Delegation for dynamic buttons
+    document.addEventListener("click", (e) => {
+        const pullBtn = e.target.closest(".open-pull-modal");
+        if(pullBtn) {
+            const modelId = pullBtn.getAttribute("data-model");
+            if(modelId) openPullModal(modelId);
+        }
+        
+        const pgBtn = e.target.closest(".launch-playground-btn");
+        if(pgBtn) {
+            const modelId = pgBtn.getAttribute("data-model");
+            if(modelId) openPlayground(modelId);
+        }
+        
+        // Modal Close logic
+        if(e.target.closest(".btn-close")) {
+            const modal = e.target.closest(".fixed.inset-0");
+            if(modal) modal.style.display = "none";
+        }
+    });
+
+    // Navigation (Sections using style.display)
     document.querySelectorAll(".nav-link").forEach(link => {
         link.addEventListener("click", (e) => {
             e.preventDefault();
             document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("text-indigo-400"));
             link.classList.add("text-indigo-400");
             
-            document.querySelectorAll(".section-container").forEach(s => s.classList.add("hidden"));
+            document.querySelectorAll(".section-container").forEach(s => s.style.display = "none");
             const target = link.dataset.target;
-            if(document.getElementById(target)) document.getElementById(target).classList.remove("hidden");
+            if(document.getElementById(target)) document.getElementById(target).style.display = "block";
             
             if(target === 'sectionMyDock') renderInstalledGrid();
         });
@@ -922,10 +1013,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         appendTermLine("Type 'help' to see available commands.", "text-slate-500 mb-4");
     }
 
-    // Playground
+    // Playground Form
+    const pgForm = document.getElementById("pgForm");
+    if(pgForm) {
+        pgForm.addEventListener("submit", handlePlaygroundSend);
+    }
     const pgInput = document.getElementById("pgInput");
-    const pgSendBtn = document.getElementById("pgSendBtn");
-    if(pgSendBtn) pgSendBtn.addEventListener("click", handlePlaygroundSend);
     if(pgInput) {
         pgInput.addEventListener("keydown", (e) => {
             if(e.key === "Enter" && !e.shiftKey) {
@@ -935,29 +1028,59 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Modals Close
-    document.querySelectorAll(".modal-close").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            const modal = e.target.closest(".fixed.inset-0");
-            if(modal) modal.style.display = "none";
-        });
-    });
-
     // Admin PIN & Dashboard
-    const adminPinBtn = document.getElementById("adminPinBtn");
-    if(adminPinBtn) {
-        adminPinBtn.addEventListener("click", () => {
-            document.getElementById("adminPinOverlay").style.display = "flex";
-            setTimeout(() => document.querySelector(".pin-digit").focus(), 100);
-        });
-    }
     setupAdminPIN();
     
-    document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+    document.querySelectorAll(".admin-tabs .tab-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             switchAdminTab(e.currentTarget.dataset.target);
         });
     });
+    
+    // Legal Tabs
+    document.querySelectorAll(".legal-tabs .tab-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            document.querySelectorAll(".legal-panel").forEach(p => p.style.display = "none");
+            document.querySelectorAll(".legal-tabs .tab-btn").forEach(b => b.classList.remove("bg-slate-800", "text-white"));
+            const target = e.currentTarget.dataset.target;
+            document.getElementById(target).style.display = "block";
+            e.currentTarget.classList.add("bg-slate-800", "text-white");
+        });
+    });
+
+    // API Keys logic
+    const apiKeysForm = document.getElementById("apiKeysForm");
+    if(apiKeysForm) apiKeysForm.addEventListener("submit", saveKeys);
+    
+    const clearApiKeysBtn = document.getElementById("clearApiKeysBtn");
+    if(clearApiKeysBtn) clearApiKeysBtn.addEventListener("click", clearKeys);
+    
+    // Toggle Password
+    document.querySelectorAll(".toggle-password").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            // Assume the previous sibling is the input
+            const input = e.currentTarget.parentElement.querySelector("input");
+            if(input) {
+                if(input.type === "password") {
+                    input.type = "text";
+                    e.currentTarget.innerHTML = `<svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>`;
+                } else {
+                    input.type = "password";
+                    e.currentTarget.innerHTML = `<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
+                }
+            }
+        });
+    });
+
+    // Partner Form
+    const partnerForm = document.getElementById("partnerForm");
+    if(partnerForm) {
+        partnerForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            toast("Partnership inquiry submitted successfully", "success");
+            partnerForm.reset();
+        });
+    }
 
     // Global Shortcuts
     document.addEventListener("keydown", (e) => {
