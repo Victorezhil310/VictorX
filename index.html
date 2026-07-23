@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com http://localhost:11434 http://127.0.0.1:11434;">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <title>VictorX — Universal Model Registry & API Workbench</title>
+    <title>VictorX — Universal AI Model Registry & API Testing Workbench</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -21,12 +21,13 @@
                     <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="#818cf8"/>
                 </svg>
                 <span>VictorX</span>
-                <span class="badge live-badge">v2.0 Hybrid</span>
+                <span class="badge live-badge">v2.5 Hybrid</span>
             </div>
 
             <nav class="topbar-nav">
                 <a href="#explore" class="active">📦 Models Hub</a>
                 <a href="#apidogWorkbench">⚡ API Workbench</a>
+                <a href="#spaces">🚀 Spaces & Apps</a>
                 <a href="#mydock">⚓ My Dock</a>
                 <a href="#ports">🔌 Ports</a>
                 <a href="#partnership">🤝 Partnership</a>
@@ -72,7 +73,7 @@
             <div class="hero-text-area">
                 <div class="eyebrow">⚡ Open-Source AI Infrastructure</div>
                 <h1>Universal AI Model Registry & API Testing Workbench</h1>
-                <p class="subtitle">Search top open-source LLMs, run API endpoint tests with live response latency, and pull models straight to your local or cloud dock.</p>
+                <p class="subtitle">Search top open-source LLMs (Llama 3.3, DeepSeek R1, Mistral, Gemma 3, Qwen 2.5), test API endpoints with live latency checks, and run AI apps in one unified platform.</p>
                 
                 <div class="hero-actions">
                     <button class="btn btn-primary" onclick="document.getElementById('explore').scrollIntoView({behavior:'smooth'})">Explore Models Hub</button>
@@ -82,7 +83,7 @@
 
                 <div class="hero-stats">
                     <div class="stat-item">
-                        <span id="statModels">17</span>
+                        <span id="statModels">150+</span>
                         <span>Models Indexed</span>
                     </div>
                     <div class="stat-item">
@@ -90,17 +91,17 @@
                         <span>OpenAPI Compliant</span>
                     </div>
                     <div class="stat-item">
-                        <span id="statPorts">5</span>
+                        <span id="statPorts">6</span>
                         <span>Ports Connected</span>
                     </div>
                     <div class="stat-item">
-                        <span id="statInstalled">2</span>
+                        <span id="statInstalled">5</span>
                         <span>Pulled to Dock</span>
                     </div>
                 </div>
             </div>
 
-            <!-- TERMINAL visual -->
+            <!-- TERMINAL VISUAL -->
             <div class="hero-visual">
                 <div class="interactive-shell">
                     <div class="terminal-header">
@@ -113,7 +114,7 @@
                     <div class="terminal-body" id="termBody">
                         <div id="termHistory">
                             <div class="term-line out">Welcome to VictorX CLI. Type 'help' for commands.</div>
-                            <div class="term-line out">Try: <span class="cmd-chip" onclick="processCliCommand('victor pull llama-3.3-70b')">victor pull llama-3.3-70b</span> or <span class="cmd-chip" onclick="processCliCommand('victor ls')">victor ls</span></div>
+                            <div class="term-line out">Try: <span class="cmd-chip" onclick="processCliCommand('victor pull llama3.3')">victor pull llama3.3</span> or <span class="cmd-chip" onclick="processCliCommand('victor ls')">victor ls</span></div>
                         </div>
                         <form id="termForm" class="term-form">
                             <span class="prompt">$</span>
@@ -132,13 +133,22 @@
         <section class="apidog-workbench" id="apidogWorkbench">
             <div class="workbench-header">
                 <div>
-                    <h2 style="font-size:18px; margin:0;">⚡ API Testing Workbench</h2>
-                    <span class="subtitle" style="font-size:12px;">Interactive HTTP request builder & code snippet generator</span>
+                    <h2 style="font-size:18px; margin:0;">⚡ API Testing Workbench & Request Studio</h2>
+                    <span class="subtitle" style="font-size:12px;">Interactive HTTP request builder, auto-mock server, & multi-language code generator</span>
                 </div>
                 <div class="status-pill">
                     <span class="status-dot green"></span>
                     <span id="activeEnvLabel">Production Gateway</span>
                 </div>
+            </div>
+
+            <!-- Feature Chips Row -->
+            <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+                <span class="tag">Design-First Specs</span>
+                <span class="tag">Visual Validation</span>
+                <span class="tag">Auto-Mock Server</span>
+                <span class="tag">MCP Agent Integration</span>
+                <span class="tag">CI/CD Orchestration</span>
             </div>
 
             <div class="request-bar">
@@ -202,7 +212,7 @@
                     </div>
 
                     <div class="pane-tabs">
-                        <button class="pane-tab active">Pretty JSON</button>
+                        <button class="pane-tab active">Pretty JSON Response</button>
                     </div>
 
                     <div class="code-snippet-box" style="flex:1;">
@@ -212,20 +222,20 @@
             </div>
         </section>
 
-        <!-- MODELS HUB / MANIFEST -->
+        <!-- MODELS HUB & REPOSITORY -->
         <section class="explore" id="explore">
             <div class="section-head">
-                <h2>📦 Models Hub & Manifest</h2>
-                <p class="subtitle">Explore open-source models, licenses, pipeline tasks, and benchmarks.</p>
+                <h2>📦 Models Hub & Open-Source Index</h2>
+                <p class="subtitle">Filter over 150 open-source LLMs, parameters, vision/code tasks, and benchmark pulls.</p>
             </div>
 
             <div class="explore-controls">
                 <div class="controls-row">
                     <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="Search models by name, task or provider...">
+                        <input type="text" id="searchInput" placeholder="Search models by name, task (e.g. reasoning, tools, vision, code)...">
                     </div>
                     <select id="sortSelect" class="sort-select">
-                        <option value="most_hauled">Most Hauled</option>
+                        <option value="most_hauled">Popular (Most Pulls)</option>
                         <option value="newest">Newest</option>
                         <option value="name_asc">Name A-Z</option>
                     </select>
@@ -233,18 +243,76 @@
 
                 <div class="controls-row">
                     <div class="chip-row" id="portChips">
-                        <!-- Chips rendered via JS -->
+                        <!-- Rendered via JS -->
                     </div>
-                    <span id="resultCount" class="result-summary">17 models on manifest</span>
+                    <span id="resultCount" class="result-summary">Index loading...</span>
                 </div>
             </div>
 
             <div class="model-grid" id="modelGrid">
-                <!-- Dynamic model cards rendered via JS -->
+                <!-- Rendered via JS -->
             </div>
 
             <div id="emptyState" class="empty-state hidden">
-                <p>No models found matching your search.</p>
+                <p>No models found matching your search query.</p>
+            </div>
+        </section>
+
+        <!-- SPACES & AI APPS -->
+        <section class="section spaces" id="spaces">
+            <div class="section-head">
+                <h2>🚀 Spaces & Interactive AI Apps</h2>
+                <p class="subtitle">Explore community-built interactive applications, robotics controllers, and vision tools.</p>
+            </div>
+
+            <div class="model-grid">
+                <div class="model-card">
+                    <div class="card-header">
+                        <span class="provider-tag">🤖 Robotics</span>
+                        <span class="badge live-badge">175 Likes</span>
+                    </div>
+                    <h3 class="model-name">Reachy Mini Companion</h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Talk with Reachy Mini! Fully local AI companion stack.</p>
+                    <div class="card-actions">
+                        <button class="btn btn-sm btn-primary" onclick="openPlayground('llama3.1')">Launch App</button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <div class="card-header">
+                        <span class="provider-tag">🎛 Dashboard</span>
+                        <span class="badge">149 Likes</span>
+                    </div>
+                    <h3 class="model-name">Reachy Web Dashboard</h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Control panel dashboard for remote robot monitoring.</p>
+                    <div class="card-actions">
+                        <button class="btn btn-sm btn-ghost" onclick="toast('Launching Web Dashboard', 'info')">Open Dashboard</button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <div class="card-header">
+                        <span class="provider-tag">🌍 Translation</span>
+                        <span class="badge">106 Likes</span>
+                    </div>
+                    <h3 class="model-name">Language Partner AI</h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Practice 55+ languages with live conversational feedback.</p>
+                    <div class="card-actions">
+                        <button class="btn btn-sm btn-primary" onclick="openPlayground('qwen2.5')">Start Practice</button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <div class="card-header">
+                        <span class="provider-tag">🧑 Meeting AI</span>
+                        <span class="badge">360 Likes</span>
+                    </div>
+                    <h3 class="model-name">Reachy Meeting Companion</h3>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Attentive meeting companion reacting to voice and transcription.</p>
+                    <div class="card-actions">
+                        <button class="btn btn-sm btn-ghost" onclick="toast('Connecting meeting audio feed', 'info')">Launch Companion</button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -252,7 +320,7 @@
         <section class="section mydock" id="mydock">
             <div class="section-head with-badge">
                 <h2>⚓ My Dock</h2>
-                <span id="installedCountPill" class="badge live-badge">2 Models</span>
+                <span id="installedCountPill" class="badge live-badge">5 Models</span>
             </div>
 
             <div class="model-grid" id="installedGrid">
@@ -260,15 +328,15 @@
             </div>
 
             <div id="emptyDockState" class="empty-state hidden">
-                <p>Your dock is currently empty. Explore the manifest above to pull your first model.</p>
+                <p>Your dock is empty. Pull models from the hub above to start testing.</p>
             </div>
         </section>
 
-        <!-- PORTS & INTEGRATIONS -->
+        <!-- PORTS -->
         <section class="section ports" id="ports">
             <div class="section-head">
-                <h2>🔌 Connected Ports</h2>
-                <p class="subtitle">Runtimes and provider integrations available on VictorX.</p>
+                <h2>🔌 Connected Ports & Runtimes</h2>
+                <p class="subtitle">Supported open model providers and API execution runtimes.</p>
             </div>
             <div class="port-grid" id="portGrid">
                 <!-- Rendered via JS -->
@@ -288,8 +356,8 @@
                     <h3>🥉 Bronze Partner</h3>
                     <div class="partner-price">₹19,999<span>/mo</span></div>
                     <ul class="partner-benefits">
-                        <li>Standard listing</li>
-                        <li>Basic analytics</li>
+                        <li>Standard model listing</li>
+                        <li>Basic analytics dashboard</li>
                         <li>Community support</li>
                     </ul>
                     <button class="btn btn-ghost w-full">Get Started</button>
@@ -301,9 +369,8 @@
                     <div class="partner-price">₹49,999<span>/mo</span></div>
                     <ul class="partner-benefits">
                         <li>Featured model placement</li>
-                        <li>API access tier</li>
+                        <li>API testing workbench integration</li>
                         <li>24/7 priority support</li>
-                        <li>Monthly analytics report</li>
                     </ul>
                     <button class="btn btn-primary w-full">Become Partner</button>
                 </div>
@@ -312,9 +379,8 @@
                     <h3>🥇 Gold Partner</h3>
                     <div class="partner-price">Custom</div>
                     <ul class="partner-benefits">
-                        <li>Priority model placement</li>
-                        <li>Co-branded dock section</li>
-                        <li>Dedicated API integration</li>
+                        <li>Priority dock placement</li>
+                        <li>Dedicated API gateway integration</li>
                         <li>Custom model indexing</li>
                     </ul>
                     <button class="btn btn-ghost w-full">Contact for Pricing</button>
@@ -346,30 +412,6 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-full">Submit Inquiry</button>
                 </form>
-            </div>
-        </section>
-
-        <!-- ADVERTISE -->
-        <section class="section advertise" id="advertise">
-            <div class="advertise-content">
-                <div>
-                    <span class="eyebrow">Reach AI Builders</span>
-                    <h2>Advertise on VictorX</h2>
-                    <p class="subtitle">Put your tool or API in front of thousands of active AI developers and researchers.</p>
-                </div>
-
-                <div class="ad-stats">
-                    <div class="ad-stat-item">
-                        <h3>~120k</h3>
-                        <div class="ad-desc">Est. Monthly Impressions</div>
-                    </div>
-                    <div class="ad-stat-item">
-                        <h3>4.2%</h3>
-                        <div class="ad-desc">Avg. Click Rate</div>
-                    </div>
-                </div>
-
-                <button id="requestSlotBtn" class="btn btn-primary" style="width:fit-content;">Request Ad Slot</button>
             </div>
         </section>
 
@@ -426,6 +468,7 @@
                     <ul>
                         <li><a href="#explore">Models Hub</a></li>
                         <li><a href="#apidogWorkbench">API Workbench</a></li>
+                        <li><a href="#spaces">Spaces & Apps</a></li>
                         <li><a href="#mydock">My Dock</a></li>
                     </ul>
                 </div>
@@ -433,7 +476,6 @@
                     <h4>Company</h4>
                     <ul>
                         <li><a href="#partnership">Partnership</a></li>
-                        <li><a href="#advertise">Advertise</a></li>
                         <li><a href="#openUpiModalBtn">Support</a></li>
                     </ul>
                 </div>
@@ -447,7 +489,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2024 VictorX. All rights reserved.</p>
+                <p>&copy; 2026 VictorX. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -558,7 +600,7 @@
                         <div style="font-size:12px; color:var(--text-muted);">Active Sessions</div>
                     </div>
                     <div class="stat-card">
-                        <span id="adminModelsPulled" style="font-size:20px; font-weight:bold;">5</span>
+                        <span id="adminModelsPulled" style="font-size:20px; font-weight:bold;">12</span>
                         <div style="font-size:12px; color:var(--text-muted);">Models Pulled</div>
                     </div>
                     <div class="stat-card">

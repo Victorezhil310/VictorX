@@ -1,31 +1,39 @@
 /* ==========================================================================
-   VictorX Engine & Database Controller
-   - Synchronizes state across localStorage, IndexedDB, and db/data.json
-   - Manages API Workbench execution & live code snippet generator
-   - Manages Model Hub filtering, pulling simulation, and AI Playground
-   - Handles Admin PIN authentication (20032004) & modal controls
+   VictorX Engine & Database Controller (v2.5)
+   - Expanded Open-Source LLM Registry (Meta, DeepSeek, Mistral, Google, Qwen, Microsoft, IBM)
+   - API Workbench HTTP Request Builder & Live Response Latency Calculator
+   - Code Snippet Generator (cURL, Fetch, Python, Go)
+   - Local DB Sync (db/data.json, localStorage, IndexedDB)
+   - Admin PIN Access (20032004)
    ========================================================================== */
 
 const PORTS = [
   { id: "ollama",     name: "Ollama",       color: "#F0A93D", desc: "Local-first runtime. Pulls sit on your own machine." },
-  { id: "hf",         name: "Model Hub",    color: "#4FD1C5", desc: "Open model weights, datasets, and pipelines." },
   { id: "meta",       name: "Meta",         color: "#7C9CFF", desc: "Llama open weights family." },
+  { id: "deepseek",   name: "DeepSeek",     color: "#38BDF8", desc: "DeepSeek reasoning & coding models." },
   { id: "mistral",    name: "Mistral AI",   color: "#E5675F", desc: "Fast, high-performance open weight models." },
   { id: "google",     name: "Google",       color: "#8FD14F", desc: "Gemma open weight models." },
-  { id: "openrouter", name: "OpenRouter",   color: "#38BDF8", desc: "Unified API gateway accessing top AI models." }
+  { id: "qwen",       name: "Alibaba Qwen", color: "#C792EA", desc: "Qwen pretrained multilingual LLMs." },
+  { id: "microsoft",  name: "Microsoft",    color: "#00A4EF", desc: "Phi family lightweight models." }
 ];
 
 const MODELS = [
-  { id: "llama-3.3-70b",  name: "Llama 3.3", size: "70B",  port: "meta",     tags: ["reasoning","chat"],    haul: 540000, added: 2,  desc: "State of the art open reasoning model comparable to top proprietary APIs.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
-  { id: "llama-3.1-8b",   name: "Llama 3.1", size: "8B",   port: "meta",     tags: ["chat","general"],     haul: 812000, added: 9,  desc: "Meta's general-purpose chat model, fast and efficient.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
-  { id: "deepseek-r1",    name: "DeepSeek R1", size: "671B", port: "openrouter", tags: ["reasoning","math","code"], haul: 920000, added: 1, desc: "Open-weights reasoning model with chain-of-thought verification.", apiModel: "deepseek/deepseek-r1" },
-  { id: "mistral-7b",     name: "Mistral",   size: "7B",   port: "mistral",  tags: ["chat","general"],      haul: 690000, added: 22, desc: "Compact and fast model build for low latency inference.", apiModel: "mistralai/mistral-7b-instruct" },
-  { id: "mixtral-8x7b",   name: "Mixtral",   size: "8x7B", port: "mistral",  tags: ["chat","reasoning"],    haul: 210000, added: 30, desc: "Mixture-of-experts model architecture for sparse inference.", apiModel: "mistralai/mixtral-8x7b-instruct" },
-  { id: "gemma-2-27b",    name: "Gemma 2",   size: "27B",  port: "google",   tags: ["chat","reasoning"],    haul: 98000,  added: 5,  desc: "Google's open weights, tuned for efficient reasoning workloads.", apiModel: "google/gemma-2-27b-it" },
-  { id: "qwen-2.5-72b",   name: "Qwen 2.5",   size: "72B",  port: "hf",       tags: ["reasoning","chat"],    haul: 61000,  added: 12, desc: "Top of the line open model for multi-step reasoning.", apiModel: "qwen/qwen-2.5-72b-instruct" },
-  { id: "phi-3.5-mini",   name: "Phi-3.5",   size: "3.8B", port: "hf",       tags: ["chat","edge"],         haul: 133000, added: 18, desc: "Lightweight model tuned for high efficiency on edge devices.", apiModel: "microsoft/phi-3.5-mini-instruct" },
-  { id: "codellama-13b",  name: "CodeLlama", size: "13B",  port: "meta",     tags: ["code"],                haul: 145000, added: 60, desc: "Meta's code-specialized model for programming context.", apiModel: "meta-llama/codellama-13b-instruct" },
-  { id: "whisper-v3",     name: "Whisper",   size: "Large", port: "hf",      tags: ["audio"],               haul: 310000, added: 120,desc: "State of the art speech-to-text reference model.", apiModel: "openai/whisper-large-v3" }
+  { id: "llama3.1",        name: "Llama 3.1", size: "8B / 70B / 405B", port: "meta", tags: ["tools", "chat"], haul: 117600000, added: 1, desc: "Meta's flagship open model available in 8B, 70B and 405B parameter sizes.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
+  { id: "deepseek-r1",     name: "DeepSeek R1", size: "1.5B - 671B", port: "deepseek", tags: ["thinking", "math", "code"], haul: 90300000, added: 2, desc: "Open reasoning model with performance approaching top proprietary models.", apiModel: "deepseek/deepseek-r1" },
+  { id: "nomic-embed-text", name: "Nomic Embed Text", size: "137M", port: "ollama", tags: ["embedding"], haul: 79400000, added: 3, desc: "High-performing open embedding model with large token context window.", apiModel: "nomic-embed-text" },
+  { id: "llama3.2",        name: "Llama 3.2", size: "1B / 3B", port: "meta", tags: ["tools", "edge"], haul: 77500000, added: 4, desc: "Meta's lightweight on-device models tuned for edge execution.", apiModel: "meta-llama/llama-3.2-3b-instruct" },
+  { id: "gemma3",          name: "Gemma 3", size: "1B - 27B", port: "google", tags: ["vision", "chat"], haul: 38800000, added: 5, desc: "Google DeepMind's most capable model designed to run on a single GPU.", apiModel: "google/gemma-2-27b-it" },
+  { id: "qwen2.5",         name: "Qwen 2.5", size: "0.5B - 72B", port: "qwen", tags: ["tools", "code"], haul: 35200000, added: 6, desc: "Pretrained on 18 trillion tokens with up to 128K context window support.", apiModel: "qwen/qwen-2.5-72b-instruct" },
+  { id: "mistral-7b",      name: "Mistral", size: "7B", port: "mistral", tags: ["tools", "chat"], haul: 31300000, added: 7, desc: "Fast, versatile 7B parameter model updated to v0.3 release.", apiModel: "mistralai/mistral-7b-instruct" },
+  { id: "gemma2",          name: "Gemma 2", size: "2B / 9B / 27B", port: "google", tags: ["chat", "general"], haul: 28400000, added: 8, desc: "High-performing efficient open model by Google DeepMind.", apiModel: "google/gemma-2-9b-it" },
+  { id: "qwen2.5-coder",   name: "Qwen 2.5 Coder", size: "0.5B - 32B", port: "qwen", tags: ["code", "tools"], haul: 18800000, added: 9, desc: "Code-specific Qwen series with significant code reasoning improvements.", apiModel: "qwen/qwen-2.5-coder-32b-instruct" },
+  { id: "phi3",            name: "Phi-3", size: "3.8B / 14B", port: "microsoft", tags: ["edge", "chat"], haul: 17900000, added: 10, desc: "Microsoft's lightweight state-of-the-art open model family.", apiModel: "microsoft/phi-3.5-mini-instruct" },
+  { id: "llava",           name: "LLaVA", size: "7B / 13B / 34B", port: "ollama", tags: ["vision", "multimodal"], haul: 14400000, added: 11, desc: "End-to-end trained large multimodal model combining vision encoder and Vicuna.", apiModel: "llava" },
+  { id: "gpt-oss",         name: "GPT-OSS", size: "20B / 120B", port: "ollama", tags: ["tools", "thinking"], haul: 11100000, added: 12, desc: "Open-weight models designed for reasoning and agentic tasks.", apiModel: "openai/gpt-oss-120b" },
+  { id: "phi4",            name: "Phi-4", size: "14B", port: "microsoft", tags: ["reasoning"], haul: 7600000, added: 13, desc: "14B parameter state-of-the-art open reasoning model from Microsoft.", apiModel: "microsoft/phi-4" },
+  { id: "codellama",       name: "CodeLlama", size: "7B - 70B", port: "meta", tags: ["code"], haul: 5800000, added: 14, desc: "Meta's code completion model for text-to-code generation.", apiModel: "meta-llama/codellama-13b-instruct" },
+  { id: "deepseek-v3",     name: "DeepSeek V3", size: "671B MoE", port: "deepseek", tags: ["thinking", "code"], haul: 3800000, added: 15, desc: "Strong Mixture-of-Experts model with 37B activated parameters per token.", apiModel: "deepseek/deepseek-v3" },
+  { id: "mixtral",         name: "Mixtral 8x7B", size: "8x7B / 8x22B", port: "mistral", tags: ["tools", "reasoning"], haul: 2700000, added: 16, desc: "Sparse mixture of experts open weight model by Mistral AI.", apiModel: "mistralai/mixtral-8x7b-instruct" }
 ];
 
 const ADMIN_VERIFICATION_PIN = '20032004';
@@ -36,12 +44,11 @@ let state = {
   sort: "most_hauled",
   user: JSON.parse(localStorage.getItem("victor_user") || 'null'),
   keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","ollama":"http://localhost:11434"}'),
-  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["llama-3.1-8b","mistral-7b"]')),
+  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["llama3.1","deepseek-r1","mistral","gemma2","qwen2.5-coder"]')),
   currentPullingModel: null,
   adminAuthenticated: false
 };
 
-// Database Storage Helper
 function saveState() {
   localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
   localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
@@ -54,7 +61,7 @@ function fmt(n) {
 }
 
 function portInfo(id) {
-  return PORTS.find(p => p.id === id) || { name: "Unknown", color: "#818cf8" };
+  return PORTS.find(p => p.id === id) || { name: "Model Hub", color: "#818cf8" };
 }
 
 function escapeHtml(str) {
@@ -91,12 +98,9 @@ function toast(msg, type = "info") {
   t.innerText = msg;
   container.appendChild(t);
   
-  setTimeout(() => {
-    t.remove();
-  }, 3000);
+  setTimeout(() => t.remove(), 3000);
 }
 
-// Modal Helpers
 function openModal(id) {
   const modal = document.getElementById(id);
   if(modal) modal.style.display = "flex";
@@ -107,14 +111,13 @@ function closeModal(id) {
   if(modal) modal.style.display = "none";
 }
 
-// Render Functions
 function updateStats() {
   const statModels = document.getElementById("statModels");
   const statPorts = document.getElementById("statPorts");
   const statInstalled = document.getElementById("statInstalled");
   const installedCountPill = document.getElementById("installedCountPill");
   
-  if(statModels) statModels.innerText = MODELS.length;
+  if(statModels) statModels.innerText = MODELS.length + "+";
   if(statPorts) statPorts.innerText = PORTS.length;
   if(statInstalled) statInstalled.innerText = state.installed.size;
   if(installedCountPill) installedCountPill.innerText = `${state.installed.size} Models`;
@@ -152,7 +155,7 @@ function renderGrid() {
     if(state.port !== "all" && m.port !== state.port) return false;
     if(state.search) {
       const q = state.search.toLowerCase();
-      if(!m.name.toLowerCase().includes(q) && !m.id.toLowerCase().includes(q) && !m.desc.toLowerCase().includes(q)) return false;
+      if(!m.name.toLowerCase().includes(q) && !m.id.toLowerCase().includes(q) && !m.desc.toLowerCase().includes(q) && !m.tags.some(t => t.toLowerCase().includes(q))) return false;
     }
     return true;
   });
@@ -185,7 +188,7 @@ function renderGrid() {
             <span class="provider-tag" style="color:${p.color};">${escapeHtml(p.name)}</span>
             <h3 class="model-name" style="margin-top:4px;">${escapeHtml(m.name)} <span>(${m.size})</span></h3>
           </div>
-          <span class="tag">⬇️ ${fmt(m.haul)}</span>
+          <span class="tag">⬇️ ${fmt(m.haul)} Pulls</span>
         </div>
 
         <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">${escapeHtml(m.desc)}</p>
@@ -220,14 +223,14 @@ function renderInstalledGrid() {
 
   g.innerHTML = "";
   Array.from(state.installed).forEach(id => {
-    const m = MODELS.find(x => x.id === id) || { id, name: id, size: "Default", desc: "Installed custom model", port: "hf" };
+    const m = MODELS.find(x => x.id === id) || { id, name: id, size: "Default", desc: "Installed custom model", port: "meta" };
     const p = portInfo(m.port);
 
     g.innerHTML += `
       <div class="model-card docked-card">
         <div class="card-header">
           <div>
-            <span class="provider-tag">${escapeHtml(p.name)}</span>
+            <span class="provider-tag" style="color:${p.color};">${escapeHtml(p.name)}</span>
             <h3 class="model-name" style="margin-top:4px;">${escapeHtml(m.name)}</h3>
           </div>
           <span class="badge live-badge">DOCKED</span>
@@ -315,7 +318,6 @@ async function handleSendApiRequest() {
     let responseData;
     let statusCode = 200;
 
-    // Real API call if OpenRouter key exists
     if(endpoint.includes("openrouter.ai") && state.keys.openrouter) {
       const res = await fetch(endpoint, {
         method: method,
@@ -328,7 +330,6 @@ async function handleSendApiRequest() {
       statusCode = res.status;
       responseData = await res.json();
     } else {
-      // High performance simulated response
       await new Promise(r => setTimeout(r, 200));
       let parsedBody = {};
       try { parsedBody = JSON.parse(bodyText); } catch(e){}
@@ -411,7 +412,7 @@ console.log(data);`;
 
 // Pull Simulation
 function openPullModal(modelId) {
-  const m = MODELS.find(x => x.id === modelId) || { id: modelId, name: modelId, size: "8B", desc: "Model download", port: "hf" };
+  const m = MODELS.find(x => x.id === modelId) || { id: modelId, name: modelId, size: "8B", desc: "Model download", port: "meta" };
   state.currentPullingModel = m;
 
   const p = portInfo(m.port);
@@ -490,7 +491,7 @@ function startPullSimulation() {
 
 // AI Playground
 function openPlayground(modelId) {
-  if(!modelId) modelId = Array.from(state.installed)[0] || "llama-3.1-8b";
+  if(!modelId) modelId = Array.from(state.installed)[0] || "llama3.1";
 
   openModal("playgroundModalOverlay");
 
@@ -515,7 +516,7 @@ async function handlePlaygroundSend(e) {
   const msg = input?.value.trim();
   if(!msg) return;
 
-  const modelId = document.getElementById("pgModelSelect")?.value || "llama-3.1-8b";
+  const modelId = document.getElementById("pgModelSelect")?.value || "llama3.1";
   input.value = "";
 
   appendChatMessage("user", msg);
@@ -529,7 +530,7 @@ async function handlePlaygroundSend(e) {
 
   setTimeout(() => {
     const loadingEl = document.getElementById(loadingId);
-    const reply = `[Response from ${modelId}]\nI received your prompt: "${msg}". Execution finished cleanly with status 200 OK.`;
+    const reply = `[Response from ${modelId}]\nI received your prompt: "${msg}". Execution completed cleanly with status 200 OK.`;
     if(loadingEl) loadingEl.remove();
     appendChatMessage("assistant", reply);
   }, 600);
@@ -703,7 +704,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Topbar Buttons
   document.getElementById("openAuthBtn")?.addEventListener("click", () => openModal("authModalOverlay"));
-  document.getElementById("openAdminPinBtn")?.addEventListener("click", () => openModal("adminPinOverlay"));
   document.getElementById("adminPinBtn")?.addEventListener("click", () => openModal("adminPinOverlay"));
   document.getElementById("openUpiModalBtn")?.addEventListener("click", () => openModal("upiModalOverlay"));
   document.getElementById("openApiKeysBtn")?.addEventListener("click", () => openModal("apiKeysModalOverlay"));

@@ -1,9 +1,10 @@
 {
-  "version": "2.0.0",
+  "version": "2.5.0",
+  "app": "VictorX Universal AI Model Registry & API Workbench",
   "users": [
-    { "username": "admin", "email": "admin@victor.dock", "role": "admin", "modelsPulled": 5 }
+    { "username": "admin", "email": "admin@victor.dock", "role": "admin", "modelsPulled": 12 }
   ],
-  "installed": ["llama-3.1-8b", "mistral-7b"],
+  "installed": ["llama3.1", "deepseek-r1", "mistral", "gemma2", "qwen2.5-coder"],
   "savedRequests": [
     {
       "id": "req-1",
@@ -12,6 +13,14 @@
       "url": "https://openrouter.ai/api/v1/chat/completions",
       "headers": { "Content-Type": "application/json" },
       "body": "{\n  \"model\": \"meta-llama/llama-3.3-70b-instruct\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}]\n}"
+    },
+    {
+      "id": "req-2",
+      "name": "DeepSeek R1 Reasoning Test",
+      "method": "POST",
+      "url": "https://openrouter.ai/api/v1/chat/completions",
+      "headers": { "Content-Type": "application/json" },
+      "body": "{\n  \"model\": \"deepseek/deepseek-r1\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"Prove pythagorean theorem.\"}]\n}"
     }
   ],
   "apiLogs": []
