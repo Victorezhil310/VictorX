@@ -1,8 +1,3 @@
-/* =========================================================
-   Victor — Model Dock & Execution Engine
-   Production-ready registry, pull installer, and playground
-   ========================================================= */
-
 const PORTS = [
   { id: "ollama",   name: "Ollama",       color: "#F0A93D", initials: "OL", models: 0, desc: "Local-first runtime. Pulls sit on your own machine." },
   { id: "hf",       name: "Hugging Face", color: "#4FD1C5", initials: "HF", models: 0, desc: "The largest open index — weights, datasets, spaces." },
@@ -38,7 +33,8 @@ const SPONSORS = [
   { sponsor: "Groq",  size: "Inference", desc: "Sub-second LPU inference for open models, hosted for you." },
 ];
 
-/* State Management */
+const ADMIN_VERIFICATION = '20032004';
+
 const state = {
   search: "",
   port: "all",
@@ -48,991 +44,947 @@ const state = {
   keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","ollama":"http://localhost:11434"}'),
   installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["llama-3.1-8b","mistral-7b"]')),
   activeTab: "cli",
-  currentPullingModel: null
+  currentPullingModel: null,
+  isAdmin: false,
+  adminAuthenticated: false
 };
 
-/* Helper Functions */
-function fmt(n) {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
-  if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k";
-  return String(n);
+// Database Initialization (IndexedDB)
+const DB_NAME = "VictorDockDB";
+const DB_VERSION = 1;
+let db;
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = (event) => reject("IndexedDB error: " + event.target.errorCode);
+    request.onsuccess = (event) => {
+      db = event.target.result;
+      resolve(db);
+    };
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("models")) db.createObjectStore("models", { keyPath: "id" });
+      if (!db.objectStoreNames.contains("chats")) db.createObjectStore("chats", { keyPath: "id", autoIncrement: true });
+      if (!db.objectStoreNames.contains("vault")) db.createObjectStore("vault", { keyPath: "key" });
+      if (!db.objectStoreNames.contains("users")) db.createObjectStore("users", { keyPath: "username" });
+    };
+  });
 }
 
-function portInfo(id) {
-  return PORTS.find(p => p.id === id) || { name: id, color: "#F0A93D", initials: "V" };
+function saveToDB(storeName, obj) {
+  if (!db) return Promise.reject("DB not initialized");
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    tx.objectStore(storeName).put(obj);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e.target.error);
+  });
 }
 
-function toast(msg) {
-  const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.classList.add("show");
-  clearTimeout(toast._t);
-  toast._t = setTimeout(() => el.classList.remove("show"), 2600);
-}
+// Helpers
+const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'k' : n;
+const portInfo = id => PORTS.find(p => p.id === id) || { name: "Unknown", color: "#aaa" };
+const escapeHtml = str => String(str).replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+}[tag]));
 
-/* Auth Manager */
-function initAuth() {
-  const userWrap = document.getElementById("authWrap");
-  const openAuthBtn = document.getElementById("openAuthBtn");
-  const userMenu = document.getElementById("userMenu");
-  const userName = document.getElementById("userName");
-  const userAvatar = document.getElementById("userAvatar");
-  const dropdownEmail = document.getElementById("dropdownEmail");
-
-  if (state.user) {
-    openAuthBtn.hidden = true;
-    userMenu.hidden = false;
-    userName.textContent = state.user.username;
-    userAvatar.textContent = state.user.username.charAt(0).toUpperCase();
-    dropdownEmail.textContent = state.user.email || `${state.user.username}@victor.dock`;
-  } else {
-    openAuthBtn.hidden = false;
-    userMenu.hidden = true;
-  }
-}
-
-function saveUser(username, email, apiKey) {
-  state.user = { username, email, created: new Date().toISOString() };
-  if (apiKey) state.keys.openrouter = apiKey;
-  localStorage.setItem("victor_user", JSON.stringify(state.user));
-  localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
-  initAuth();
-  updateKeyStatusDisplay();
-  toast(`Welcome aboard, ${username}!`);
-}
-
-function logoutUser() {
-  state.user = null;
-  localStorage.removeItem("victor_user");
-  initAuth();
-  toast("Signed out of Victor session.");
-}
-
-/* API Key Manager */
-function updateKeyStatusDisplay() {
-  const check = (id, elId) => {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    if (state.keys[id] && state.keys[id].trim().length > 0) {
-      el.textContent = "Connected ✓";
-      el.classList.add("set");
-    } else {
-      el.textContent = "Not set";
-      el.classList.remove("set");
-    }
-  };
-  check("openrouter", "statusOpenRouter");
-  check("openai", "statusOpenAI");
-  check("gemini", "statusGemini");
-}
-
-function openKeysModal() {
-  document.getElementById("keyOpenRouter").value = state.keys.openrouter || "";
-  document.getElementById("keyOpenAI").value = state.keys.openai || "";
-  document.getElementById("keyGemini").value = state.keys.gemini || "";
-  document.getElementById("urlOllama").value = state.keys.ollama || "http://localhost:11434";
-  updateKeyStatusDisplay();
-  document.getElementById("apiKeysModalOverlay").hidden = false;
-}
-
-/* Code Snippet Generator */
-function generateCodeSnippet(m, tab) {
-  const slug = (m.name + ":" + m.size).toLowerCase().replace(/\s+/g, "");
-  const apiId = m.apiModel || slug;
+function toast(msg, type = "info") {
+  const t = document.createElement("div");
+  t.className = `fixed bottom-4 right-4 p-4 rounded-xl shadow-lg border border-white/10 z-50 transform transition-all duration-300 translate-y-10 opacity-0 flex items-center gap-3`;
+  if(type === "error") t.classList.add("bg-red-900/90", "text-red-100");
+  else if(type === "success") t.classList.add("bg-green-900/90", "text-green-100");
+  else t.classList.add("bg-slate-800/90", "text-slate-200", "backdrop-blur-md");
   
-  switch (tab) {
-    case "cli":
-      if (m.port === "ollama") return `ollama run ${slug}`;
-      if (m.port === "hf") return `huggingface-cli download ${slug}`;
-      return `victor pull ${apiId}`;
+  t.innerHTML = `<div>${escapeHtml(msg)}</div>`;
+  document.body.appendChild(t);
+  
+  requestAnimationFrame(() => {
+    t.classList.remove("translate-y-10", "opacity-0");
+  });
+  
+  setTimeout(() => {
+    t.classList.add("translate-y-10", "opacity-0");
+    setTimeout(() => t.remove(), 300);
+  }, 3000);
+}
 
-    case "python":
-      return `import openai
-
-client = openai.OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key="YOUR_API_KEY" # Configure in Victor Settings
-)
-
-response = client.chat.completions.create(
-    model="${apiId}",
-    messages=[{"role": "user", "content": "Hello Victor dock!"}]
-)
-
-print(response.choices[0].message.content)`;
-
-    case "js":
-      return `import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: 'YOUR_API_KEY', // Saved in browser localStorage
-});
-
-const completion = await openai.chat.completions.create({
-  model: '${apiId}',
-  messages: [{ role: 'user', content: 'Explain quantum computing in 2 lines' }],
-});
-
-console.log(completion.choices[0].message.content);`;
-
-    case "curl":
-      return `curl https://openrouter.ai/api/v1/chat/completions \\
-  -H "Authorization: Bearer $VICTOR_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "model": "${apiId}",
-    "messages": [{"role": "user", "content": "Ping dock server"}]
-  }'`;
-    default:
-      return `victor pull ${slug}`;
+// UI Rendering
+function updateStats() {
+  const modelsCount = document.getElementById("heroModelsCount");
+  const pullsCount = document.getElementById("heroPullsCount");
+  if(modelsCount) modelsCount.innerText = MODELS.length;
+  if(pullsCount) pullsCount.innerText = fmt(MODELS.reduce((acc, m) => acc + m.haul, 0));
+  
+  const dockBadge = document.getElementById("dockCountBadge");
+  if(dockBadge) {
+    dockBadge.innerText = state.installed.size;
+    dockBadge.style.display = state.installed.size > 0 ? "inline-flex" : "none";
   }
 }
 
-/* Port Chips & Models Filter */
 function renderChips() {
-  const row = document.getElementById("portChips");
-  const chips = [{ id: "all", name: "All ports" }, ...PORTS];
-  row.innerHTML = chips.map(p => `
-    <button class="chip" data-port="${p.id}" aria-pressed="${state.port === p.id}">${p.name}</button>
-  `).join("");
-  row.querySelectorAll(".chip").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.port = btn.dataset.port;
+  const c = document.getElementById("portChips");
+  if(!c) return;
+  c.innerHTML = `<button class="px-4 py-2 rounded-full text-sm font-medium transition-colors ${state.port === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white border border-white/5'}" data-port="all">All Ports</button>`;
+  
+  PORTS.forEach(p => {
+    const isSelected = state.port === p.id;
+    const isConnected = state.connected.has(p.id);
+    if(isConnected) {
+        c.innerHTML += `<button class="px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white border border-white/5'}" data-port="${p.id}">
+          <span class="w-2 h-2 rounded-full" style="background:${p.color}"></span> ${escapeHtml(p.name)}
+        </button>`;
+    }
+  });
+
+  c.querySelectorAll("button").forEach(b => {
+    b.addEventListener("click", () => {
+      state.port = b.dataset.port;
       renderChips();
       renderGrid();
     });
   });
 }
 
-function filteredModels() {
-  let list = MODELS.filter(m => {
-    const matchesPort = state.port === "all" || m.port === state.port;
-    const q = state.search.trim().toLowerCase();
-    const matchesSearch = !q ||
-      m.name.toLowerCase().includes(q) ||
-      m.tags.some(t => t.includes(q)) ||
-      m.size.toLowerCase().includes(q);
-    return matchesPort && matchesSearch;
-  });
-
-  const sizeVal = s => {
-    const n = parseFloat(s);
-    if (s.toLowerCase().includes("mini") || s.toLowerCase().includes("m")) return n || 0.1;
-    if (s.toLowerCase().includes("x")) return n * 7;
-    return n || 0;
-  };
-
-  switch (state.sort) {
-    case "popular":   list.sort((a, b) => b.haul - a.haul); break;
-    case "new":       list.sort((a, b) => a.added - b.added); break;
-    case "size-asc":  list.sort((a, b) => sizeVal(a.size) - sizeVal(b.size)); break;
-    case "size-desc": list.sort((a, b) => sizeVal(b.size) - sizeVal(a.size)); break;
-    case "az":        list.sort((a, b) => a.name.localeCompare(b.name)); break;
-  }
-  return list;
-}
-
-function modelCard(m) {
-  const p = portInfo(m.port);
-  const isInstalled = state.installed.has(m.id);
-
-  return `
-    <article class="card" style="--port-color:${p.color}">
-      <div class="card-top">
-        <span class="port-tag">${p.name}</span>
-        <span class="haul-count">${fmt(m.haul)} hauled</span>
-      </div>
-      <h3 class="card-name">${m.name}</h3>
-      <p class="card-desc">${m.desc}</p>
-      <div class="tag-row">${m.tags.map(t => `<span class="tag-pill">${t}</span>`).join("")}</div>
-      <div class="card-foot">
-        <span class="card-size">${m.size}</span>
-        <button class="btn-pull ${isInstalled ? 'installed' : ''}" type="button" data-modelid="${m.id}">
-          ${isInstalled ? '✓ Docked' : 'Pull to dock'}
-        </button>
-      </div>
-    </article>
-  `;
-}
-
-function sponsoredCard(s) {
-  return `
-    <article class="card sponsored-card">
-      <div class="card-top">
-        <span class="sponsor-tag">Sponsored · via Victor</span>
-      </div>
-      <h3 class="card-name">${s.sponsor}</h3>
-      <p class="card-desc">${s.desc}</p>
-      <div class="tag-row"><span class="tag-pill">${s.size}</span></div>
-      <div class="card-foot">
-        <span class="card-size"></span>
-        <button class="btn-pull" type="button" data-sponsor="${s.sponsor}">Learn more</button>
-      </div>
-    </article>
-  `;
-}
-
 function renderGrid() {
-  const grid = document.getElementById("modelGrid");
-  const list = filteredModels();
-  const empty = document.getElementById("emptyState");
-  document.getElementById("resultCount").textContent =
-    `${list.length} model${list.length === 1 ? "" : "s"} on manifest`;
+  const g = document.getElementById("modelGrid");
+  if(!g) return;
+  
+  const filtered = MODELS.filter(m => {
+    if (state.port !== "all" && m.port !== state.port) return false;
+    if (state.search) {
+      const q = state.search.toLowerCase();
+      if (!m.name.toLowerCase().includes(q) && !m.id.toLowerCase().includes(q) && !m.desc.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
 
-  if (!list.length) {
-    grid.innerHTML = "";
-    empty.hidden = false;
+  filtered.sort((a,b) => {
+    if(state.sort === "popular") return b.haul - a.haul;
+    if(state.sort === "new") return a.added - b.added;
+    if(state.sort === "size") return parseFloat(a.size) - parseFloat(b.size); // Naive sort
+    return a.name.localeCompare(b.name);
+  });
+
+  g.innerHTML = "";
+  if(filtered.length === 0) {
+    g.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500">No models found matching your criteria.</div>`;
     return;
   }
-  empty.hidden = true;
 
-  const cards = list.map(modelCard);
-  const withAds = [];
-  cards.forEach((c, i) => {
-    withAds.push(c);
-    if ((i + 1) % 6 === 0 && SPONSORS.length) {
-      withAds.push(sponsoredCard(SPONSORS[(i / 6) % SPONSORS.length | 0]));
-    }
-  });
-  grid.innerHTML = withAds.join("");
-
-  grid.querySelectorAll("[data-modelid]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const m = MODELS.find(x => x.id === btn.dataset.modelid);
-      if (m) openPullModal(m);
-    });
-  });
-  grid.querySelectorAll("[data-sponsor]").forEach(btn => {
-    btn.addEventListener("click", () => toast(`${btn.dataset.sponsor} partner link opened.`));
-  });
-
-  renderInstalledGrid();
-}
-
-/* My Dock (Installed Models) */
-function renderInstalledGrid() {
-  const grid = document.getElementById("installedGrid");
-  const emptyState = document.getElementById("emptyDockState");
-  const installedList = MODELS.filter(m => state.installed.has(m.id));
-
-  document.getElementById("installedCountPill").textContent = `${installedList.length} Model${installedList.length === 1 ? '' : 's'}`;
-  document.getElementById("dockBadge").textContent = installedList.length;
-  document.getElementById("statInstalled").textContent = installedList.length;
-
-  if (installedList.length === 0) {
-    grid.innerHTML = "";
-    emptyState.hidden = false;
-    return;
-  }
-  emptyState.hidden = true;
-
-  grid.innerHTML = installedList.map(m => {
-    const p = portInfo(m.port);
-    return `
-      <article class="card" style="--port-color:${p.color}">
-        <div class="card-top">
-          <span class="port-tag">${p.name} · DOCKED</span>
-          <button class="btn-ghost btn-small danger" style="padding:0; font-size:11px;" data-removeid="${m.id}">Remove</button>
-        </div>
-        <h3 class="card-name">${m.name}</h3>
-        <p class="card-desc">${m.desc}</p>
-        <div class="card-foot">
-          <span class="card-size">${m.size}</span>
-          <button class="btn btn-primary btn-small" data-launchpg="${m.id}">⚡ Launch Playground</button>
-        </div>
-      </article>
-    `;
-  }).join("");
-
-  grid.querySelectorAll("[data-removeid]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.installed.delete(btn.dataset.removeid);
-      localStorage.setItem("victor_installed", JSON.stringify([...state.installed]));
-      renderGrid();
-      toast("Removed from your dock.");
-    });
-  });
-
-  grid.querySelectorAll("[data-launchpg]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      openPlayground(btn.dataset.launchpg);
-    });
-  });
-}
-
-/* Pull Modal Handler */
-function openPullModal(m) {
-  state.currentPullingModel = m;
-  const p = portInfo(m.port);
-  const isInstalled = state.installed.has(m.id);
-
-  document.getElementById("pullModalPort").textContent = p.name;
-  document.getElementById("pullModalTitle").textContent = `${m.name} ${m.size}`;
-  document.getElementById("pullModalDesc").textContent = m.desc;
-  document.getElementById("pullModalSize").textContent = `Size: ${m.size}`;
-
-  const startPullBtn = document.getElementById("startPullBtn");
-  const statusText = document.getElementById("pullStatusText");
-  const progressWrap = document.getElementById("pullProgressWrap");
-  const progressBar = document.getElementById("pullProgressBar");
-  const progressLabel = document.getElementById("pullProgressLabel");
-
-  progressWrap.hidden = true;
-  progressBar.style.width = "0%";
-
-  if (isInstalled) {
-    statusText.textContent = "Currently Docked & Ready";
-    startPullBtn.textContent = "✓ Re-pull Model";
-  } else {
-    statusText.textContent = "Ready to Pull";
-    startPullBtn.textContent = "⚡ Pull to My Dock";
-  }
-
-  updateCodeSnippetDisplay();
-  document.getElementById("pullModalOverlay").hidden = false;
-}
-
-function updateCodeSnippetDisplay() {
-  if (!state.currentPullingModel) return;
-  const codeEl = document.getElementById("pullModalCodeSnippet");
-  codeEl.textContent = generateCodeSnippet(state.currentPullingModel, state.activeTab);
-}
-
-/* ===== IndexedDB Secure Database Engine ===== */
-const VictorDatabase = {
-  db: null,
-  init() {
-    return new Promise((resolve) => {
-      if (!window.indexedDB) {
-        console.warn("IndexedDB not supported, falling back to localStorage.");
-        return resolve(false);
-      }
-      const req = window.indexedDB.open("VictorDockDB", 1);
-      req.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains("models")) db.createObjectStore("models", { keyPath: "id" });
-        if (!db.objectStoreNames.contains("chats")) db.createObjectStore("chats", { keyPath: "id", autoIncrement: true });
-        if (!db.objectStoreNames.contains("vault")) db.createObjectStore("vault", { keyPath: "key" });
-      };
-      req.onsuccess = (e) => {
-        VictorDatabase.db = e.target.result;
-        console.log("VictorDockDB IndexedDB initialized successfully.");
-        resolve(true);
-      };
-      req.onerror = () => resolve(false);
-    });
-  },
-  saveModel(modelObj) {
-    if (!this.db) return;
-    const tx = this.db.transaction("models", "readwrite");
-    tx.objectStore("models").put({ ...modelObj, dockedAt: new Date().toISOString() });
-  },
-  removeModel(id) {
-    if (!this.db) return;
-    const tx = this.db.transaction("models", "readwrite");
-    tx.objectStore("models").delete(id);
-  }
-};
-
-/* ===== Layer Hash Generator ===== */
-function generateLayerHashes(modelName, sizeStr) {
-  const hash = (str) => {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
-    return Math.abs(h).toString(16).padEnd(12, '0').slice(0, 12);
-  };
-  const base = hash(modelName + sizeStr);
-  return [
-    { name: "Layer 1/4: config.json & manifest", hash: `sha256:${base}a1`, size: "512 KB" },
-    { name: "Layer 2/4: model.safetensors.index.json", hash: `sha256:${base}b2`, size: "1.2 MB" },
-    { name: `Layer 3/4: model weight tensor shard (part 1)`, hash: `sha256:${base}c3`, size: `${sizeStr} Weights` },
-    { name: "Layer 4/4: tokenizer & vocab embeddings", hash: `sha256:${base}d4`, size: "24 MB" },
-  ];
-}
-
-/* Layer-by-Layer Modal Pull Installer */
-function startPullSimulation() {
-  const m = state.currentPullingModel;
-  if (!m) return;
-
-  const startPullBtn = document.getElementById("startPullBtn");
-  const statusText = document.getElementById("pullStatusText");
-  const progressWrap = document.getElementById("pullProgressWrap");
-  const progressBar = document.getElementById("pullProgressBar");
-  const progressLabel = document.getElementById("pullProgressLabel");
-  const layersContainer = document.getElementById("layersBreakdownContainer");
-
-  startPullBtn.disabled = true;
-  progressWrap.hidden = false;
-  statusText.textContent = "Connecting to registry & pulling layer manifests...";
-
-  const layers = generateLayerHashes(m.name, m.size);
-  layersContainer.innerHTML = layers.map((l, idx) => `
-    <div class="layer-item" id="modalLayer_${idx}">
-      <div class="layer-info-row">
-        <span>${l.name}</span>
-        <span class="layer-status" id="modalLayerStatus_${idx}">Waiting</span>
-      </div>
-      <div class="layer-hash">${l.hash} · ${l.size}</div>
-      <div class="layer-bar-bg"><div class="layer-bar-fill" id="modalLayerFill_${idx}"></div></div>
-    </div>
-  `).join("");
-
-  let currentLayerIdx = 0;
-  let layerPct = 0;
-  let overallPct = 0;
-
-  const layerTimer = setInterval(() => {
-    layerPct += Math.floor(Math.random() * 25) + 15;
-    if (layerPct > 100) layerPct = 100;
-
-    const layerFill = document.getElementById(`modalLayerFill_${currentLayerIdx}`);
-    const layerStatus = document.getElementById(`modalLayerStatus_${currentLayerIdx}`);
-    if (layerFill) layerFill.style.width = `${layerPct}%`;
-    if (layerStatus) layerStatus.textContent = `${layerPct}%`;
-
-    overallPct = Math.floor(((currentLayerIdx + (layerPct / 100)) / layers.length) * 100);
-    progressBar.style.width = `${overallPct}%`;
-    progressLabel.textContent = `${overallPct}% — Pulling layer ${currentLayerIdx + 1} of ${layers.length} for ${m.name}...`;
-
-    if (layerPct >= 100) {
-      if (layerStatus) {
-        layerStatus.textContent = "Complete ✓";
-        layerStatus.style.color = "var(--success)";
-      }
-      currentLayerIdx++;
-      layerPct = 0;
-
-      if (currentLayerIdx >= layers.length) {
-        clearInterval(layerTimer);
-        state.installed.add(m.id);
-        localStorage.setItem("victor_installed", JSON.stringify([...state.installed]));
-        VictorDatabase.saveModel(m);
-
-        statusText.textContent = "Successfully Docked to Local Storage! ✓";
-        startPullBtn.textContent = "✓ Docked";
-        startPullBtn.disabled = false;
-        renderGrid();
-        toast(`${m.name} ${m.size} pulled & saved to IndexedDB dock!`);
-      }
-    }
-  }, 180);
-}
-
-/* Ports Section */
-function renderPorts() {
-  const grid = document.getElementById("portGrid");
-  grid.innerHTML = PORTS.map(p => {
-    const connected = state.connected.has(p.id);
-    return `
-      <div class="port-card" style="--port-color:${p.color}">
-        <div class="port-card-head">
-          <div class="port-icon">${p.initials}</div>
+  let sIdx = 0;
+  filtered.forEach((m, i) => {
+    if(i > 0 && i % 6 === 0 && sIdx < SPONSORS.length) {
+      const s = SPONSORS[sIdx++];
+      g.innerHTML += `
+        <div class="bg-gradient-to-br from-indigo-900/40 to-slate-900/60 border border-indigo-500/20 rounded-2xl p-6 hover:border-indigo-500/40 transition-all flex flex-col justify-between group">
           <div>
-            <div class="port-name">${p.name}</div>
-            <div class="port-models">${p.models} indexed</div>
+            <div class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">Sponsored</div>
+            <h3 class="text-xl font-semibold text-white mb-2">${escapeHtml(s.sponsor)}</h3>
+            <span class="inline-block px-2 py-1 bg-slate-800 rounded text-xs text-slate-300 mb-3">${escapeHtml(s.size)}</span>
+            <p class="text-sm text-slate-400 line-clamp-3">${escapeHtml(s.desc)}</p>
           </div>
+          <button class="mt-4 w-full py-2 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white rounded-lg transition-colors font-medium text-sm">
+            Try ${escapeHtml(s.sponsor)}
+          </button>
+        </div>`;
+    }
+
+    const p = portInfo(m.port);
+    const isInstalled = state.installed.has(m.id);
+    
+    g.innerHTML += `
+      <div class="bg-slate-900/50 border border-white/5 rounded-2xl p-6 hover:bg-slate-800/60 transition-all flex flex-col justify-between group opacity-0 animate-fade-in" style="animation-delay: ${i*50}ms">
+        <div>
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full" style="background:${p.color}"></span>
+              <span class="text-xs font-medium text-slate-400">${escapeHtml(p.name)}</span>
+            </div>
+            <div class="text-xs text-slate-500 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              ${fmt(m.haul)}
+            </div>
+          </div>
+          <h3 class="text-lg font-bold text-slate-100 mb-1 group-hover:text-indigo-400 transition-colors">${escapeHtml(m.name)}</h3>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <span class="px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-300 font-mono">${escapeHtml(m.size)}</span>
+            ${m.tags.map(t => `<span class="px-2 py-0.5 bg-slate-800/50 rounded text-xs text-slate-400 border border-slate-700/50">${escapeHtml(t)}</span>`).join('')}
+          </div>
+          <p class="text-sm text-slate-400 line-clamp-2 mb-4">${escapeHtml(m.desc)}</p>
         </div>
-        <p class="port-desc">${p.desc}</p>
-        <button class="port-connect" data-port="${p.id}" data-connected="${connected}">
-          ${connected ? "Connected ✓" : "Connect"}
-        </button>
-      </div>
-    `;
-  }).join("");
-
-  grid.querySelectorAll(".port-connect").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.port;
-      if (state.connected.has(id)) {
-        state.connected.delete(id);
-        toast(`Disconnected ${portInfo(id).name}.`);
-      } else {
-        state.connected.add(id);
-        toast(`Connected ${portInfo(id).name}. Models indexed.`);
-      }
-      localStorage.setItem("victor_connected", JSON.stringify([...state.connected]));
-      renderPorts();
-      updateStats();
-    });
+        <div class="flex gap-2">
+          ${isInstalled 
+            ? `<button onclick="openPlayground('${m.id}')" class="flex-1 py-2 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-lg transition-colors font-medium text-sm flex justify-center items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Run
+               </button>`
+            : `<button onclick="openPullModal('${m.id}')" class="flex-1 py-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white rounded-lg transition-colors font-medium text-sm flex justify-center items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Pull
+               </button>`
+          }
+        </div>
+      </div>`;
   });
 }
 
-function updateStats() {
-  document.getElementById("statModels").textContent = MODELS.length;
-  document.getElementById("statPorts").textContent = state.connected.size;
-  document.getElementById("connectedCount").textContent = state.connected.size;
-  PORTS.forEach(p => { p.models = MODELS.filter(m => m.port === p.id).length; });
-}
-
-/* Interactive Web Terminal CLI Processor */
-function appendTermLine(text, type = "info") {
-  const history = document.getElementById("termHistory");
-  if (!history) return;
-  const p = document.createElement("p");
-  p.className = `term-line-out ${type}`;
-  p.textContent = text;
-  history.appendChild(p);
-  history.scrollTop = history.scrollHeight;
-}
-
-function processCliCommand(rawCmd) {
-  const cmd = rawCmd.trim();
-  if (!cmd) return;
-
-  appendTermLine(`$ ${cmd}`, "cmd");
-
-  const parts = cmd.split(/\s+/);
-  let main = parts[0].toLowerCase();
-  let action = parts[1] ? parts[1].toLowerCase() : "";
-  let arg = parts.slice(2).join(" ");
-
-  if (main !== "victor" && main !== "clear" && main !== "cls" && main !== "help") {
-    // If user types 'pull llama3.3' directly without 'victor' prefix
-    arg = parts.slice(1).join(" ");
-    action = main;
-    main = "victor";
-  }
-
-  if (main === "clear" || main === "cls" || action === "clear" || action === "cls") {
-    const history = document.getElementById("termHistory");
-    if (history) history.innerHTML = '<p class="term-welcome">Terminal output cleared.</p>';
-    return;
-  }
-
-  if (action === "help" || main === "help" || (!action && main === "victor")) {
-    appendTermLine("VICTOR CLI COMMAND REFERENCE:", "info");
-    appendTermLine("  victor pull <model-id>   Pull & dock model weights (e.g. victor pull llama-3.3-70b)", "info");
-    appendTermLine("  victor run <model-id>    Launch AI Playground for docked model", "info");
-    appendTermLine("  victor ls                List all currently docked models in IndexedDB", "info");
-    appendTermLine("  victor search <query>    Search manifest models", "info");
-    appendTermLine("  victor keys              Check API connection status", "info");
-    appendTermLine("  clear                    Clear terminal history", "info");
-    return;
-  }
-
-  if (action === "ls" || action === "list") {
-    const installedList = MODELS.filter(m => state.installed.has(m.id));
-    if (installedList.length === 0) {
-      appendTermLine("No models currently docked. Run 'victor pull <model>' to install.", "info");
-      return;
-    }
-    appendTermLine(`DOCKED MODELS (${installedList.length}):`, "success");
-    installedList.forEach(m => {
-      appendTermLine(` - ${m.name} (${m.size}) [${m.port.toUpperCase()}] -> ID: ${m.id}`, "info");
-    });
-    return;
-  }
-
-  if (action === "keys") {
-    appendTermLine("API KEY INTEGRATION STATUS:", "info");
-    appendTermLine(` OpenRouter : ${state.keys.openrouter ? 'Connected ✓' : 'Not set'}`, state.keys.openrouter ? 'success' : 'info');
-    appendTermLine(` OpenAI     : ${state.keys.openai ? 'Connected ✓' : 'Not set'}`, state.keys.openai ? 'success' : 'info');
-    appendTermLine(` Gemini     : ${state.keys.gemini ? 'Connected ✓' : 'Not set'}`, state.keys.gemini ? 'success' : 'info');
-    appendTermLine(` Ollama Local: ${state.keys.ollama || 'http://localhost:11434'}`, 'info');
-    return;
-  }
-
-  if (action === "search") {
-    if (!arg) {
-      appendTermLine("Usage: victor search <query> (e.g. victor search reasoning)", "info");
-      return;
-    }
-    const matches = MODELS.filter(m => m.name.toLowerCase().includes(arg.toLowerCase()) || m.tags.some(t => t.includes(arg.toLowerCase())));
-    if (!matches.length) {
-      appendTermLine(`No models matching '${arg}' found on manifest.`, "info");
-      return;
-    }
-    appendTermLine(`FOUND ${matches.length} MATCHES:`, "success");
-    matches.forEach(m => {
-      appendTermLine(` • ${m.name} (${m.size}) - ${m.desc} [${m.port.toUpperCase()}]`, "info");
-    });
-    return;
-  }
-
-  if (action === "run") {
-    if (!arg) {
-      appendTermLine("Usage: victor run <model-id> (e.g. victor run deepseek-r1)", "info");
-      return;
-    }
-    const q = arg.toLowerCase();
-    const m = MODELS.find(x => x.id === q || x.name.toLowerCase().includes(q));
-    if (m) {
-      appendTermLine(`Launching AI Playground for ${m.name}...`, "success");
-      openPlayground(m.id);
-    } else {
-      appendTermLine(`Model '${arg}' not found. Run 'victor search' or check name.`, "info");
-    }
-    return;
-  }
-
-  if (action === "pull") {
-    if (!arg) {
-      appendTermLine("Usage: victor pull <model-id> (e.g. victor pull meta-llama/llama-3.3-70b-instruct)", "info");
-      return;
-    }
-
-    // Clean user query (e.g. 'meta-llama/llama-3.3-70b-instruct' -> 'llama-3.3-70b')
-    const query = arg.toLowerCase().replace("meta-llama/", "").replace("-instruct", "");
-    let m = MODELS.find(x => x.id === query || x.name.toLowerCase().includes(query) || x.apiModel.toLowerCase().includes(query));
-
-    if (!m) {
-      // Create dynamically recognized model if user inputs an exact custom HF / Ollama tag!
-      m = {
-        id: query.replace(/[^a-z0-9-]/g, '-'),
-        name: arg,
-        size: "Custom",
-        port: "hf",
-        tags: ["custom"],
-        haul: 1000,
-        added: 1,
-        desc: `Custom pulled model layer manifest: ${arg}`,
-        apiModel: arg
-      };
-      MODELS.push(m);
-    }
-
-    appendTermLine(`Pulling ${m.name} (${m.size}) from ${m.port.toUpperCase()}...`, "info");
-    const layers = generateLayerHashes(m.name, m.size);
-
-    let lIdx = 0;
-    const termPullInterval = setInterval(() => {
-      if (lIdx < layers.length) {
-        appendTermLine(`  → ${layers[lIdx].name} [${layers[lIdx].hash}] 100% COMPLETE`, "layer");
-        lIdx++;
-      } else {
-        clearInterval(termPullInterval);
-        state.installed.add(m.id);
-        localStorage.setItem("victor_installed", JSON.stringify([...state.installed]));
-        VictorDatabase.saveModel(m);
-        renderGrid();
-        appendTermLine(`✓ Successfully pulled & docked ${m.name} to IndexedDB workspace!`, "success");
-        appendTermLine(`  Run 'victor run ${m.id}' to launch inference playground.`, "info");
-        toast(`Pulled ${m.name} via terminal!`);
-      }
-    }, 450);
-    return;
-  }
-
-  appendTermLine(`Unknown command: '${cmd}'. Type 'victor help' for available commands.`, "info");
-}
-
-/* Interactive AI Playground */
-function openPlayground(selectedModelId) {
-  const select = document.getElementById("pgModelSelect");
-  select.innerHTML = MODELS.map(m => `
-    <option value="${m.id}" ${m.id === selectedModelId ? 'selected' : ''}>${m.name} (${m.size})</option>
-  `).join("");
-
-  document.getElementById("playgroundModalOverlay").hidden = false;
-}
-
-async function handlePlaygroundSend(e) {
-  e.preventDefault();
-  const input = document.getElementById("pgInput");
-  const prompt = input.value.trim();
-  if (!prompt) return;
-
-  const modelId = document.getElementById("pgModelSelect").value;
-  const model = MODELS.find(m => m.id === modelId) || MODELS[0];
-  const msgsContainer = document.getElementById("pgMessages");
-
-  // User Message
-  const userMsg = document.createElement("div");
-  userMsg.className = "chat-msg user";
-  userMsg.innerHTML = `<div class="msg-author">${state.user ? state.user.username : 'User'}</div><div class="msg-content">${escapeHtml(prompt)}</div>`;
-  msgsContainer.appendChild(userMsg);
-  input.value = "";
-  msgsContainer.scrollTop = msgsContainer.scrollHeight;
-
-  // Assistant Loading Bubble
-  const botMsg = document.createElement("div");
-  botMsg.className = "chat-msg assistant";
-  botMsg.innerHTML = `<div class="msg-author">${model.name} (${model.size})</div><div class="msg-content"><em>Thinking &amp; executing inference...</em></div>`;
-  msgsContainer.appendChild(botMsg);
-  msgsContainer.scrollTop = msgsContainer.scrollHeight;
-
-  const contentEl = botMsg.querySelector(".msg-content");
-
-  // Real Inference Attempt via OpenRouter or OpenAI API if key exists!
-  if (state.keys.openrouter) {
-    try {
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${state.keys.openrouter}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: model.apiModel || "meta-llama/llama-3.1-8b-instruct",
-          messages: [{ role: "user", content: prompt }]
-        })
-      });
-      const data = await res.json();
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        contentEl.textContent = data.choices[0].message.content;
-        msgsContainer.scrollTop = msgsContainer.scrollHeight;
+function renderInstalledGrid() {
+    const g = document.getElementById("installedGrid");
+    if(!g) return;
+    
+    if(state.installed.size === 0) {
+        g.innerHTML = `
+            <div class="col-span-full py-16 text-center">
+                <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-700">
+                    <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-300 mb-2">No models installed</h3>
+                <p class="text-slate-500 mb-6">Explore the registry to pull your first model.</p>
+                <button onclick="document.getElementById('navRegistry').click()" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors">Browse Registry</button>
+            </div>
+        `;
         return;
-      }
+    }
+
+    g.innerHTML = "";
+    Array.from(state.installed).forEach(id => {
+        const m = MODELS.find(x => x.id === id);
+        if(!m) return;
+        const p = portInfo(m.port);
+        g.innerHTML += `
+            <div class="bg-slate-900/50 border border-indigo-500/20 rounded-2xl p-6 flex flex-col justify-between group">
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full" style="background:${p.color}"></span>
+                        <span class="text-xs font-medium text-slate-400">${escapeHtml(p.name)}</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-100 mb-1 group-hover:text-indigo-400 transition-colors">${escapeHtml(m.name)}</h3>
+                    <div class="flex gap-2 mb-4">
+                        <span class="px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-300 font-mono">${escapeHtml(m.size)}</span>
+                        <span class="px-2 py-0.5 bg-green-900/30 text-green-400 border border-green-500/20 rounded text-xs">Ready</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openPlayground('${m.id}')" class="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors text-sm font-medium">Launch</button>
+                    <button onclick="removeModel('${m.id}')" class="p-2 bg-slate-800 text-red-400 rounded-lg hover:bg-red-900/50 transition-colors" title="Remove model">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function removeModel(id) {
+    if(!confirm(`Are you sure you want to remove ${id}?`)) return;
+    state.installed.delete(id);
+    localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
+    toast(`Removed ${id}`);
+    updateStats();
+    renderInstalledGrid();
+    renderGrid(); // update pull/run buttons
+}
+
+// Authentication System
+function getUsersDB() {
+    return JSON.parse(localStorage.getItem("victor_users_db") || '[]');
+}
+
+function saveUsersDB(users) {
+    localStorage.setItem("victor_users_db", JSON.stringify(users));
+}
+
+function initAuth() {
+    const authBtn = document.getElementById("authBtn");
+    const userMenu = document.getElementById("userMenu");
+    const userAvatar = document.getElementById("userAvatar");
+    
+    if(state.user) {
+        if(authBtn) authBtn.style.display = "none";
+        if(userMenu) userMenu.style.display = "flex";
+        if(userAvatar) userAvatar.innerText = state.user.username ? state.user.username.charAt(0).toUpperCase() : "?";
+    } else {
+        if(authBtn) authBtn.style.display = "flex";
+        if(userMenu) userMenu.style.display = "none";
+    }
+}
+
+function handleLogin(e) {
+    e.preventDefault();
+    const identifier = document.getElementById("loginEmail").value;
+    const pass = document.getElementById("loginPassword").value;
+    
+    const users = getUsersDB();
+    const user = users.find(u => (u.email === identifier || u.username === identifier) && u.password === btoa(pass));
+    
+    if(user) {
+        state.user = user;
+        localStorage.setItem("victor_user", JSON.stringify(user));
+        document.getElementById("authModal").style.display = "none";
+        initAuth();
+        toast("Welcome back, " + user.username, "success");
+    } else {
+        toast("Invalid credentials", "error");
+    }
+}
+
+function handleRegister(e) {
+    e.preventDefault();
+    const username = document.getElementById("regUsername").value;
+    const email = document.getElementById("regEmail").value;
+    const pass = document.getElementById("regPassword").value;
+    
+    const users = getUsersDB();
+    if(users.find(u => u.username === username)) {
+        toast("Username already taken", "error");
+        return;
+    }
+    if(users.find(u => u.email === email)) {
+        toast("Email already registered", "error");
+        return;
+    }
+    
+    const newUser = {
+        username,
+        email,
+        password: btoa(pass),
+        role: "user",
+        created: new Date().toISOString(),
+        modelsPulled: 0
+    };
+    
+    users.push(newUser);
+    saveUsersDB(users);
+    
+    // Auto login
+    state.user = newUser;
+    localStorage.setItem("victor_user", JSON.stringify(newUser));
+    document.getElementById("authModal").style.display = "none";
+    initAuth();
+    toast("Registration successful!", "success");
+}
+
+function handleGuestLogin() {
+    const guestUser = {
+        username: "Guest_" + Math.floor(Math.random() * 10000),
+        email: "guest@victor.dock",
+        role: "guest"
+    };
+    state.user = guestUser;
+    localStorage.setItem("victor_user", JSON.stringify(guestUser));
+    document.getElementById("authModal").style.display = "none";
+    initAuth();
+    toast("Logged in as Guest");
+}
+
+function handleLogout() {
+    state.user = null;
+    localStorage.removeItem("victor_user");
+    state.adminAuthenticated = false;
+    document.getElementById("userDropdown").classList.add("hidden");
+    initAuth();
+    toast("Logged out");
+}
+
+// Admin System
+function setupAdminPIN() {
+    const inputs = document.querySelectorAll(".pin-digit");
+    inputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+            if(e.target.value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            checkPIN();
+        });
+        input.addEventListener("keydown", (e) => {
+            if(e.key === "Backspace" && !e.target.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+}
+
+function checkPIN() {
+    const inputs = document.querySelectorAll(".pin-digit");
+    const pin = Array.from(inputs).map(i => i.value).join("");
+    if(pin.length === 8) {
+        if(pin === ADMIN_VERIFICATION) {
+            state.adminAuthenticated = true;
+            document.getElementById("adminPinOverlay").style.display = "none";
+            inputs.forEach(i => i.value = "");
+            openAdminDashboard();
+            toast("Admin access granted", "success");
+        } else {
+            const container = document.querySelector("#adminPinOverlay .bg-slate-900");
+            container.classList.add("animate-shake");
+            setTimeout(() => container.classList.remove("animate-shake"), 500);
+            inputs.forEach(i => i.value = "");
+            inputs[0].focus();
+            toast("Access denied. Wrong PIN.", "error");
+        }
+    }
+}
+
+function openAdminDashboard() {
+    if(!state.adminAuthenticated) {
+        document.getElementById("adminPinOverlay").style.display = "flex";
+        setTimeout(() => document.querySelector(".pin-digit").focus(), 100);
+        return;
+    }
+    document.getElementById("adminDashboardOverlay").style.display = "flex";
+    renderAdminUsers();
+}
+
+function renderAdminUsers() {
+    const tbody = document.getElementById("adminUsersTableBody");
+    if(!tbody) return;
+    const users = getUsersDB();
+    
+    document.getElementById("adminTotalUsers").innerText = users.length;
+    document.getElementById("adminActiveSessions").innerText = state.user ? "1" : "0";
+    
+    tbody.innerHTML = "";
+    users.forEach((u, i) => {
+        tbody.innerHTML += `
+            <tr class="border-b border-white/5 hover:bg-white/5">
+                <td class="p-3 text-sm text-slate-400">${i+1}</td>
+                <td class="p-3 text-sm font-medium text-slate-200">${escapeHtml(u.username)}</td>
+                <td class="p-3 text-sm text-slate-400">${escapeHtml(u.email)}</td>
+                <td class="p-3 text-sm text-slate-400">${escapeHtml(u.role)}</td>
+                <td class="p-3 text-sm text-slate-400">${u.modelsPulled || 0}</td>
+                <td class="p-3 text-sm">
+                    <button class="text-red-400 hover:text-red-300">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function switchAdminTab(tabId) {
+    document.querySelectorAll(".admin-panel").forEach(p => p.classList.add("hidden"));
+    document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.remove("bg-slate-800", "text-white"));
+    
+    document.getElementById(tabId).classList.remove("hidden");
+    document.querySelector(`[data-target="${tabId}"]`).classList.add("bg-slate-800", "text-white");
+    
+    if(tabId === 'adminUsersPanel') renderAdminUsers();
+    // Add logic for other admin tabs as needed
+}
+
+// Pull Simulation
+function openPullModal(modelId) {
+    state.currentPullingModel = MODELS.find(m => m.id === modelId);
+    if(!state.currentPullingModel) return;
+    
+    const m = state.currentPullingModel;
+    document.getElementById("pullModalTitle").innerText = `Pulling ${m.name} (${m.size})`;
+    document.getElementById("pullModal").style.display = "flex";
+    
+    // Generate snippets
+    document.getElementById("snippetCli").innerText = `victor pull ${m.id}`;
+    document.getElementById("snippetPython").innerText = `import victor\n\nmodel = victor.pull("${m.id}")\nprint(f"Loaded {model.name}")`;
+    document.getElementById("snippetJs").innerText = `import { pull } from 'victorx';\n\nconst model = await pull('${m.id}');`;
+    
+    startPullSimulation();
+}
+
+function startPullSimulation() {
+    const layers = [
+        { name: "config.json", size: 1024, el: document.getElementById("layer1Progress") },
+        { name: "safetensors.index.json", size: 24000, el: document.getElementById("layer2Progress") },
+        { name: "weight_shards.bin", size: 1024 * 1024 * 100, el: document.getElementById("layer3Progress") }, // pseudo size
+        { name: "tokenizer.model", size: 1024 * 500, el: document.getElementById("layer4Progress") }
+    ];
+    
+    const btn = document.getElementById("pullConfirmBtn");
+    btn.disabled = true;
+    btn.innerText = "Pulling...";
+    
+    let layerIdx = 0;
+    
+    function animateLayer(layer, cb) {
+        let p = 0;
+        const interval = setInterval(() => {
+            p += Math.random() * 15;
+            if(p >= 100) {
+                p = 100;
+                clearInterval(interval);
+                layer.el.style.width = "100%";
+                layer.el.classList.add("bg-green-500");
+                layer.el.classList.remove("bg-indigo-500");
+                setTimeout(cb, 200);
+            } else {
+                layer.el.style.width = `${p}%`;
+            }
+        }, 100);
+    }
+    
+    function nextLayer() {
+        if(layerIdx < layers.length) {
+            animateLayer(layers[layerIdx], () => {
+                layerIdx++;
+                nextLayer();
+            });
+        } else {
+            // Complete
+            btn.innerText = "Complete";
+            btn.classList.add("bg-green-600");
+            btn.classList.remove("bg-indigo-600");
+            
+            setTimeout(() => {
+                state.installed.add(state.currentPullingModel.id);
+                localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
+                
+                // Update user stats
+                if(state.user) {
+                    const users = getUsersDB();
+                    const uIdx = users.findIndex(u => u.username === state.user.username);
+                    if(uIdx > -1) {
+                        users[uIdx].modelsPulled = (users[uIdx].modelsPulled || 0) + 1;
+                        saveUsersDB(users);
+                    }
+                }
+                
+                toast(`Successfully pulled ${state.currentPullingModel.id}`, "success");
+                document.getElementById("pullModal").style.display = "none";
+                updateStats();
+                renderInstalledGrid();
+                renderGrid();
+                
+                // reset modal state
+                layers.forEach(l => {
+                    l.el.style.width = "0%";
+                    l.el.classList.add("bg-indigo-500");
+                    l.el.classList.remove("bg-green-500");
+                });
+                btn.disabled = false;
+                btn.innerText = "Pulling...";
+                btn.classList.add("bg-indigo-600");
+                btn.classList.remove("bg-green-600");
+            }, 1000);
+        }
+    }
+    
+    nextLayer();
+}
+
+// Web CLI
+function processCliCommand(input) {
+    const cmd = input.trim().toLowerCase();
+    const parts = cmd.split(" ");
+    
+    appendTermLine(`> ${escapeHtml(input)}`, 'text-slate-300');
+    
+    if(!cmd) return;
+    
+    if(cmd === "clear") {
+        document.getElementById("cliOutput").innerHTML = "";
+        return;
+    }
+    
+    if(parts[0] === "victor") {
+        switch(parts[1]) {
+            case "pull":
+                if(!parts[2]) appendTermLine("Usage: victor pull <model_id>", "text-red-400");
+                else {
+                    const m = MODELS.find(x => x.id === parts[2]);
+                    if(m) {
+                        appendTermLine(`Initializing pull for ${m.id}...`, "text-indigo-400");
+                        openPullModal(m.id);
+                    } else {
+                        appendTermLine(`Error: Model '${parts[2]}' not found in registry.`, "text-red-400");
+                    }
+                }
+                break;
+            case "ls":
+            case "list":
+                if(state.installed.size === 0) {
+                    appendTermLine("No models currently installed.", "text-slate-400");
+                } else {
+                    appendTermLine("INSTALLED MODELS:", "text-indigo-400 font-bold");
+                    Array.from(state.installed).forEach(id => {
+                        const m = MODELS.find(x => x.id === id);
+                        appendTermLine(`${m.id.padEnd(20)} ${m.size.padEnd(8)} ${m.port}`, "text-slate-300 font-mono");
+                    });
+                }
+                break;
+            case "search":
+                if(!parts[2]) appendTermLine("Usage: victor search <query>", "text-red-400");
+                else {
+                    const q = parts[2];
+                    const res = MODELS.filter(m => m.id.includes(q) || m.name.toLowerCase().includes(q));
+                    appendTermLine(`Found ${res.length} models matching '${q}':`, "text-indigo-400");
+                    res.forEach(m => appendTermLine(`- ${m.id}`, "text-slate-300"));
+                }
+                break;
+            case "run":
+                if(!parts[2]) appendTermLine("Usage: victor run <model_id>", "text-red-400");
+                else if(state.installed.has(parts[2])) openPlayground(parts[2]);
+                else appendTermLine(`Error: Model '${parts[2]}' not installed. Try 'victor pull ${parts[2]}' first.`, "text-red-400");
+                break;
+            case "keys":
+                appendTermLine("API KEY STATUS:", "text-indigo-400 font-bold");
+                Object.entries(state.keys).forEach(([provider, key]) => {
+                    appendTermLine(`${provider.padEnd(12)}: ${key ? '[SET]' : '[NOT SET]'}`, key ? "text-green-400" : "text-slate-500");
+                });
+                break;
+            case "help":
+            default:
+                appendTermLine("VictorX CLI Commands:", "text-indigo-400 font-bold");
+                appendTermLine("victor pull <model>   - Download a model");
+                appendTermLine("victor ls             - List installed models");
+                appendTermLine("victor search <query> - Search the registry");
+                appendTermLine("victor run <model>    - Launch playground");
+                appendTermLine("victor keys           - Check API key status");
+                appendTermLine("clear                 - Clear terminal");
+                break;
+        }
+    } else {
+        appendTermLine(`command not found: ${parts[0]}`, "text-red-400");
+    }
+}
+
+function appendTermLine(text, className = "text-slate-300") {
+    const out = document.getElementById("cliOutput");
+    const line = document.createElement("div");
+    line.className = className;
+    line.innerHTML = text; // Allow pre-formatted html
+    out.appendChild(line);
+    out.scrollTop = out.scrollHeight;
+}
+
+// AI Playground
+let playgroundChatHistory = [];
+
+function openPlayground(modelId) {
+    if(!state.installed.has(modelId)) {
+        toast(`Please pull ${modelId} first`, "error");
+        return;
+    }
+    
+    document.getElementById("playgroundModal").style.display = "flex";
+    
+    const select = document.getElementById("pgModelSelect");
+    select.innerHTML = "";
+    Array.from(state.installed).forEach(id => {
+        const m = MODELS.find(x => x.id === id);
+        if(m) {
+            select.innerHTML += `<option value="${m.id}" ${m.id === modelId ? 'selected' : ''}>${m.name} (${m.size})</option>`;
+        }
+    });
+    
+    document.getElementById("pgChatArea").innerHTML = `
+        <div class="text-center text-slate-500 my-8">
+            System: Connected to ${modelId}. Type a message to begin.
+        </div>
+    `;
+    playgroundChatHistory = [];
+}
+
+async function handlePlaygroundSend() {
+    const input = document.getElementById("pgInput");
+    const msg = input.value.trim();
+    if(!msg) return;
+    
+    const modelId = document.getElementById("pgModelSelect").value;
+    const model = MODELS.find(m => m.id === modelId);
+    
+    input.value = "";
+    appendChatMessage("user", msg);
+    playgroundChatHistory.push({ role: "user", content: msg });
+    
+    const btn = document.getElementById("pgSendBtn");
+    btn.disabled = true;
+    
+    // Simulated loading
+    const loadingId = "msg-" + Date.now();
+    const chatArea = document.getElementById("pgChatArea");
+    chatArea.innerHTML += `<div id="${loadingId}" class="flex gap-4 mb-6"><div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs shrink-0">AI</div><div class="bg-slate-800 rounded-2xl rounded-tl-none p-4 text-slate-300 animate-pulse">Thinking...</div></div>`;
+    chatArea.scrollTop = chatArea.scrollHeight;
+    
+    try {
+        let responseText = "";
+        
+        // Try real APIs if configured
+        if(state.keys.openrouter && model.port === 'openrouter') {
+             // Real OpenRouter call
+             const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                 method: "POST",
+                 headers: {
+                     "Authorization": `Bearer ${state.keys.openrouter}`,
+                     "Content-Type": "application/json"
+                 },
+                 body: JSON.stringify({
+                     model: model.apiModel,
+                     messages: playgroundChatHistory
+                 })
+             });
+             const data = await res.json();
+             if(data.choices && data.choices.length > 0) {
+                 responseText = data.choices[0].message.content;
+             } else {
+                 throw new Error("Invalid API response");
+             }
+        } else {
+            // Offline Simulation
+            await new Promise(r => setTimeout(r, 1500));
+            responseText = generateSimulatedResponse(msg, modelId);
+        }
+        
+        document.getElementById(loadingId).remove();
+        appendChatMessage("assistant", responseText);
+        playgroundChatHistory.push({ role: "assistant", content: responseText });
+        
     } catch (err) {
-      console.warn("API Call Error, falling back to local simulation:", err);
+        document.getElementById(loadingId).remove();
+        appendChatMessage("system", `Error: ${err.message}. Please check your API keys or connection.`);
     }
-  }
-
-  // Built-in intelligent simulated response engine if no key configured
-  setTimeout(() => {
-    contentEl.textContent = generateSimulatedResponse(model, prompt);
-    msgsContainer.scrollTop = msgsContainer.scrollHeight;
-  }, 700);
+    
+    btn.disabled = false;
 }
 
-function generateSimulatedResponse(model, prompt) {
-  const p = prompt.toLowerCase();
-
-  if (p.includes("code") || p.includes("function") || p.includes("python") || p.includes("javascript")) {
-    return `Here is a clean implementation compiled by ${model.name} (${model.size}):\n\n\`\`\`python\ndef victor_model_pipeline(data_stream):\n    """Process inference stream on ${model.name} (${model.port.toUpperCase()})"""\n    results = []\n    for item in data_stream:\n        processed = f"Docked: {item}"\n        results.append(processed)\n    return results\n\`\`\`\n\nTip: To run this model with live OpenRouter / OpenAI API keys, click ⚙️ API Keys in the topbar!`;
-  }
-
-  return `[Response from ${model.name} (${model.size} / ${model.port.toUpperCase()})]\n\n"I have processed your query: '${prompt}'.\n\nThis model is currently running on the Victor dock index. Configure your OpenRouter API key in settings to unlock real live streaming from cloud hardware!"`;
-}
-
-function escapeHtml(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-/* Event Listeners Setup */
-document.addEventListener("DOMContentLoaded", () => {
-  VictorDatabase.init();
-  initAuth();
-  updateStats();
-  renderChips();
-  renderGrid();
-  renderPorts();
-
-  // Terminal form handlers
-  const termForm = document.getElementById("termForm");
-  const cliInput = document.getElementById("cliInput");
-  const clearTermBtn = document.getElementById("clearTermBtn");
-
-  if (termForm && cliInput) {
-    termForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const val = cliInput.value.trim();
-      if (val) {
-        processCliCommand(val);
-        cliInput.value = "";
-      }
-    });
-  }
-
-  if (clearTermBtn) {
-    clearTermBtn.addEventListener("click", () => {
-      const history = document.getElementById("termHistory");
-      if (history) history.innerHTML = '<p class="term-welcome">Terminal cleared. Try <code class="cmd-chip">victor help</code>.</p>';
-    });
-  }
-
-  // Search & Filter
-  document.getElementById("searchInput").addEventListener("input", (e) => {
-    state.search = e.target.value;
-    renderGrid();
-  });
-
-  document.getElementById("sortSelect").addEventListener("change", (e) => {
-    state.sort = e.target.value;
-    renderGrid();
-  });
-
-  // Auth Modals & Dropdown
-  const userBtn = document.getElementById("userBtn");
-  const userDropdown = document.getElementById("userDropdown");
-  if (userBtn) {
-    userBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      userDropdown.hidden = !userDropdown.hidden;
-    });
-    document.addEventListener("click", () => { userDropdown.hidden = true; });
-  }
-
-  document.getElementById("openAuthBtn").addEventListener("click", () => {
-    document.getElementById("authModalOverlay").hidden = false;
-  });
-  document.getElementById("authModalClose").addEventListener("click", () => {
-    document.getElementById("authModalOverlay").hidden = true;
-  });
-
-  document.getElementById("authForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const u = document.getElementById("authUsername").value.trim();
-    const em = document.getElementById("authEmail").value.trim();
-    const k = document.getElementById("authApiKey").value.trim();
-    if (u) {
-      saveUser(u, em, k);
-      document.getElementById("authModalOverlay").hidden = true;
+function appendChatMessage(role, content) {
+    const area = document.getElementById("pgChatArea");
+    let html = "";
+    if(role === "user") {
+        html = `
+        <div class="flex gap-4 mb-6 justify-end">
+            <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-4 max-w-[80%]">
+                ${escapeHtml(content)}
+            </div>
+            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs shrink-0 border border-white/10">U</div>
+        </div>`;
+    } else if (role === "assistant") {
+        html = `
+        <div class="flex gap-4 mb-6">
+            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs shrink-0 shadow-[0_0_10px_rgba(79,70,229,0.5)]">AI</div>
+            <div class="bg-slate-800 border border-white/5 rounded-2xl rounded-tl-none p-4 text-slate-300 max-w-[80%] whitespace-pre-wrap">
+                ${escapeHtml(content)}
+            </div>
+        </div>`;
+    } else {
+        html = `<div class="text-center text-red-400 my-4 text-sm">${escapeHtml(content)}</div>`;
     }
-  });
+    
+    area.innerHTML += html;
+    area.scrollTop = area.scrollHeight;
+}
 
-  document.getElementById("quickGuestLoginBtn").addEventListener("click", () => {
-    saveUser("Developer_Guest", "guest@victor.dock", "");
-    document.getElementById("authModalOverlay").hidden = true;
-  });
+function generateSimulatedResponse(prompt, modelId) {
+    const p = prompt.toLowerCase();
+    if(p.includes("hello") || p.includes("hi")) return `Hello! I am ${modelId}, running locally in your browser simulation. How can I assist you today?`;
+    if(p.includes("code") || p.includes("write")) return "```javascript\nfunction simulateCode() {\n  return 'This is a simulated code block from ' + modelId;\n}\n```";
+    return `[Simulated response from ${modelId}]\nI understood your query: "${prompt}". In a full deployment, I would process this using my weights. Since this is a demo, I am replying with a standard simulated response.`;
+}
 
-  document.getElementById("logoutBtn").addEventListener("click", logoutUser);
 
-  // API Keys Modal
-  document.getElementById("openApiKeysBtn").addEventListener("click", openKeysModal);
-  document.getElementById("dropdownKeysBtn").addEventListener("click", () => {
-    userDropdown.hidden = true;
-    openKeysModal();
-  });
-  document.getElementById("apiKeysModalClose").addEventListener("click", () => {
-    document.getElementById("apiKeysModalOverlay").hidden = true;
-  });
+// Key Manager
+function openKeysModal() {
+    document.getElementById("keysModal").style.display = "flex";
+    document.getElementById("keyOpenRouter").value = state.keys.openrouter || "";
+    document.getElementById("keyOpenAI").value = state.keys.openai || "";
+    document.getElementById("keyGemini").value = state.keys.gemini || "";
+    document.getElementById("keyOllama").value = state.keys.ollama || "http://localhost:11434";
+    updateKeyStatusDisplay();
+}
 
-  document.getElementById("apiKeysForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    state.keys.openrouter = document.getElementById("keyOpenRouter").value.trim();
-    state.keys.openai = document.getElementById("keyOpenAI").value.trim();
-    state.keys.gemini = document.getElementById("keyGemini").value.trim();
-    state.keys.ollama = document.getElementById("urlOllama").value.trim();
+function saveKeys() {
+    state.keys = {
+        openrouter: document.getElementById("keyOpenRouter").value,
+        openai: document.getElementById("keyOpenAI").value,
+        gemini: document.getElementById("keyGemini").value,
+        ollama: document.getElementById("keyOllama").value
+    };
     localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
     updateKeyStatusDisplay();
-    document.getElementById("apiKeysModalOverlay").hidden = true;
-    toast("API settings saved successfully.");
-  });
-
-  document.getElementById("clearKeysBtn").addEventListener("click", () => {
-    state.keys = { openrouter: "", openai: "", gemini: "", ollama: "http://localhost:11434" };
-    localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
-    openKeysModal();
-    toast("Cleared API keys.");
-  });
-
-  // Password visibility toggles
-  document.querySelectorAll(".btn-toggle-pw").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const targetInput = document.getElementById(btn.dataset.target);
-      if (targetInput) {
-        if (targetInput.type === "password") {
-          targetInput.type = "text";
-          btn.textContent = "🙈";
-        } else {
-          targetInput.type = "password";
-          btn.textContent = "👁️";
-        }
-      }
-    });
-  });
-
-  // Code Tabs & Pull Modal Actions
-  document.querySelectorAll(".code-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".code-tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      state.activeTab = tab.dataset.tab;
-      updateCodeSnippetDisplay();
-    });
-  });
-
-  document.getElementById("startPullBtn").addEventListener("click", startPullSimulation);
-
-  document.getElementById("copyCodeBtn").addEventListener("click", async () => {
-    const code = document.getElementById("pullModalCodeSnippet").textContent;
-    try {
-      await navigator.clipboard.writeText(code);
-      toast("Snippet copied to clipboard!");
-    } catch {
-      toast("Select and copy code manually.");
-    }
-  });
-
-  document.getElementById("pullModalClose").addEventListener("click", () => {
-    document.getElementById("pullModalOverlay").hidden = true;
-  });
-
-  document.getElementById("launchPlaygroundFromModalBtn").addEventListener("click", () => {
-    document.getElementById("pullModalOverlay").hidden = true;
-    if (state.currentPullingModel) openPlayground(state.currentPullingModel.id);
-  });
-
-  // Playground Modal
-  document.getElementById("openPlaygroundNavLink").addEventListener("click", (e) => {
-    e.preventDefault();
-    openPlayground();
-  });
-  document.getElementById("heroPlaygroundBtn").addEventListener("click", () => openPlayground());
-  document.getElementById("playgroundClose").addEventListener("click", () => {
-    document.getElementById("playgroundModalOverlay").hidden = true;
-  });
-  document.getElementById("pgKeysBtn").addEventListener("click", () => {
-    openKeysModal();
-  });
-  document.getElementById("pgForm").addEventListener("submit", handlePlaygroundSend);
-
-  // Miscellaneous
-  document.getElementById("openConnectedBtn").addEventListener("click", () => {
-    document.getElementById("ports").scrollIntoView({ behavior: "smooth" });
-  });
-  document.getElementById("requestSlotBtn").addEventListener("click", () => {
-    toast("Slot request recorded — Victor team will reach out!");
-  });
-  document.getElementById("dropdownDockBtn").addEventListener("click", () => {
-    userDropdown.hidden = true;
-    document.getElementById("mydock").scrollIntoView({ behavior: "smooth" });
-  });
-
-  // UPI Subscription Modal
-  const openUpiBtn = document.getElementById("openUpiModalBtn");
-  const openUpiNav = document.getElementById("openUpiModalNavLink");
-  const upiOverlay = document.getElementById("upiModalOverlay");
-  const upiClose = document.getElementById("upiModalClose");
-  const copyUpiBtn = document.getElementById("copyUpiBtn");
-  const confirmUpiBtn = document.getElementById("confirmUpiPayBtn");
-
-  const openUpiModal = (e) => {
-    if (e) e.preventDefault();
-    upiOverlay.hidden = false;
-  };
-
-  if (openUpiBtn) openUpiBtn.addEventListener("click", openUpiModal);
-  if (openUpiNav) openUpiNav.addEventListener("click", openUpiModal);
-  if (upiClose) upiClose.addEventListener("click", () => { upiOverlay.hidden = true; });
-
-  if (copyUpiBtn) {
-    copyUpiBtn.addEventListener("click", async () => {
-      const upiId = document.getElementById("upiIdText").textContent;
-      try {
-        await navigator.clipboard.writeText(upiId);
-        toast("UPI ID copied: " + upiId);
-      } catch {
-        toast("UPI ID: arasu9629hf@okhdfcbank");
-      }
-    });
-  }
-
-  if (confirmUpiBtn) {
-    confirmUpiBtn.addEventListener("click", () => {
-      upiOverlay.hidden = true;
-      toast("Thank you for your support! Pro status pending verification.");
-    });
-  }
-
-  // ESC Key listener
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      document.querySelectorAll(".modal-overlay").forEach(m => m.hidden = true);
-    }
-  });
-});
-
-// Immediate execution trigger for instantaneous rendering
-try {
-  initAuth();
-  updateStats();
-  renderChips();
-  renderGrid();
-  renderPorts();
-} catch (err) {
-  console.warn("Immediate render init:", err);
+    toast("API Keys saved successfully", "success");
+    document.getElementById("keysModal").style.display = "none";
 }
+
+function updateKeyStatusDisplay() {
+    ['openrouter', 'openai', 'gemini'].forEach(k => {
+        const badge = document.getElementById(`status${k.charAt(0).toUpperCase() + k.slice(1)}`);
+        if(badge) {
+            if(state.keys[k]) {
+                badge.className = "text-xs px-2 py-1 rounded bg-green-900/30 text-green-400 border border-green-500/20";
+                badge.innerText = "Connected";
+            } else {
+                badge.className = "text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 border border-white/5";
+                badge.innerText = "Not set";
+            }
+        }
+    });
+}
+
+
+// Initialize & Event Listeners
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        await initDB();
+    } catch (e) {
+        console.warn("IndexedDB init failed, falling back to localStorage", e);
+    }
+
+    updateStats();
+    renderChips();
+    renderGrid();
+    renderInstalledGrid();
+    initAuth();
+    
+    // Auth Tabs
+    const loginTab = document.getElementById("authTabLogin");
+    const regTab = document.getElementById("authTabRegister");
+    const loginForm = document.getElementById("loginForm");
+    const regForm = document.getElementById("registerForm");
+    
+    if(loginTab && regTab) {
+        loginTab.addEventListener("click", () => {
+            loginTab.classList.replace("border-transparent", "border-indigo-500");
+            loginTab.classList.replace("text-slate-400", "text-indigo-400");
+            regTab.classList.replace("border-indigo-500", "border-transparent");
+            regTab.classList.replace("text-indigo-400", "text-slate-400");
+            loginForm.classList.remove("hidden");
+            regForm.classList.add("hidden");
+        });
+        
+        regTab.addEventListener("click", () => {
+            regTab.classList.replace("border-transparent", "border-indigo-500");
+            regTab.classList.replace("text-slate-400", "text-indigo-400");
+            loginTab.classList.replace("border-indigo-500", "border-transparent");
+            loginTab.classList.replace("text-indigo-400", "text-slate-400");
+            regForm.classList.remove("hidden");
+            loginForm.classList.add("hidden");
+        });
+    }
+
+    if(loginForm) loginForm.addEventListener("submit", handleLogin);
+    if(regForm) regForm.addEventListener("submit", handleRegister);
+    
+    const guestBtn = document.getElementById("guestLoginBtn");
+    if(guestBtn) guestBtn.addEventListener("click", handleGuestLogin);
+    
+    const authBtn = document.getElementById("authBtn");
+    if(authBtn) authBtn.addEventListener("click", () => document.getElementById("authModal").style.display = "flex");
+    
+    const userMenu = document.getElementById("userMenu");
+    const userDropdown = document.getElementById("userDropdown");
+    if(userMenu) {
+        userMenu.addEventListener("click", () => userDropdown.classList.toggle("hidden"));
+    }
+    
+    const logoutBtn = document.getElementById("logoutBtn");
+    if(logoutBtn) logoutBtn.addEventListener("click", handleLogout);
+    
+    // Navigation
+    document.querySelectorAll(".nav-link").forEach(link => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("text-indigo-400"));
+            link.classList.add("text-indigo-400");
+            
+            document.querySelectorAll(".section-container").forEach(s => s.classList.add("hidden"));
+            const target = link.dataset.target;
+            if(document.getElementById(target)) document.getElementById(target).classList.remove("hidden");
+            
+            if(target === 'sectionMyDock') renderInstalledGrid();
+        });
+    });
+
+    // Search & Filter
+    const searchInput = document.getElementById("searchInput");
+    if(searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            state.search = e.target.value;
+            renderGrid();
+        });
+    }
+    
+    const sortSelect = document.getElementById("sortSelect");
+    if(sortSelect) {
+        sortSelect.addEventListener("change", (e) => {
+            state.sort = e.target.value;
+            renderGrid();
+        });
+    }
+
+    // CLI
+    const cliInput = document.getElementById("cliInput");
+    if(cliInput) {
+        cliInput.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") {
+                processCliCommand(cliInput.value);
+                cliInput.value = "";
+            }
+        });
+        appendTermLine("VictorX Interactive CLI v1.0.0", "text-slate-400");
+        appendTermLine("Type 'help' to see available commands.", "text-slate-500 mb-4");
+    }
+
+    // Playground
+    const pgInput = document.getElementById("pgInput");
+    const pgSendBtn = document.getElementById("pgSendBtn");
+    if(pgSendBtn) pgSendBtn.addEventListener("click", handlePlaygroundSend);
+    if(pgInput) {
+        pgInput.addEventListener("keydown", (e) => {
+            if(e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handlePlaygroundSend();
+            }
+        });
+    }
+
+    // Modals Close
+    document.querySelectorAll(".modal-close").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            const modal = e.target.closest(".fixed.inset-0");
+            if(modal) modal.style.display = "none";
+        });
+    });
+
+    // Admin PIN & Dashboard
+    const adminPinBtn = document.getElementById("adminPinBtn");
+    if(adminPinBtn) {
+        adminPinBtn.addEventListener("click", () => {
+            document.getElementById("adminPinOverlay").style.display = "flex";
+            setTimeout(() => document.querySelector(".pin-digit").focus(), 100);
+        });
+    }
+    setupAdminPIN();
+    
+    document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            switchAdminTab(e.currentTarget.dataset.target);
+        });
+    });
+
+    // Global Shortcuts
+    document.addEventListener("keydown", (e) => {
+        if(e.key === "Escape") {
+            document.querySelectorAll(".fixed.inset-0").forEach(m => m.style.display = "none");
+        }
+        if(e.ctrlKey && e.key === "k") {
+            e.preventDefault();
+            if(searchInput) searchInput.focus();
+        }
+        if(e.ctrlKey && e.key === "p") {
+            e.preventDefault();
+            if(state.installed.size > 0) {
+                openPlayground(Array.from(state.installed)[0]);
+            }
+        }
+    });
+
+    // Scroll Animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting) {
+                entry.target.classList.add("opacity-100", "translate-y-0");
+                entry.target.classList.remove("opacity-0", "translate-y-10");
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll(".animate-on-scroll").forEach(el => observer.observe(el));
+});

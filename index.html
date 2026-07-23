@@ -1,548 +1,1018 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com http://localhost:11434 http://127.0.0.1:11434;">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Victor — every model, one dock</title>
-<meta name="description" content="Victor indexes models from Ollama, Hugging Face, OpenRouter, and every port worth pulling from. Search, compare, pull, and run in one place.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VictorX — AI Model Registry & Execution Dock</title>
+  
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com http://localhost:11434 http://127.0.0.1:11434;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="VictorX is a universal AI model registry and execution dock. Indexing Ollama, HuggingFace, OpenRouter, and more.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="noise" aria-hidden="true"></div>
+  <!-- Noise Overlay -->
+  <div class="noise" aria-hidden="true"></div>
 
-<!-- TOPBAR -->
-<header class="topbar">
-  <div class="wrap topbar-inner">
-    <a class="brand" href="#top">
-      <span class="brand-mark">V</span>
-      <span class="brand-word">Victor</span>
-    </a>
-    <nav class="mainnav" aria-label="Primary">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="currentColor"/>
+      </svg>
+      <span>VictorX</span>
+    </div>
+    
+    <nav class="topbar-nav">
       <a href="#explore">Explore</a>
       <a href="#ports">Ports</a>
-      <a href="#mydock">My Dock <span class="badge" id="dockBadge">2</span></a>
-      <a href="#playground" id="openPlaygroundNavLink">Playground</a>
-      <a href="#pro" id="openUpiModalNavLink">⚡ Pro / Donate</a>
+      <a href="#mydock">My Dock <span id="dockBadge" class="badge">2</span></a>
+      <a href="#playground" id="heroPlaygroundBtnNav">Playground</a>
+      <a href="#partnership">Partnership</a>
       <a href="#advertise">Advertise</a>
+      <a href="#pro" class="pro-link">⚡ Pro</a>
     </nav>
+
     <div class="topbar-actions">
-      <button class="btn btn-ghost btn-icon-text" id="openUpiModalBtn" type="button" title="Support Victor & UPI Subscription">
-        <span>❤️ Support</span>
+      <button class="btn-icon subtle-icon" id="adminPinBtn" title="Admin">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
       </button>
-      <button class="btn btn-ghost btn-icon-text" id="openApiKeysBtn" type="button" title="Configure API Keys">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-        <span>API Keys</span>
+      
+      <button class="btn-ghost" id="openUpiModalBtn">❤️ Support</button>
+      
+      <button class="btn-icon" id="openApiKeysBtn" title="API Keys">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+        </svg>
       </button>
-      <button class="btn btn-ghost" id="openConnectedBtn" type="button">
+      
+      <button class="btn-ghost" id="openConnectedBtn">
+        <span class="status-dot green"></span>
         <span id="connectedCount">5</span> connected
       </button>
-
-      <!-- Auth area -->
-      <div class="auth-wrap" id="authWrap">
-        <button class="btn btn-primary" id="openAuthBtn" type="button">Sign In</button>
-        <div class="user-menu" id="userMenu" hidden>
-          <button class="user-btn" id="userBtn" type="button">
-            <span class="user-avatar" id="userAvatar">U</span>
-            <span class="user-name" id="userName">User</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      
+      <div id="authWrap" class="auth-wrap">
+        <button class="btn-primary" id="openAuthBtn">Sign In</button>
+        
+        <div id="userMenu" class="user-menu" style="display: none;">
+          <button class="user-btn" id="userMenuBtn">
+            <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Ccircle cx='12' cy='12' r='12'/%3E%3C/svg%3E" alt="Avatar" class="avatar">
+            <span id="userName">User</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
           </button>
-          <div class="dropdown-menu" id="userDropdown" hidden>
+          
+          <div id="userDropdown" class="user-dropdown" style="display: none;">
             <div class="dropdown-header">
-              <span id="dropdownEmail">user@victor.dock</span>
-              <span class="status-pill online">Active Session</span>
+              <span id="dropdownEmail">user@example.com</span>
+              <span class="status-pill">Active</span>
             </div>
-            <hr>
-            <button class="dropdown-item" id="dropdownDockBtn" type="button">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-              My Installed Models
-            </button>
-            <button class="dropdown-item" id="dropdownKeysBtn" type="button">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-              Manage API Keys
-            </button>
-            <hr>
-            <button class="dropdown-item danger" id="logoutBtn" type="button">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></button>
+            <div class="dropdown-divider"></div>
+            <button id="dropdownDockBtn" class="dropdown-item">My Installed Models</button>
+            <button id="dropdownKeysBtn" class="dropdown-item">Manage API Keys</button>
+            <div class="dropdown-divider"></div>
+            <button id="logoutBtn" class="dropdown-item text-danger">Sign Out</button>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<main id="top">
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="wrap hero-inner">
-      <div class="hero-copy">
-        <p class="eyebrow">Model registry &amp; execution dock</p>
-        <h1>Every model.<br>One dock.</h1>
-        <p class="hero-sub">Victor indexes what's sitting on Ollama, Hugging Face, OpenRouter, and Meta. Pull weights, set API keys, and test live inference straight from your dock.</p>
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="hero-content">
+        <span class="eyebrow">Model registry & execution dock</span>
+        <h1 class="text-gradient">Every model.<br>One dock.</h1>
+        <p class="subtitle">VictorX indexing Ollama, HuggingFace, OpenRouter, Meta and more into a unified interface.</p>
+        
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#explore">Explore Manifest</a>
-          <button class="btn btn-ghost" id="heroPlaygroundBtn" type="button">⚡ Open AI Playground</button>
+          <a href="#explore" class="btn-primary">Explore Manifest</a>
+          <button class="btn-ghost" id="heroPlaygroundBtn">⚡ Open AI Playground</button>
         </div>
+        
         <div class="hero-stats">
-          <div><strong id="statModels">17</strong><span>models indexed</span></div>
-          <div><strong id="statPorts">5</strong><span>ports connected</span></div>
-          <div><strong id="statInstalled">2</strong><span>pulled to dock</span></div>
-        </div>
-      </div>
-
-      <div class="terminal interactive-shell" role="region" aria-label="Victor Interactive Terminal">
-        <div class="terminal-bar">
-          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-          <span class="terminal-title">victor — interactive web CLI (v1.4.0)</span>
-          <button class="btn-clear-term" id="clearTermBtn" title="Clear Terminal">Clear</button>
-        </div>
-        <div class="terminal-body" id="termBody">
-          <div class="term-history" id="termHistory">
-            <p class="term-welcome">Victor Shell Ready. Try running <code class="cmd-chip">victor pull llama-3.3-70b</code> or <code class="cmd-chip">victor help</code>.</p>
+          <div class="stat-item">
+            <strong id="statModels">17</strong>
+            <span>models indexed</span>
           </div>
-          <form class="term-prompt-row" id="termForm">
-            <span class="prompt">$</span>
-            <input type="text" id="cliInput" placeholder="victor pull meta-llama/llama-3.3-70b-instruct..." autocomplete="off" spellcheck="false">
-            <button type="submit" class="btn-term-run" title="Run command">Run</button>
-          </form>
+          <div class="stat-item">
+            <strong id="statPorts">5</strong>
+            <span>ports connected</span>
+          </div>
+          <div class="stat-item">
+            <strong id="statInstalled">2</strong>
+            <span>pulled to dock</span>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- EXPLORE -->
-  <section class="explore" id="explore">
-    <div class="wrap">
+      <div class="hero-visual">
+        <div class="terminal interactive-shell">
+          <div class="terminal-header">
+            <div class="term-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="term-title">victor — interactive web CLI (v1.4.0)</div>
+            <button class="btn-icon" id="clearTermBtn" title="Clear Terminal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+          <div class="terminal-body" id="termBody">
+            <div id="termHistory">
+              <div class="term-line">Welcome to VictorX CLI. Type 'help' to see available commands.</div>
+              <div class="cmd-chips">
+                <span class="cmd-chip">help</span>
+                <span class="cmd-chip">list</span>
+                <span class="cmd-chip">status</span>
+              </div>
+            </div>
+            <form id="termForm" class="term-form">
+              <span class="prompt">$</span>
+              <input type="text" id="cliInput" autocomplete="off" spellcheck="false" autofocus>
+              <button type="submit" class="btn-primary btn-sm">Run</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPLORE SECTION -->
+    <section class="explore" id="explore">
       <div class="section-head">
         <h2>The Manifest</h2>
-        <p>Every indexed model on the dock. Filter by port, category, or search by name &amp; task.</p>
+        <p>Discover and pull models from across the ecosystem.</p>
       </div>
-
-      <div class="controls">
+      
+      <div class="explore-controls">
         <div class="search-box">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input type="text" id="searchInput" placeholder="Search models — “code”, “deepseek”, “vision”, “7b”…" aria-label="Search models">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="searchInput" placeholder="Search models by name, tag or provider...">
         </div>
-        <div class="chip-row" id="portChips" role="group" aria-label="Filter by port"></div>
-        <select id="sortSelect" aria-label="Sort models">
-          <option value="popular">Most hauled</option>
-          <option value="new">Newest on dock</option>
-          <option value="size-asc">Size: small → large</option>
-          <option value="size-desc">Size: large → small</option>
-          <option value="az">Name: A → Z</option>
-        </select>
-      </div>
-
-      <p class="result-count" id="resultCount" aria-live="polite">17 models on manifest</p>
-
-      <div class="grid" id="modelGrid">
-        <article class="card" style="--port-color:#38BDF8">
-          <div class="card-top">
-            <span class="port-tag">OpenRouter</span>
-            <span class="haul-count">920.0k hauled</span>
+        
+        <div class="controls-row">
+          <div class="chip-row" id="portChips">
+            <button class="chip active" data-port="all">All Ports</button>
+            <button class="chip" data-port="openrouter">OpenRouter</button>
+            <button class="chip" data-port="meta">Meta</button>
+            <button class="chip" data-port="mistral">Mistral AI</button>
           </div>
-          <h3 class="card-name">DeepSeek R1</h3>
-          <p class="card-desc">Open-weights reasoning model with chain-of-thought verification.</p>
-          <div class="tag-row"><span class="tag-pill">reasoning</span><span class="tag-pill">math</span><span class="tag-pill">code</span></div>
-          <div class="card-foot">
-            <span class="card-size">671B</span>
-            <button class="btn-pull" type="button" data-modelid="deepseek-r1">Pull to dock</button>
-          </div>
-        </article>
-
-        <article class="card" style="--port-color:#7C9CFF">
-          <div class="card-top">
-            <span class="port-tag">Meta</span>
-            <span class="haul-count">540.0k hauled</span>
-          </div>
-          <h3 class="card-name">Llama 3.3</h3>
-          <p class="card-desc">State of the art open reasoning model, comparable to top proprietary APIs.</p>
-          <div class="tag-row"><span class="tag-pill">chat</span><span class="tag-pill">reasoning</span></div>
-          <div class="card-foot">
-            <span class="card-size">70B</span>
-            <button class="btn-pull" type="button" data-modelid="llama-3.3-70b">Pull to dock</button>
-          </div>
-        </article>
-
-        <article class="card" style="--port-color:#7C9CFF">
-          <div class="card-top">
-            <span class="port-tag">Meta</span>
-            <span class="haul-count">812.0k hauled</span>
-          </div>
-          <h3 class="card-name">Llama 3.1</h3>
-          <p class="card-desc">Meta's general-purpose chat model, solid default for most tasks.</p>
-          <div class="tag-row"><span class="tag-pill">chat</span><span class="tag-pill">general</span></div>
-          <div class="card-foot">
-            <span class="card-size">8B</span>
-            <button class="btn-pull installed" type="button" data-modelid="llama-3.1-8b">✓ Docked</button>
-          </div>
-        </article>
-
-        <article class="card" style="--port-color:#E5675F">
-          <div class="card-top">
-            <span class="port-tag">Mistral AI</span>
-            <span class="haul-count">690.0k hauled</span>
-          </div>
-          <h3 class="card-name">Mistral</h3>
-          <p class="card-desc">Compact and fast — a common first pull for local chat.</p>
-          <div class="tag-row"><span class="tag-pill">chat</span><span class="tag-pill">general</span></div>
-          <div class="card-foot">
-            <span class="card-size">7B</span>
-            <button class="btn-pull installed" type="button" data-modelid="mistral-7b">✓ Docked</button>
-          </div>
-        </article>
-      </div>
-      <p class="empty-state" id="emptyState" hidden>Nothing matches that on the manifest yet. Try a different port or search term.</p>
-    </div>
-  </section>
-
-  <!-- MY DOCK (INSTALLED / PULLED MODELS) -->
-  <section class="mydock" id="mydock">
-    <div class="wrap">
-      <div class="section-head">
-        <div class="head-with-badge">
-          <h2>My Dock</h2>
-          <span class="count-pill" id="installedCountPill">2 Models</span>
+          
+          <select id="sortSelect" class="sort-select">
+            <option value="most_hauled">Most hauled</option>
+            <option value="newest">Newest</option>
+            <option value="size_asc">Size small→large</option>
+            <option value="size_desc">Size large→small</option>
+            <option value="name_asc">Name A→Z</option>
+          </select>
         </div>
-        <p>Models you have pulled &amp; docked to your active workstation. Configured and ready for local CLI or API execution.</p>
       </div>
-      <div class="grid" id="installedGrid">
-        <article class="card" style="--port-color:#7C9CFF">
-          <div class="card-top">
-            <span class="port-tag">Meta · DOCKED</span>
-          </div>
-          <h3 class="card-name">Llama 3.1</h3>
-          <p class="card-desc">Meta's general-purpose chat model, solid default for most tasks.</p>
-          <div class="card-foot">
-            <span class="card-size">8B</span>
-            <button class="btn btn-primary btn-small" data-launchpg="llama-3.1-8b">⚡ Launch Playground</button>
-          </div>
-        </article>
-        <article class="card" style="--port-color:#E5675F">
-          <div class="card-top">
-            <span class="port-tag">Mistral AI · DOCKED</span>
-          </div>
-          <h3 class="card-name">Mistral</h3>
-          <p class="card-desc">Compact and fast — a common first pull for local chat.</p>
-          <div class="card-foot">
-            <span class="card-size">7B</span>
-            <button class="btn btn-primary btn-small" data-launchpg="mistral-7b">⚡ Launch Playground</button>
-          </div>
-        </article>
+      
+      <div class="result-summary">
+        <span id="resultCount">17 models on manifest</span>
       </div>
-      <div class="empty-dock" id="emptyDockState" hidden>
-        <div class="empty-dock-icon">⚓</div>
+
+      <div class="model-grid" id="modelGrid">
+        <!-- Pre-rendered Card 1 -->
+        <div class="model-card">
+          <div class="card-header">
+            <span class="provider-tag" style="background-color: #38BDF820; color: #38BDF8;">OpenRouter</span>
+            <h3 class="model-name">DeepSeek R1</h3>
+          </div>
+          <div class="card-meta">
+            <span class="meta-item">671B</span>
+            <span class="meta-item">920k hauled</span>
+          </div>
+          <div class="card-tags">
+            <span class="tag">reasoning</span>
+            <span class="tag">math</span>
+            <span class="tag">code</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-primary w-full open-pull-modal" data-model="deepseek-r1">Pull Model</button>
+          </div>
+        </div>
+
+        <!-- Pre-rendered Card 2 -->
+        <div class="model-card">
+          <div class="card-header">
+            <span class="provider-tag" style="background-color: #7C9CFF20; color: #7C9CFF;">Meta</span>
+            <h3 class="model-name">Llama 3.3</h3>
+          </div>
+          <div class="card-meta">
+            <span class="meta-item">70B</span>
+            <span class="meta-item">540k hauled</span>
+          </div>
+          <div class="card-tags">
+            <span class="tag">chat</span>
+            <span class="tag">reasoning</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-primary w-full open-pull-modal" data-model="llama-3.3-70b">Pull Model</button>
+          </div>
+        </div>
+
+        <!-- Pre-rendered Card 3 -->
+        <div class="model-card installed">
+          <div class="card-header">
+            <span class="provider-tag" style="background-color: #7C9CFF20; color: #7C9CFF;">Meta</span>
+            <h3 class="model-name">Llama 3.1</h3>
+          </div>
+          <div class="card-meta">
+            <span class="meta-item">8B</span>
+            <span class="meta-item">812k hauled</span>
+          </div>
+          <div class="card-tags">
+            <span class="tag">chat</span>
+            <span class="tag">general</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-pull installed w-full" disabled>✓ Docked</button>
+          </div>
+        </div>
+
+        <!-- Pre-rendered Card 4 -->
+        <div class="model-card installed">
+          <div class="card-header">
+            <span class="provider-tag" style="background-color: #E5675F20; color: #E5675F;">Mistral AI</span>
+            <h3 class="model-name">Mistral</h3>
+          </div>
+          <div class="card-meta">
+            <span class="meta-item">7B</span>
+            <span class="meta-item">690k hauled</span>
+          </div>
+          <div class="card-tags">
+            <span class="tag">chat</span>
+            <span class="tag">general</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-pull installed w-full" disabled>✓ Docked</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <h3>No models found</h3>
+        <p>Try adjusting your search or filters.</p>
+      </div>
+    </section>
+
+    <!-- MY DOCK SECTION -->
+    <section class="mydock" id="mydock">
+      <div class="section-head with-badge">
+        <h2>My Dock</h2>
+        <span id="installedCountPill" class="count-pill">2 Models</span>
+      </div>
+      
+      <div class="model-grid" id="installedGrid">
+        <!-- Pre-rendered Installed Card 1 -->
+        <div class="model-card docked-card">
+          <div class="card-header">
+            <span class="provider-tag" style="background-color: #7C9CFF20; color: #7C9CFF;">Meta</span>
+            <h3 class="model-name">Llama 3.1</h3>
+            <span class="docked-badge">DOCKED</span>
+          </div>
+          <div class="card-meta">
+            <span class="meta-item">8B</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-ghost w-full launch-playground-btn" data-model="llama-3.1-8b">⚡ Launch Playground</button>
+          </div>
+        </div>
+
+        <!-- Pre-rendered Installed Card 2 -->
+        <div class="model-card docked-card">
+          <div class="card-header">
+            <span class="provider-tag" style="background-color: #E5675F20; color: #E5675F;">Mistral AI</span>
+            <h3 class="model-name">Mistral</h3>
+            <span class="docked-badge">DOCKED</span>
+          </div>
+          <div class="card-meta">
+            <span class="meta-item">7B</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-ghost w-full launch-playground-btn" data-model="mistral-7b">⚡ Launch Playground</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="emptyDockState" class="empty-state" style="display: none;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8M5 12H2a10 10 0 0 0 20 0h-3"></path><circle cx="12" cy="5" r="3"></circle></svg>
         <h3>Your dock is empty</h3>
-        <p>Explore the manifest above and click <strong>"Pull to dock"</strong> to add models to your workstation.</p>
-        <a class="btn btn-primary" href="#explore">Browse Manifest</a>
+        <p>Pull some models from the manifest to get started.</p>
+        <a href="#explore" class="btn-primary mt-4">Browse Manifest</a>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- PORTS -->
-  <section class="ports" id="ports">
-    <div class="wrap">
+    <!-- PORTS SECTION -->
+    <section class="ports" id="ports">
       <div class="section-head">
         <h2>Connected Ports</h2>
-        <p>Connect the registries and inference backends you pull from. Victor indexes them together in one unified manifest.</p>
+        <p>Data streams and integrations powering VictorX.</p>
       </div>
-      <div class="port-grid" id="portGrid"></div>
-    </div>
-  </section>
+      <div class="port-grid" id="portGrid">
+        <!-- JS rendered -->
+      </div>
+    </section>
 
-  <!-- ADVERTISE -->
-  <section class="advertise" id="advertise">
-    <div class="wrap advertise-inner">
-      <div>
-        <p class="eyebrow">For model builders &amp; platforms</p>
-        <h2>Put your model in front of developers pulling right now.</h2>
-        <p class="hero-sub">Sponsored slots sit in the manifest, clearly labeled, never mixed with natural ranking. Reach developers at the moment of choosing what to run.</p>
-        <ul class="advertise-list">
-          <li>Marked “Sponsored” on every placement — 100% transparent</li>
-          <li>Target by task, model size, or port origin</li>
-          <li>Simple monthly slot pricing, cancel anytime</li>
-        </ul>
-        <button class="btn btn-primary" id="requestSlotBtn" type="button">Request a slot</button>
+    <!-- PARTNERSHIP SECTION (NEW) -->
+    <section class="partnership" id="partnership">
+      <div class="section-head text-center">
+        <span class="eyebrow">Strategic Alliances</span>
+        <h2>Partner with VictorX</h2>
+        <p class="subtitle max-w-2xl mx-auto">Join our ecosystem of AI model providers, cloud platforms, and infrastructure partners. Together we're building the universal model dock.</p>
       </div>
-      <div class="ad-preview">
-        <p class="ad-preview-label">How it looks on the dock</p>
-        <div class="card sponsored-card" aria-hidden="true">
-          <div class="card-top">
-            <span class="sponsor-tag">Sponsored · via Victor</span>
+
+      <div class="partner-grid">
+        <div class="partner-card">
+          <div class="partner-header">
+            <h3>🥉 Bronze Partner</h3>
+            <div class="partner-price">₹19,999/month</div>
           </div>
-          <h3 class="card-name">Your Model Here</h3>
-          <p class="card-desc">One line about what makes it worth pulling.</p>
-          <div class="card-foot">
-            <span class="card-size">7B</span>
-            <span class="btn btn-pull">Learn more</span>
+          <ul class="partner-benefits">
+            <li>Standard listing</li>
+            <li>Basic analytics</li>
+            <li>Community features</li>
+          </ul>
+          <button class="btn-ghost w-full">Get Started</button>
+        </div>
+
+        <div class="partner-card featured-tier">
+          <div class="partner-header">
+            <h3>🥈 Silver Partner</h3>
+            <div class="partner-price">₹49,999/month</div>
           </div>
+          <ul class="partner-benefits">
+            <li>Featured model listing</li>
+            <li>API access tier</li>
+            <li>Community support</li>
+            <li>Monthly analytics report</li>
+          </ul>
+          <button class="btn-primary w-full">Become Partner</button>
         </div>
-      </div>
-    </div>
-  </section>
 
-</main>
-
-<!-- FOOTER -->
-<footer class="site-footer">
-  <div class="wrap footer-inner">
-    <div class="brand brand-footer">
-      <span class="brand-mark">V</span>
-      <span class="brand-word">Victor</span>
-    </div>
-    <p>An index and execution dock. Models stay where their port keeps them — Victor makes them easy to search, pull, and run.</p>
-    <div class="footer-links">
-      <a href="#explore">Explore</a>
-      <a href="#mydock">My Dock</a>
-      <a href="#ports">Ports</a>
-      <a href="#advertise">Advertise</a>
-    </div>
-  </div>
-</footer>
-
-<!-- TOAST -->
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-<!-- AUTH MODAL (LOGIN / SIGN UP) -->
-<div class="modal-overlay" id="authModalOverlay" hidden>
-  <div class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
-    <button class="modal-close" id="authModalClose" aria-label="Close">&times;</button>
-    <div class="auth-header">
-      <span class="brand-mark">V</span>
-      <h3 id="authModalTitle">Welcome to Victor</h3>
-      <p class="modal-desc">Sign in or create a account to save your pulled models and API key preferences.</p>
-    </div>
-    <form id="authForm">
-      <div class="form-group">
-        <label for="authUsername">Username</label>
-        <input type="text" id="authUsername" placeholder="e.g. alex_developer" required>
-      </div>
-      <div class="form-group">
-        <label for="authEmail">Email Address</label>
-        <input type="email" id="authEmail" placeholder="alex@company.io" required>
-      </div>
-      <div class="form-group">
-        <label for="authApiKey">Default OpenRouter / OpenAI Key (Optional)</label>
-        <input type="password" id="authApiKey" placeholder="sk-or-v1-..." autocomplete="off">
-      </div>
-      <button class="btn btn-primary btn-full" type="submit" id="authSubmitBtn">Sign In / Create Account</button>
-    </form>
-    <div class="auth-footer-hint">
-      <button class="btn-link" id="quickGuestLoginBtn" type="button">Or continue as Guest (Instant)</button>
-    </div>
-  </div>
-</div>
-
-<!-- API KEYS MODAL -->
-<div class="modal-overlay" id="apiKeysModalOverlay" hidden>
-  <div class="modal keys-modal" role="dialog" aria-modal="true" aria-labelledby="keysModalTitle">
-    <button class="modal-close" id="apiKeysModalClose" aria-label="Close">&times;</button>
-    <p class="eyebrow">Dock Integration</p>
-    <h3 id="keysModalTitle">API Keys &amp; Backend Endpoints</h3>
-    <p class="modal-desc">Keys are stored strictly inside your local browser storage (`localStorage`). They are never transmitted to external telemetry servers.</p>
-    
-    <form id="apiKeysForm">
-      <div class="form-group">
-        <div class="label-row">
-          <label for="keyOpenRouter">OpenRouter API Key <span class="badge-rec">Recommended</span></label>
-          <span class="key-status" id="statusOpenRouter">Not set</span>
-        </div>
-        <div class="password-input-wrap">
-          <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-..." autocomplete="off">
-          <button type="button" class="btn-toggle-pw" data-target="keyOpenRouter" aria-label="Toggle password visibility">👁️</button>
-        </div>
-        <span class="field-hint">Access DeepSeek, Llama 3.3, Claude, GPT-4o, Mistral in one key.</span>
-      </div>
-
-      <div class="form-group">
-        <div class="label-row">
-          <label for="keyOpenAI">OpenAI API Key</label>
-          <span class="key-status" id="statusOpenAI">Not set</span>
-        </div>
-        <div class="password-input-wrap">
-          <input type="password" id="keyOpenAI" placeholder="sk-..." autocomplete="off">
-          <button type="button" class="btn-toggle-pw" data-target="keyOpenAI" aria-label="Toggle password visibility">👁️</button>
+        <div class="partner-card">
+          <div class="partner-header">
+            <h3>🥇 Gold Partner</h3>
+            <div class="partner-price">Custom</div>
+          </div>
+          <ul class="partner-benefits">
+            <li>Priority model placement</li>
+            <li>Co-branded dock section</li>
+            <li>Dedicated API integration</li>
+            <li>24/7 priority support</li>
+            <li>Custom model indexing</li>
+          </ul>
+          <button class="btn-ghost w-full">Contact for Pricing</button>
         </div>
       </div>
 
-      <div class="form-group">
-        <div class="label-row">
-          <label for="keyGemini">Google Gemini API Key</label>
-          <span class="key-status" id="statusGemini">Not set</span>
-        </div>
-        <div class="password-input-wrap">
-          <input type="password" id="keyGemini" placeholder="AIzaSy..." autocomplete="off">
-          <button type="button" class="btn-toggle-pw" data-target="keyGemini" aria-label="Toggle password visibility">👁️</button>
-        </div>
+      <div class="partner-form-container">
+        <h3>Request Partnership Details</h3>
+        <form id="partnerForm" class="partner-form">
+          <div class="form-group">
+            <label for="partnerCompany">Company Name</label>
+            <input type="text" id="partnerCompany" required>
+          </div>
+          <div class="form-group">
+            <label for="partnerEmail">Contact Email</label>
+            <input type="email" id="partnerEmail" required>
+          </div>
+          <div class="form-group">
+            <label for="partnerTier">Partnership Tier</label>
+            <select id="partnerTier">
+              <option value="gold">Gold Partner</option>
+              <option value="silver">Silver Partner</option>
+              <option value="bronze">Bronze Partner</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="partnerMessage">Message</label>
+            <textarea id="partnerMessage" rows="4"></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Submit Inquiry</button>
+        </form>
       </div>
+    </section>
 
-      <div class="form-group">
-        <div class="label-row">
-          <label for="urlOllama">Ollama Local URL</label>
-          <span class="key-status" id="statusOllama">Active</span>
-        </div>
-        <input type="text" id="urlOllama" placeholder="http://localhost:11434" value="http://localhost:11434">
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="clearKeysBtn" type="button">Clear All</button>
-        <button class="btn btn-primary" type="submit">Save API Settings</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- PULL / INSTALL MODAL -->
-<div class="modal-overlay" id="pullModalOverlay" hidden>
-  <div class="modal pull-modal" role="dialog" aria-modal="true" aria-labelledby="pullModalTitle">
-    <button class="modal-close" id="pullModalClose" aria-label="Close">&times;</button>
-    <div class="pull-modal-head">
-      <span class="port-tag" id="pullModalPort"></span>
-      <h3 id="pullModalTitle"></h3>
-      <p class="modal-desc" id="pullModalDesc"></p>
-    </div>
-
-    <!-- Pull Action Box -->
-    <div class="pull-action-card">
-      <div class="pull-status-row">
-        <div>
-          <strong id="pullStatusText">Ready to pull</strong>
-          <span class="pull-size-tag" id="pullModalSize"></span>
-        </div>
-        <button class="btn btn-primary" id="startPullBtn" type="button">
-          ⚡ Pull to My Dock
-        </button>
-      </div>
-      <div class="progress-bar-wrap" id="pullProgressWrap" hidden>
-        <div class="progress-bar" id="pullProgressBar"></div>
-        <span class="progress-label" id="pullProgressLabel">0% - Fetching manifests...</span>
+    <!-- ADVERTISE SECTION -->
+    <section class="advertise" id="advertise">
+      <div class="advertise-content">
+        <span class="eyebrow">Reach AI Builders</span>
+        <h2>Advertise on VictorX</h2>
+        <p class="subtitle">Put your API, tool, or service in front of thousands of developers actively pulling and testing AI models.</p>
         
-        <!-- Multi-layer breakdown -->
-        <div class="layers-breakdown" id="layersBreakdownContainer"></div>
-      </div>
-    </div>
+        <ul class="feature-list">
+          <li>Highly targeted developer audience</li>
+          <li>Native integration in the Manifest</li>
+          <li>Transparent performance analytics</li>
+        </ul>
 
-    <!-- Code Switcher Tabs -->
-    <div class="code-tabs-wrap">
-      <div class="code-tabs">
-        <button class="code-tab active" data-tab="cli" type="button">CLI</button>
-        <button class="code-tab" data-tab="python" type="button">Python</button>
-        <button class="code-tab" data-tab="js" type="button">JavaScript</button>
-        <button class="code-tab" data-tab="curl" type="button">cURL</button>
-      </div>
-      <div class="code-box">
-        <pre><code id="pullModalCodeSnippet"></code></pre>
-        <button class="btn btn-ghost btn-small copy-btn" id="copyCodeBtn" type="button">Copy Code</button>
-      </div>
-    </div>
-
-    <div class="pull-modal-footer">
-      <button class="btn btn-ghost btn-full" id="launchPlaygroundFromModalBtn" type="button">
-        💬 Open in AI Playground
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- AI PLAYGROUND MODAL / WORKSPACE -->
-<div class="modal-overlay" id="playgroundModalOverlay" hidden>
-  <div class="modal playground-modal" role="dialog" aria-modal="true" aria-labelledby="playgroundTitle">
-    <button class="modal-close" id="playgroundClose" aria-label="Close">&times;</button>
-
-    <div class="pg-header">
-      <div class="pg-title-wrap">
-        <span class="badge-live">LIVE DOCK</span>
-        <h3 id="playgroundTitle">AI Model Playground</h3>
+        <div class="ad-stats">
+          <div class="ad-stat-item">
+            <strong>~120k</strong><span>Est. Monthly Impressions</span>
+          </div>
+          <div class="ad-stat-item">
+            <strong>4.2%</strong><span>Avg. Click Rate</span>
+          </div>
+        </div>
+        
+        <button class="btn-primary" id="requestSlotBtn">Request Ad Slot</button>
       </div>
 
-      <div class="pg-controls">
-        <select id="pgModelSelect" aria-label="Select model for playground">
-          <!-- Populated dynamically -->
-        </select>
-        <button class="btn btn-ghost btn-small" id="pgKeysBtn" type="button">⚙️ API Keys</button>
-      </div>
-    </div>
-
-    <div class="pg-body">
-      <!-- Chat history -->
-      <div class="pg-messages" id="pgMessages">
-        <div class="chat-msg system">
-          <div class="msg-author">Victor Dock Engine</div>
-          <div class="msg-content">Welcome to the Victor AI Dock Playground! Select an installed or indexed model above and send a message. If an API key (OpenRouter/OpenAI/Gemini) or local Ollama server is configured, real model responses will stream directly into this window.</div>
+      <div class="advertise-preview">
+        <div class="model-card sponsored-card">
+          <div class="card-header">
+            <span class="provider-tag sponsor-tag">Sponsored</span>
+            <h3 class="model-name">Your Awesome AI Tool</h3>
+          </div>
+          <p class="ad-desc">The fastest way to deploy AI in production. Get 100k free tokens on signup.</p>
+          <div class="card-actions">
+            <button class="btn-primary w-full">Learn More</button>
+          </div>
         </div>
       </div>
+    </section>
 
-      <!-- Input box -->
-      <form class="pg-input-row" id="pgForm">
-        <textarea id="pgInput" placeholder="Ask model anything... (e.g. Write a Python function to quicksort an array)" rows="2" required></textarea>
-        <button class="btn btn-primary" type="submit" id="pgSendBtn">
-          <span>Send</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-        </button>
-      </form>
-    </div>
-  </div>
-<!-- UPI DONATION & SUBSCRIPTION MODAL -->
-<div class="modal-overlay" id="upiModalOverlay" hidden>
-  <div class="modal upi-modal" role="dialog" aria-modal="true" aria-labelledby="upiModalTitle">
-    <button class="modal-close" id="upiModalClose" aria-label="Close">&times;</button>
-    
-    <div class="upi-head">
-      <span class="badge-live">SUPPORT VICTOR DOCK</span>
-      <h3 id="upiModalTitle">Support Victor &amp; Unlock Pro Dock</h3>
-      <p class="modal-desc">Victor is an open-source model registry. Support our independent infrastructure via UPI subscription or donation!</p>
-    </div>
+    <!-- LEGAL SECTION (NEW) -->
+    <section class="legal" id="legal">
+      <div class="section-head">
+        <h2>Legal & Compliance</h2>
+      </div>
 
-    <!-- UPI Payment Details -->
-    <div class="upi-box">
-      <div class="upi-id-row">
-        <div>
-          <span class="upi-label">DIRECT UPI VPA ID</span>
-          <strong class="upi-id-text" id="upiIdText">arasu9629hf@okhdfcbank</strong>
+      <div class="legal-container">
+        <div class="legal-tabs">
+          <button class="tab-btn active" data-target="legalTerms">Terms of Service</button>
+          <button class="tab-btn" data-target="legalPrivacy">Privacy Policy</button>
+          <button class="tab-btn" data-target="legalCookies">Cookie Policy</button>
         </div>
-        <button class="btn btn-primary btn-small" id="copyUpiBtn" type="button">Copy ID</button>
-      </div>
 
-      <!-- QR Code -->
-      <div class="qr-container">
-        <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Model%20Dock&cu=INR" alt="UPI Payment QR Code" width="200" height="200">
-        <p class="qr-hint">Scan with GPay, PhonePe, Paytm, BHIM, or any UPI app</p>
-      </div>
-    </div>
+        <div class="legal-content">
+          <!-- Terms of Service -->
+          <div id="legalTerms" class="legal-panel active">
+            <p class="last-updated">Last updated: October 24, 2023</p>
+            
+            <h4>1. Acceptance</h4>
+            <p>By accessing or using VictorX, you agree to be bound by these Terms of Service.</p>
 
-    <!-- Tier Options -->
-    <div class="tier-grid">
-      <div class="tier-card active">
-        <div class="tier-badge">POPULAR</div>
-        <h4>⚡ Pro Dock Member</h4>
-        <p class="tier-price">₹199 <span>/ month</span></p>
-        <ul class="tier-list">
-          <li>✔ Priority cloud model layer bandwidth</li>
-          <li>✔ Save unlimited IndexedDB models &amp; logs</li>
-          <li>✔ Direct CLI system integration</li>
+            <h4>2. Service Description</h4>
+            <p>VictorX provides a unified registry and execution environment for AI models. We act as an interface to various third-party model providers.</p>
+
+            <h4>3. User Accounts</h4>
+            <p>You are responsible for safeguarding your password and API keys. VictorX cannot and will not be liable for any loss or damage arising from your failure to comply.</p>
+
+            <h4>4. API Usage</h4>
+            <p>You agree to adhere to the terms of service of any third-party APIs you connect through VictorX. Excessive usage or abuse may result in account termination.</p>
+
+            <h4>5. Intellectual Property</h4>
+            <p>The VictorX service, original content, features, and functionality are owned by VictorX and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.</p>
+
+            <h4>6. Limitation of Liability</h4>
+            <p>In no event shall VictorX, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages.</p>
+
+            <h4>7. Termination</h4>
+            <p>We may terminate or suspend access to our service immediately, without prior notice or liability, for any reason whatsoever.</p>
+          </div>
+
+          <!-- Privacy Policy -->
+          <div id="legalPrivacy" class="legal-panel" style="display: none;">
+            <p class="last-updated">Last updated: October 24, 2023</p>
+            <h4>Data Collection</h4>
+            <p>We collect information you provide directly to us when you create an account, use our services, or communicate with us.</p>
+            <h4>Data Usage</h4>
+            <p>We use the information we collect to operate, maintain, and provide the features and functionality of VictorX.</p>
+            <h4>Data Storage</h4>
+            <p>Your API keys are stored securely. We do not log your interactions with AI models in the Playground.</p>
+            <h4>Third-Party Services</h4>
+            <p>We may share your information with third-party vendors and service providers that perform services on our behalf.</p>
+            <h4>User Rights</h4>
+            <p>You have the right to access, update, or delete your personal information.</p>
+            <h4>Contact Info</h4>
+            <p>For any privacy-related questions, contact us at privacy@victorx.com.</p>
+          </div>
+
+          <!-- Cookie Policy -->
+          <div id="legalCookies" class="legal-panel" style="display: none;">
+            <p class="last-updated">Last updated: October 24, 2023</p>
+            <h4>Types of Cookies</h4>
+            <p>We use essential cookies to maintain your session and preferences.</p>
+            <h4>Purposes</h4>
+            <p>Cookies help us understand how you use the site and improve your experience.</p>
+            <h4>Management</h4>
+            <p>You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.</p>
+            <h4>Consent</h4>
+            <p>By using VictorX, you consent to the use of cookies in accordance with this policy.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-brand">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="currentColor"/>
+          </svg>
+          <span>VictorX</span>
+        </div>
+        <p class="footer-desc">The universal model registry and execution dock for AI builders.</p>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#explore">Explore</a></li>
+          <li><a href="#mydock">My Dock</a></li>
+          <li><a href="#playground">Playground</a></li>
+          <li><a href="#">CLI</a></li>
         </ul>
       </div>
 
-      <div class="tier-card">
-        <h4>☕ Coffee Supporter</h4>
-        <p class="tier-price">Any Amount</p>
-        <p class="tier-desc">One-time UPI contribution to keep Victor servers running.</p>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#partnership">Partnership</a></li>
+          <li><a href="#advertise">Advertise</a></li>
+          <li><a href="#pro">Pro</a></li>
+          <li><a href="#" id="footerSupportBtn">Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#legal">Terms</a></li>
+          <li><a href="#legal">Privacy</a></li>
+          <li><a href="#legal">Cookies</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
       </div>
     </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2024 VictorX. All rights reserved.</p>
+      <div class="social-links">
+        <a href="#" aria-label="Twitter">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+        </a>
+        <a href="#" aria-label="GitHub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
 
-    <div class="upi-footer">
-      <button class="btn btn-ghost btn-full" id="confirmUpiPayBtn" type="button">I Have Sent Payment / Done</button>
+  <!-- TOAST -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="authModalOverlay" style="display: none;">
+    <div class="modal auth-modal">
+      <div class="modal-header text-center">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-2">
+          <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="currentColor"/>
+        </svg>
+        <h2>Welcome to VictorX</h2>
+        <button class="btn-close" aria-label="Close modal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-target="loginForm">Login</button>
+          <button class="auth-tab" data-target="registerForm">Register</button>
+        </div>
+
+        <form id="loginForm" class="auth-form active">
+          <div class="form-group">
+            <label for="loginUsername">Username or Email</label>
+            <input type="text" id="loginUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <div class="input-with-icon">
+              <input type="password" id="loginPassword" required>
+              <button type="button" class="toggle-password">👁</button>
+            </div>
+          </div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="rememberMe">
+            <label for="rememberMe">Remember me</label>
+          </div>
+          <button type="submit" class="btn-primary w-full" id="loginSubmitBtn">Sign In</button>
+          
+          <div class="auth-divider">── OR ──</div>
+          
+          <button type="button" class="btn-ghost w-full" id="googleSignInBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+        </form>
+
+        <form id="registerForm" class="auth-form" style="display: none;">
+          <div class="form-group">
+            <label for="regFullName">Full Name</label>
+            <input type="text" id="regFullName" required>
+          </div>
+          <div class="form-group">
+            <label for="regUsername">Username</label>
+            <input type="text" id="regUsername" required>
+          </div>
+          <div class="form-group">
+            <label for="regEmail">Email</label>
+            <input type="email" id="regEmail" required>
+          </div>
+          <div class="form-group">
+            <label for="regPassword">Password</label>
+            <div class="input-with-icon">
+              <input type="password" id="regPassword" required>
+              <button type="button" class="toggle-password">👁</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="regConfirmPassword">Confirm Password</label>
+            <div class="input-with-icon">
+              <input type="password" id="regConfirmPassword" required>
+              <button type="button" class="toggle-password">👁</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="regApiKey">Default API Key (Optional)</label>
+            <input type="text" id="regApiKey">
+          </div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="regTerms" required>
+            <label for="regTerms">I agree to the Terms of Service and Privacy Policy</label>
+          </div>
+          <button type="submit" class="btn-primary w-full" id="registerSubmitBtn">Create Account</button>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-ghost w-full" id="quickGuestLoginBtn">Or continue as Guest (Instant)</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <!-- ADMIN PIN MODAL (CRITICAL) -->
+  <div class="pin-overlay" id="adminPinOverlay" style="display: none;">
+    <div class="pin-modal">
+      <div class="pin-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h2>Admin Access</h2>
+      <p class="subtitle">Enter the administrator PIN to access the control panel</p>
+      
+      <div class="pin-input-group" id="pinInputGroup">
+        <input type="password" class="pin-digit" maxlength="1">
+        <input type="password" class="pin-digit" maxlength="1">
+        <input type="password" class="pin-digit" maxlength="1">
+        <input type="password" class="pin-digit" maxlength="1">
+        <input type="password" class="pin-digit" maxlength="1">
+        <input type="password" class="pin-digit" maxlength="1">
+        <input type="password" class="pin-digit" maxlength="1">
+        <input type="password" class="pin-digit" maxlength="1">
+      </div>
+      
+      <div class="pin-error" id="pinError" style="display: none;">Incorrect PIN. Access denied.</div>
+      
+      <div class="pin-actions">
+        <button class="btn-ghost" id="pinCancelBtn">Cancel</button>
+        <button class="btn-primary" id="pinVerifyBtn">Verify</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD MODAL (CRITICAL) -->
+  <div class="modal-overlay" id="adminDashboardOverlay" style="display: none;">
+    <div class="modal admin-modal">
+      <div class="modal-header">
+        <div>
+          <span class="admin-badge">Admin</span>
+          <h2>VictorX Admin Dashboard</h2>
+          <p class="subtitle">Logged in as Administrator</p>
+        </div>
+        <button class="btn-close" aria-label="Close modal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="admin-stats-grid">
+          <div class="stat-card">
+            <span class="stat-icon">👥</span>
+            <div class="stat-details">
+              <span class="stat-value" id="adminTotalUsers">1,248</span>
+              <span class="stat-label">Total Users</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🟢</span>
+            <div class="stat-details">
+              <span class="stat-value" id="adminActiveSessions">42</span>
+              <span class="stat-label">Active Sessions</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">📦</span>
+            <div class="stat-details">
+              <span class="stat-value" id="adminModelsPulled">8,932</span>
+              <span class="stat-label">Models Pulled</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">💰</span>
+            <div class="stat-details">
+              <span class="stat-value" id="adminRevenue">₹1,24,500</span>
+              <span class="stat-label">Revenue</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-tabs">
+          <button class="tab-btn active" data-target="adminUsersPanel">Users</button>
+          <button class="tab-btn" data-target="adminModelsPanel">Models</button>
+          <button class="tab-btn" data-target="adminKeysPanel">API Keys</button>
+          <button class="tab-btn" data-target="adminRevenuePanel">Revenue</button>
+          <button class="tab-btn" data-target="adminSettingsPanel">Settings</button>
+        </div>
+
+        <div class="admin-panels">
+          <!-- Users Panel -->
+          <div id="adminUsersPanel" class="admin-panel active">
+            <div class="panel-toolbar">
+              <input type="text" id="adminUserSearch" placeholder="Search users...">
+            </div>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Models</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableBody">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Models Panel -->
+          <div id="adminModelsPanel" class="admin-panel" style="display: none;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Model</th>
+                  <th>Size</th>
+                  <th>Port</th>
+                  <th>Pulls</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminModelsTableBody">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- API Keys Panel -->
+          <div id="adminKeysPanel" class="admin-panel" style="display: none;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User</th>
+                  <th>Provider</th>
+                  <th>Key (masked)</th>
+                  <th>Status</th>
+                  <th>Last Used</th>
+                </tr>
+              </thead>
+              <tbody id="adminKeysTableBody">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Revenue Panel -->
+          <div id="adminRevenuePanel" class="admin-panel" style="display: none;">
+            <div class="revenue-summary">
+              <h3>Revenue Breakdown</h3>
+              <p>Detailed view of platform revenue.</p>
+            </div>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Source</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Today</td><td>Ad Slot - TechCorp</td><td>₹5,000</td><td><span class="status-pill green">Paid</span></td></tr>
+                <tr><td>Yesterday</td><td>Silver Partner - AI Startup</td><td>₹49,999</td><td><span class="status-pill green">Paid</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Settings Panel -->
+          <div id="adminSettingsPanel" class="admin-panel" style="display: none;">
+            <form class="admin-settings-form">
+              <div class="form-group">
+                <label>Site Name</label>
+                <input type="text" value="VictorX">
+              </div>
+              <div class="form-group checkbox-group">
+                <input type="checkbox" id="maintModeToggle">
+                <label for="maintModeToggle">Enable Maintenance Mode</label>
+              </div>
+              <div class="form-group">
+                <label>Max Users</label>
+                <input type="number" value="10000">
+              </div>
+              <button type="button" class="btn-primary">Save Settings</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API KEYS MODAL -->
+  <div class="modal-overlay" id="apiKeysModalOverlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="eyebrow">Configuration</span>
+        <h2>API Keys</h2>
+        <p class="subtitle">Connect your preferred providers to run models.</p>
+        <button class="btn-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="apiKeysForm">
+          <div class="form-group">
+            <label>OpenRouter</label>
+            <div class="input-with-icon">
+              <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-...">
+              <button type="button" class="toggle-password">👁</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>OpenAI</label>
+            <div class="input-with-icon">
+              <input type="password" id="keyOpenAI" placeholder="sk-...">
+              <button type="button" class="toggle-password">👁</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Gemini</label>
+            <div class="input-with-icon">
+              <input type="password" id="keyGemini" placeholder="AIza...">
+              <button type="button" class="toggle-password">👁</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Ollama (Local URL)</label>
+            <input type="text" id="urlOllama" placeholder="http://localhost:11434">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" id="clearApiKeysBtn">Clear All</button>
+        <button class="btn-primary" id="saveApiKeysBtn">Save Keys</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PULL MODAL -->
+  <div class="modal-overlay" id="pullModalOverlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="provider-tag" id="pullModalPort">Port</span>
+        <h2 id="pullModalTitle">Pull Model</h2>
+        <p class="subtitle" id="pullModalDesc">Description</p>
+        <button class="btn-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="pull-action-card">
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="pullProgressBar"></div>
+          </div>
+          <div class="layers-breakdown" id="pullLayers">
+            <!-- Layers JS populated -->
+          </div>
+        </div>
+        <div class="code-tabs">
+          <button class="tab-btn active">CLI</button>
+          <button class="tab-btn">Python</button>
+          <button class="tab-btn">JS</button>
+          <button class="tab-btn">cURL</button>
+        </div>
+        <div class="code-block">
+          <pre><code id="pullCodeSnippet">victor pull model-name</code></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary w-full" id="pullConfirmBtn">Start Pull</button>
+        <button class="btn-ghost w-full launch-playground-btn" id="pullPlaygroundBtn" style="display: none;">⚡ Launch Playground</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYGROUND MODAL -->
+  <div class="modal-overlay" id="playgroundModalOverlay" style="display: none;">
+    <div class="modal playground-modal">
+      <div class="modal-header">
+        <div>
+          <span class="live-badge">LIVE DOCK</span>
+          <h2>Playground</h2>
+        </div>
+        <div class="pg-controls">
+          <select id="pgModelSelect">
+            <!-- Populated via JS -->
+          </select>
+          <button class="btn-icon" id="pgApiKeysBtn" title="API Keys">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+          </button>
+        </div>
+        <button class="btn-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body pg-body">
+        <div class="pg-chat-history" id="pgHistory">
+          <!-- Chat messages -->
+          <div class="msg system">Ready. Start typing below.</div>
+        </div>
+      </div>
+      <div class="modal-footer pg-footer">
+        <form id="pgForm" class="pg-input-form">
+          <textarea id="pgInput" rows="1" placeholder="Type a message... (Shift+Enter for newline)"></textarea>
+          <button type="submit" class="btn-primary btn-sm">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPI MODAL -->
+  <div class="modal-overlay" id="upiModalOverlay" style="display: none;">
+    <div class="modal text-center">
+      <div class="modal-header">
+        <span class="support-badge mx-auto mb-2">❤️ Support VictorX</span>
+        <h2>Support the Project</h2>
+        <p class="subtitle">Your support helps keep VictorX servers running and models indexing.</p>
+        <button class="btn-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upi-box">
+          <p>Scan to pay via any UPI app</p>
+          <div class="qr-placeholder" style="margin: 20px auto; width: 150px; height: 150px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #000;">
+            [QR Code]
+          </div>
+          <p class="upi-id"><strong>arasu9629hf@okhdfcbank</strong></p>
+        </div>
+        <div class="tier-cards" style="display: flex; gap: 10px; margin-top: 20px;">
+          <div class="tier-card" style="flex: 1; padding: 15px; border: 1px solid var(--border); border-radius: 8px;">
+            <h4>Coffee</h4>
+            <p>₹100</p>
+          </div>
+          <div class="tier-card" style="flex: 1; padding: 15px; border: 1px solid var(--border); border-radius: 8px;">
+            <h4>Server</h4>
+            <p>₹500</p>
+          </div>
+          <div class="tier-card" style="flex: 1; padding: 15px; border: 1px solid var(--border); border-radius: 8px;">
+            <h4>Pro</h4>
+            <p>₹1000</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary w-full" id="confirmSupportBtn">I've made a payment</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
