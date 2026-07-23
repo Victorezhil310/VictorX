@@ -1,31 +1,29 @@
 /* ==========================================================================
-   VICTOR OG ULTIMATE ENGINE
-   - Real-time HUD system status metrics simulation (CPU/RAM/GPU/Disk)
-   - Live clock counter & Activity Log feed
-   - Interactive Console Commander & Voice Assistant
-   - Model Registry (Ollama, Meta, DeepSeek, Mistral, Google, Qwen)
-   - Apidog API Workbench & Code Generator
-   - Admin Security PIN (20032004)
+   VictorX Platform Engine (v3.0)
+   - API Workbench & HTTP Client Runner
+   - Model Fine-Tuning & Training Simulator (LoRA / QLoRA)
+   - One-Click Cloud Hosting & Deployment Manager
+   - Local DB Storage Engine (db/data.json)
+   - Admin PIN Security (20032004)
    ========================================================================== */
 
 const PORTS = [
-  { id: "ollama",     name: "Ollama",       color: "#00f0ff", desc: "Local-first runtime dock." },
-  { id: "meta",       name: "Meta",         color: "#7C9CFF", desc: "Llama 3 open weights family." },
+  { id: "meta",       name: "Meta",         color: "#7C9CFF", desc: "Llama open weights family." },
   { id: "deepseek",   name: "DeepSeek",     color: "#38BDF8", desc: "DeepSeek R1 reasoning models." },
   { id: "mistral",    name: "Mistral AI",   color: "#E5675F", desc: "Fast open weight models." },
   { id: "google",     name: "Google",       color: "#8FD14F", desc: "Gemma 3 open models." },
-  { id: "qwen",       name: "Alibaba Qwen", color: "#C792EA", desc: "Qwen 2.5 series." }
+  { id: "qwen",       name: "Alibaba Qwen", color: "#C792EA", desc: "Qwen 2.5 series." },
+  { id: "ollama",     name: "Local Ollama", color: "#F0A93D", desc: "Local machine execution." }
 ];
 
 const MODELS = [
-  { id: "gemma3-12b",    name: "GEMMA 3 12B",   size: "12B",  port: "google",   tags: ["vision","chat"],    haul: 38800000, added: 1, desc: "Google DeepMind frontier model for single GPU.", apiModel: "google/gemma-2-27b-it" },
-  { id: "qwen2.5-14b",   name: "QWEN 2.5 14B",  size: "14B",  port: "qwen",     tags: ["tools","code"],     haul: 35200000, added: 2, desc: "Multilingual model with 128K context window.", apiModel: "qwen/qwen-2.5-72b-instruct" },
-  { id: "llama3.3-70b",  name: "LLAMA 3.3 70B", size: "70B",  port: "meta",     tags: ["reasoning","tools"], haul: 5400000, added: 3, desc: "State of the art open reasoning model.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
-  { id: "deepseek-r1",   name: "DEEPSEEK R1",   size: "671B", port: "deepseek", tags: ["thinking","code"],  haul: 90300000, added: 4, desc: "Open reasoning model approaching top proprietary APIs.", apiModel: "deepseek/deepseek-r1" },
-  { id: "glm4-9b",       name: "GLM 4 9B",      size: "9B",   port: "ollama",   tags: ["chat","tools"],     haul: 12000000, added: 5, desc: "General language model fine tuned for instructions.", apiModel: "glm-4-9b" },
-  { id: "mistral-7b",    name: "MISTRAL 7B",    size: "7B",   port: "mistral",  tags: ["chat","general"],   haul: 31300000, added: 6, desc: "High performance compact model v0.3.", apiModel: "mistralai/mistral-7b-instruct" },
-  { id: "llama3.1-8b",   name: "LLAMA 3.1 8B",  size: "8B",   port: "meta",     tags: ["tools","chat"],     haul: 81200000, added: 7, desc: "Meta general purpose fast model.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
-  { id: "codellama-13b", name: "CODELLAMA 13B", size: "13B",  port: "meta",     tags: ["code"],             haul: 5800000,  added: 8, desc: "Code generation and completion model.", apiModel: "meta-llama/codellama-13b-instruct" }
+  { id: "llama-3.3-70b",  name: "Llama 3.3 70B", size: "70B",  port: "meta",     tags: ["reasoning","tools"], haul: 5400000, added: 1, desc: "State of the art open reasoning model.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
+  { id: "deepseek-r1",   name: "DeepSeek R1",   size: "671B", port: "deepseek", tags: ["thinking","code"],  haul: 90300000, added: 2, desc: "Open reasoning model approaching top proprietary APIs.", apiModel: "deepseek/deepseek-r1" },
+  { id: "gemma-3-12b",   name: "Gemma 3 12B",   size: "12B",  port: "google",   tags: ["vision","chat"],    haul: 38800000, added: 3, desc: "Google DeepMind frontier model for single GPU.", apiModel: "google/gemma-2-27b-it" },
+  { id: "qwen-2.5-14b",  name: "Qwen 2.5 14B",  size: "14B",  port: "qwen",     tags: ["tools","code"],     haul: 35200000, added: 4, desc: "Multilingual model with 128K context window.", apiModel: "qwen/qwen-2.5-72b-instruct" },
+  { id: "mistral-7b",    name: "Mistral 7B",    size: "7B",   port: "mistral",  tags: ["chat","general"],   haul: 31300000, added: 5, desc: "High performance compact model v0.3.", apiModel: "mistralai/mistral-7b-instruct" },
+  { id: "llama-3.1-8b",   name: "Llama 3.1 8B",  size: "8B",   port: "meta",     tags: ["tools","chat"],     haul: 81200000, added: 6, desc: "Meta general purpose fast model.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
+  { id: "codellama-13b", name: "CodeLlama 13B", size: "13B",  port: "meta",     tags: ["code"],             haul: 5800000,  added: 7, desc: "Code generation and completion model.", apiModel: "meta-llama/codellama-13b-instruct" }
 ];
 
 const ADMIN_VERIFICATION_PIN = '20032004';
@@ -36,10 +34,9 @@ let state = {
   sort: "most_hauled",
   user: JSON.parse(localStorage.getItem("victor_user") || 'null'),
   keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","ollama":"http://localhost:11434"}'),
-  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["gemma3-12b","qwen2.5-14b","llama3.3-70b","deepseek-r1","glm4-9b","mistral-7b"]')),
-  isListening: false,
+  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["gemma-3-12b","qwen-2.5-14b","llama-3.3-70b","deepseek-r1","mistral-7b","llama-3.1-8b"]')),
   adminAuthenticated: false,
-  uptimeSeconds: 8075
+  isTraining: false
 };
 
 function saveState() {
@@ -54,7 +51,7 @@ function fmt(n) {
 }
 
 function portInfo(id) {
-  return PORTS.find(p => p.id === id) || { name: "Ollama", color: "#00f0ff" };
+  return PORTS.find(p => p.id === id) || { name: "Open Weights", color: "#38bdf8" };
 }
 
 function escapeHtml(str) {
@@ -67,14 +64,14 @@ function toast(msg, type = "info") {
   const container = document.getElementById("toast");
   if(!container) return;
   const t = document.createElement("div");
-  t.style.padding = "8px 14px";
-  t.style.borderRadius = "4px";
-  t.style.fontSize = "12px";
-  t.style.fontFamily = "var(--font-mono)";
-  t.style.background = type === "error" ? "rgba(255,0,85,0.9)" : type === "success" ? "rgba(0,255,136,0.9)" : "rgba(0,240,255,0.9)";
-  t.style.color = "#000";
-  t.style.fontWeight = "bold";
-  t.style.boxShadow = "0 0 15px rgba(0,240,255,0.5)";
+  t.style.padding = "10px 16px";
+  t.style.borderRadius = "6px";
+  t.style.fontSize = "13px";
+  t.style.fontWeight = "600";
+  t.style.boxShadow = "0 4px 14px rgba(0,0,0,0.5)";
+  t.style.background = type === "error" ? "#7f1d1d" : type === "success" ? "#064e3b" : "#1e293b";
+  t.style.color = type === "error" ? "#fca5a5" : type === "success" ? "#6ee7b7" : "#e2e8f0";
+  t.style.border = "1px solid " + (type === "error" ? "#991b1b" : type === "success" ? "#065f46" : "#334155");
   
   t.innerText = msg;
   container.appendChild(t);
@@ -91,134 +88,18 @@ function closeModal(id) {
   if(m) m.style.display = "none";
 }
 
-function scrollToSection(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-}
-
-// Clock & Metrics Update Timer
-function startHudTimers() {
-  setInterval(() => {
-    const now = new Date();
-    const clockEl = document.getElementById("hudClock");
-    if(clockEl) {
-      const dayName = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-      const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-      clockEl.innerText = `${dateStr} | ${dayName} | ${now.toLocaleTimeString()}`;
-    }
-
-    // Uptime
-    state.uptimeSeconds++;
-    const hrs = String(Math.floor(state.uptimeSeconds / 3600)).padStart(2, '0');
-    const mins = String(Math.floor((state.uptimeSeconds % 3600) / 60)).padStart(2, '0');
-    const secs = String(state.uptimeSeconds % 60).padStart(2, '0');
-    const uptimeEl = document.getElementById("uptimeVal");
-    if(uptimeEl) uptimeEl.innerText = `${hrs}:${mins}:${secs}`;
-
-    // Fluctuate System Stats
-    const cpu = Math.floor(20 + Math.random() * 15);
-    const ram = Math.floor(45 + Math.random() * 8);
-    const gpu = Math.floor(30 + Math.random() * 10);
-    const disk = 62;
-
-    updateMetric("cpuVal", "cpuBar", cpu);
-    updateMetric("ramVal", "ramBar", ram);
-    updateMetric("gpuVal", "gpuBar", gpu);
-    updateMetric("diskVal", "diskBar", disk);
-  }, 1000);
-}
-
-function updateMetric(valId, barId, pct) {
-  const valEl = document.getElementById(valId);
-  const barEl = document.getElementById(barId);
-  if(valEl) valEl.innerText = `${pct}%`;
-  if(barEl) barEl.style.width = `${pct}%`;
-}
-
-// Voice Toggle
-function toggleVoiceListening() {
-  state.isListening = !state.isListening;
-  const stateText = document.getElementById("listeningText");
-  const micBtn = document.getElementById("micBtn");
-
-  if(state.isListening) {
-    if(stateText) stateText.innerText = "VICTOR IS LISTENING & PROCESSING...";
-    if(micBtn) micBtn.style.boxShadow = "0 0 25px #00ff88";
-    toast("Voice Assistant Activated - Listening...", "success");
-    addConsoleLine("VICTOR", "Voice Assistant Listening... How can I help Boss?");
-  } else {
-    if(stateText) stateText.innerText = "VICTOR IS STANDBY...";
-    if(micBtn) micBtn.style.boxShadow = "0 0 15px rgba(0,240,255,0.3)";
-    toast("Voice Assistant Standby", "info");
-  }
-}
-
-// Console Commander
-function handleConsoleSubmit(e) {
-  if(e) e.preventDefault();
-  const input = document.getElementById("consoleInput");
-  const cmd = input?.value.trim();
-  if(!cmd) return;
-
-  input.value = "";
-  addConsoleLine("YOU", cmd);
-
-  const lower = cmd.toLowerCase();
-  let reply = "Understood Boss. Executing task...";
-
-  if(lower.includes("hello") || lower.includes("hi")) {
-    reply = "Hello Boss! VICTOR OG Core is online and ready for your command.";
-  } else if(lower.includes("youtube") || lower.includes("music")) {
-    reply = "Opening YouTube... Launching Lo-Fi beats workstation stream.";
-  } else if(lower.includes("news") || lower.includes("summary")) {
-    reply = "Summarizing latest AI news: Open-source models performing at SOTA levels!";
-  } else if(lower.includes("status")) {
-    reply = "System Status: CPU 23% | RAM 48% | GPU 31% | All 6 Ollama Models RUNNING.";
-  } else if(lower.includes("help")) {
-    reply = "Commands available: 'status', 'pull <model>', 'open workbench', 'run llama', 'news'";
-  } else if(lower.includes("workbench")) {
-    scrollToSection("apidogWorkbench");
-    reply = "Navigating to API Testing Workbench.";
-  } else if(lower.includes("pull")) {
-    openPullModal("llama3.3-70b");
-    reply = "Initializing download dock for model.";
-  }
-
-  setTimeout(() => {
-    addConsoleLine("VICTOR", reply);
-    addActivityLog(cmd.toUpperCase());
-  }, 400);
-}
-
-function addConsoleLine(sender, text) {
-  const out = document.getElementById("consoleOutput");
-  if(!out) return;
-  const line = document.createElement("div");
-  line.className = `c-line ${sender === 'YOU' ? 'usr' : 'sys'}`;
-  line.innerHTML = `<span class="c-tag">${sender}:</span> ${escapeHtml(text)}`;
-  out.appendChild(line);
-  out.scrollTop = out.scrollHeight;
-}
-
-function addActivityLog(text) {
-  const log = document.getElementById("activityLog");
-  if(!log) return;
-  const time = new Date().toLocaleTimeString();
-  const item = document.createElement("div");
-  item.innerHTML = `<span>${time}</span> ${escapeHtml(text.slice(0, 20))}`;
-  log.appendChild(item);
-  log.scrollTop = log.scrollHeight;
-}
-
 // Render Functions
 function updateStats() {
   const installedCountPill = document.getElementById("installedCountPill");
-  if(installedCountPill) installedCountPill.innerText = `${state.installed.size} MODELS DOCKED`;
+  const statInstalled = document.getElementById("statInstalled");
+  if(installedCountPill) installedCountPill.innerText = `${state.installed.size} Models`;
+  if(statInstalled) statInstalled.innerText = state.installed.size;
 }
 
 function renderChips() {
   const c = document.getElementById("portChips");
   if(!c) return;
-  let html = `<button class="chip ${state.port === 'all' ? 'active' : ''}" data-port="all">ALL PORTS</button>`;
+  let html = `<button class="chip ${state.port === 'all' ? 'active' : ''}" data-port="all">All Ports</button>`;
   PORTS.forEach(p => {
     html += `<button class="chip ${state.port === p.id ? 'active' : ''}" data-port="${p.id}">${escapeHtml(p.name)}</button>`;
   });
@@ -235,7 +116,6 @@ function renderChips() {
 
 function renderGrid() {
   const g = document.getElementById("modelGrid");
-  const resultCount = document.getElementById("resultCount");
   const emptyState = document.getElementById("emptyState");
   if(!g) return;
 
@@ -247,8 +127,6 @@ function renderGrid() {
     }
     return true;
   });
-
-  if(resultCount) resultCount.innerText = `${filtered.length} MODELS ON MANIFEST`;
 
   if(filtered.length === 0) {
     g.innerHTML = "";
@@ -266,18 +144,18 @@ function renderGrid() {
       <div class="model-card" style="border-left-color:${p.color};">
         <div class="card-header">
           <div>
-            <span class="provider-tag" style="color:${p.color};">${escapeHtml(p.name)}</span>
-            <h3 class="model-name">${escapeHtml(m.name)} <span>(${m.size})</span></h3>
+            <span class="badge live-badge" style="color:${p.color};">${escapeHtml(p.name)}</span>
+            <h3 class="model-name" style="margin-top:4px;">${escapeHtml(m.name)} <span>(${m.size})</span></h3>
           </div>
-          <span class="hud-badge green">⬇ ${fmt(m.haul)}</span>
+          <span class="badge">⬇ ${fmt(m.haul)}</span>
         </div>
-        <p style="font-size:11px; color:#78a6b8; margin-bottom:8px;">${escapeHtml(m.desc)}</p>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">${escapeHtml(m.desc)}</p>
         <div class="card-actions">
           ${isInstalled 
-            ? `<button class="hud-action-btn launch-playground-btn" data-model="${m.id}">⚡ PLAYGROUND</button>`
-            : `<button class="hud-action-btn primary open-pull-modal" data-model="${m.id}">PULL MODEL</button>`
+            ? `<button class="btn btn-sm btn-ghost launch-playground-btn" data-model="${m.id}">⚡ Playground</button>`
+            : `<button class="btn btn-sm btn-primary open-pull-modal" data-model="${m.id}">Pull Weights</button>`
           }
-          <button class="hud-action-btn test-api-btn" data-model="${m.apiModel}">⚡ TEST API</button>
+          <button class="btn btn-sm btn-ghost test-api-btn" data-model="${m.apiModel}">⚡ Test API</button>
         </div>
       </div>
     `;
@@ -298,33 +176,16 @@ function renderInstalledGrid() {
 
   g.innerHTML = "";
   Array.from(state.installed).forEach(id => {
-    const m = MODELS.find(x => x.id === id) || { id, name: id.toUpperCase(), size: "14B" };
+    const m = MODELS.find(x => x.id === id) || { id, name: id, size: "Weights" };
     g.innerHTML += `
       <div class="model-card">
         <div class="card-header">
           <h3 class="model-name">${escapeHtml(m.name)}</h3>
-          <span class="hud-badge green">RUNNING</span>
+          <span class="badge live-badge">DOCKED</span>
         </div>
-        <div class="card-actions" style="margin-top:10px;">
-          <button class="hud-action-btn primary launch-playground-btn" data-model="${m.id}">⚡ LAUNCH CHAT</button>
-          <button class="hud-action-btn remove-dock-btn" data-model="${m.id}">REMOVE</button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-function renderPorts() {
-  const grid = document.getElementById("portGrid");
-  if(!grid) return;
-  grid.innerHTML = "";
-  PORTS.forEach(p => {
-    grid.innerHTML += `
-      <div class="port-card">
-        <div class="port-icon">🔌</div>
-        <div>
-          <strong style="color:#fff; font-family:var(--font-orbitron);">${escapeHtml(p.name)}</strong>
-          <div style="font-size:11px; color:#78a6b8;">${escapeHtml(p.desc)}</div>
+        <div class="card-actions" style="margin-top:12px;">
+          <button class="btn btn-sm btn-primary launch-playground-btn" data-model="${m.id}">⚡ Launch Chat</button>
+          <button class="btn btn-sm btn-ghost remove-dock-btn" data-model="${m.id}">Remove</button>
         </div>
       </div>
     `;
@@ -334,14 +195,14 @@ function renderPorts() {
 // API Workbench Runner
 function initApidogWorkbench() {
   document.getElementById("apiSendBtn")?.addEventListener("click", handleSendApiRequest);
-  document.getElementById("apiSaveBtn")?.addEventListener("click", () => toast("API Request saved to database", "success"));
+  document.getElementById("apiSaveBtn")?.addEventListener("click", () => toast("API Request saved to database collection", "success"));
 
   document.querySelectorAll(".pane-tab-bar .pane-tab").forEach(tab => {
     tab.addEventListener("click", (e) => {
       document.querySelectorAll(".pane-tab-bar .pane-tab").forEach(t => t.classList.remove("active"));
       e.target.classList.add("active");
       const targetTab = e.target.dataset.tab;
-      document.querySelectorAll(".pane-panel").forEach(p => p.classList.add("hidden"));
+      document.querySelectorAll(".tab-content").forEach(p => p.classList.add("hidden"));
       if(targetTab === 'body') document.getElementById("tabBody")?.classList.remove("hidden");
       if(targetTab === 'headers') document.getElementById("tabHeaders")?.classList.remove("hidden");
       if(targetTab === 'params') document.getElementById("tabParams")?.classList.remove("hidden");
@@ -394,28 +255,98 @@ function generateCodeSnippets() {
   const method = document.getElementById("apiMethod")?.value || "POST";
   const body = document.getElementById("apiRequestBody")?.value || "";
 
-  el.innerText = `curl -X ${method} "${endpoint}" -H "Content-Type: application/json" -d '${body.replace(/\n/g, '')}'`;
+  el.innerText = `// cURL Command\ncurl -X ${method} "${endpoint}" \\\n  -H "Content-Type: application/json" \\\n  -d '${body.replace(/\n/g, '')}'\n\n// JavaScript (Fetch)\nconst res = await fetch("${endpoint}", { method: "${method}", body: JSON.stringify(${body.trim()}) });`;
+}
+
+// Model Fine-Tuning Simulator
+function initTrainingStudio() {
+  const startBtn = document.getElementById("startTrainingBtn");
+  if(!startBtn) return;
+
+  startBtn.addEventListener("click", () => {
+    if(state.isTraining) return;
+    state.isTraining = true;
+    startBtn.disabled = true;
+    startBtn.innerText = "⏳ Fine-Tuning in Progress...";
+
+    const baseModel = document.getElementById("trainBaseModel")?.value || "llama-3.3-70b";
+    const epochs = document.getElementById("trainEpochs")?.value || "3";
+    const loraRank = document.getElementById("trainLoraRank")?.value || "16";
+
+    const statusText = document.getElementById("trainStatusText");
+    const pctText = document.getElementById("trainPctText");
+    const progressBar = document.getElementById("trainProgressBar");
+    const logBox = document.getElementById("trainLogBox");
+
+    if(statusText) statusText.innerText = "TRAINING...";
+    if(logBox) logBox.innerHTML = `<div>[INFO] Initializing LoRA rank r=${loraRank} adapter for base model ${baseModel}...</div>`;
+
+    let step = 0;
+    const totalSteps = parseInt(epochs) * 10;
+    
+    const interval = setInterval(() => {
+      step++;
+      const pct = Math.round((step / totalSteps) * 100);
+      const currentLoss = (0.95 - (step / totalSteps) * 0.78).toFixed(4);
+
+      if(progressBar) progressBar.style.width = `${pct}%`;
+      if(pctText) pctText.innerText = `${pct}%`;
+
+      if(logBox) {
+        logBox.innerHTML += `<div>[STEP ${step}/${totalSteps}] Epoch ${Math.ceil(step/10)}/${epochs} — Loss: ${currentLoss}</div>`;
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+
+      if(step >= totalSteps) {
+        clearInterval(interval);
+        state.isTraining = false;
+        startBtn.disabled = false;
+        startBtn.innerText = "🚀 Start Training Job";
+        if(statusText) statusText.innerText = "COMPLETED";
+
+        const customModelId = `custom-finetune-${Date.now().toString().slice(-4)}`;
+        state.installed.add(customModelId);
+        MODELS.push({ id: customModelId, name: `Fine-Tuned ${baseModel}`, size: "LoRA Adapters", port: "meta", tags: ["custom", "finetuned"], haul: 1, added: Date.now(), desc: `Custom LoRA fine-tuned model (r=${loraRank}).`, apiModel: customModelId });
+        
+        saveState();
+        updateStats();
+        renderInstalledGrid();
+        renderGrid();
+
+        toast(`Model Fine-Tuning Completed! Weights saved as ${customModelId}`, "success");
+      }
+    }, 200);
+  });
 }
 
 // Pull Simulator
 function openPullModal(modelId) {
-  const m = MODELS.find(x => x.id === modelId) || { id: modelId, name: modelId.toUpperCase(), size: "70B", desc: "Model download" };
-  document.getElementById("pullModalTitle").innerText = `PULLING ${m.name}`;
+  const m = MODELS.find(x => x.id === modelId) || { id: modelId, name: modelId, size: "Weights", desc: "Model weight download" };
+  document.getElementById("pullModalTitle").innerText = `Pulling ${m.name}`;
   document.getElementById("pullModalDesc").innerText = m.desc;
   openModal("pullModalOverlay");
-  startPullSimulation(m);
+
+  const btn = document.getElementById("pullConfirmBtn");
+  if(btn) {
+    btn.disabled = false;
+    btn.innerText = "Start Pull";
+    btn.onclick = () => startPullSimulation(m);
+  }
 }
 
 function startPullSimulation(m) {
   const progressBar = document.getElementById("pullProgressBar");
   const layersEl = document.getElementById("pullLayers");
-  layersEl.innerHTML = "";
+  const btn = document.getElementById("pullConfirmBtn");
+
+  if(btn) { btn.disabled = true; btn.innerText = "Downloading..."; }
+  if(layersEl) layersEl.innerHTML = "";
   let pct = 0;
 
   const timer = setInterval(() => {
     pct += 25;
     if(progressBar) progressBar.style.width = `${pct}%`;
-    layersEl.innerHTML += `<div style="color:var(--green);">✔ PULLED SHARD: layer-${pct/25}.safetensors</div>`;
+    if(layersEl) layersEl.innerHTML += `<div style="color:var(--green);">✔ Pulled shard: layer-${pct/25}.safetensors</div>`;
 
     if(pct >= 100) {
       clearInterval(timer);
@@ -430,16 +361,20 @@ function startPullSimulation(m) {
   }, 250);
 }
 
-// Playground Chat
-function openPlayground(modelId = "llama3.3-70b") {
+// AI Playground Chat
+function openPlayground(modelId = "llama-3.3-70b") {
   openModal("playgroundModalOverlay");
   const select = document.getElementById("pgModelSelect");
   if(select) {
-    select.innerHTML = `<option value="${modelId}">${modelId.toUpperCase()}</option>`;
+    select.innerHTML = "";
+    Array.from(state.installed).forEach(id => {
+      const m = MODELS.find(x => x.id === id) || { id, name: id };
+      select.innerHTML += `<option value="${m.id}" ${m.id === modelId ? 'selected' : ''}>${m.name}</option>`;
+    });
   }
 }
 
-// Admin PIN (20032004)
+// Admin Security PIN (20032004)
 function setupAdminPIN() {
   const inputs = document.querySelectorAll(".pin-digit");
   inputs.forEach((input, index) => {
@@ -467,13 +402,12 @@ function checkPIN() {
 
 // Master Initialization
 function initApp() {
-  startHudTimers();
   updateStats();
   renderChips();
   renderGrid();
   renderInstalledGrid();
-  renderPorts();
   initApidogWorkbench();
+  initTrainingStudio();
   setupAdminPIN();
 
   // Search filter
@@ -482,14 +416,17 @@ function initApp() {
     renderGrid();
   });
 
-  document.getElementById("consoleForm")?.addEventListener("submit", handleConsoleSubmit);
+  document.getElementById("adminPinBtn")?.addEventListener("click", () => openModal("adminPinOverlay"));
+  document.getElementById("openUpiModalBtn")?.addEventListener("click", () => openModal("upiModalOverlay"));
+  document.getElementById("openApiKeysBtn")?.addEventListener("click", () => openModal("apiKeysModalOverlay"));
   document.getElementById("pinVerifyBtn")?.addEventListener("click", checkPIN);
   document.getElementById("pinCancelBtn")?.addEventListener("click", () => closeModal("adminPinOverlay"));
 
   // Event Delegation
   document.addEventListener("click", (e) => {
     if(e.target.closest(".btn-close")) {
-      e.target.closest(".modal-overlay, .pin-overlay").style.display = "none";
+      const overlay = e.target.closest(".modal-overlay") || e.target.closest(".pin-overlay");
+      if(overlay) overlay.style.display = "none";
     }
     const pullBtn = e.target.closest(".open-pull-modal");
     if(pullBtn) openPullModal(pullBtn.dataset.model);
@@ -499,7 +436,7 @@ function initApp() {
 
     const testBtn = e.target.closest(".test-api-btn");
     if(testBtn) {
-      scrollToSection("apidogWorkbench");
+      document.getElementById("workbench")?.scrollIntoView({ behavior: "smooth" });
       toast("Loaded endpoint into API Workbench", "info");
     }
 
