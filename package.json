@@ -1,0 +1,26 @@
+{
+  "name": "victor-cli",
+  "version": "1.4.0",
+  "description": "Victor — Every Model, One Dock. Unified AI Model Registry & CLI Execution Engine",
+  "main": "script.js",
+  "bin": {
+    "victor": "./bin/victor.js"
+  },
+  "scripts": {
+    "start": "npx serve .",
+    "deploy": "git push origin main"
+  },
+  "keywords": [
+    "ai",
+    "ollama",
+    "huggingface",
+    "openrouter",
+    "llama3",
+    "deepseek",
+    "cli",
+    "model-dock"
+  ],
+  "author": "Victor Dock Engine <arasu9629hf@okhdfcbank>",
+  "license": "MIT",
+  "dependencies": {}
+}

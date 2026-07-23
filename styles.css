@@ -1114,8 +1114,93 @@ section { position: relative; z-index: 1; padding: 64px 0; }
   .hero-inner, .advertise-inner { grid-template-columns: 1fr; }
   .mainnav { display: none; }
 }
-@media (max-width: 520px) {
-  .topbar-actions .btn-ghost { display: none; }
-  .hero-stats { flex-wrap: wrap; row-gap: 16px; }
-  .playground-modal { height: 90vh; }
+/* ===== UPI Subscription & Donation Modal ===== */
+.upi-modal { max-width: 580px; }
+.upi-head { text-align: center; margin-bottom: 20px; }
+.upi-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
+.upi-id-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.upi-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dimmer);
+  letter-spacing: 0.05em;
+}
+.upi-id-text {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--accent);
+}
+.qr-container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.qr-img {
+  background: #FFFFFF;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.qr-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.tier-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.tier-card {
+  position: relative;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.tier-card.active {
+  border-color: var(--accent);
+  background: rgba(240, 169, 61, 0.06);
+}
+.tier-badge {
+  position: absolute;
+  top: -10px; right: 12px;
+  background: var(--accent);
+  color: #0B0D12;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+.tier-card h4 { font-size: 15px; margin-bottom: 4px; }
+.tier-price { font-size: 20px; font-weight: 700; color: var(--accent-2); margin-bottom: 10px; }
+.tier-price span { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+.tier-list { list-style: none; padding: 0; margin: 0; font-size: 12px; color: var(--text-dim); display: flex; flex-direction: column; gap: 4px; }
+.tier-desc { font-size: 12px; color: var(--text-dim); margin: 0; }
+
+.upi-footer { margin-top: 10px; }

@@ -982,6 +982,42 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("mydock").scrollIntoView({ behavior: "smooth" });
   });
 
+  // UPI Subscription Modal
+  const openUpiBtn = document.getElementById("openUpiModalBtn");
+  const openUpiNav = document.getElementById("openUpiModalNavLink");
+  const upiOverlay = document.getElementById("upiModalOverlay");
+  const upiClose = document.getElementById("upiModalClose");
+  const copyUpiBtn = document.getElementById("copyUpiBtn");
+  const confirmUpiBtn = document.getElementById("confirmUpiPayBtn");
+
+  const openUpiModal = (e) => {
+    if (e) e.preventDefault();
+    upiOverlay.hidden = false;
+  };
+
+  if (openUpiBtn) openUpiBtn.addEventListener("click", openUpiModal);
+  if (openUpiNav) openUpiNav.addEventListener("click", openUpiModal);
+  if (upiClose) upiClose.addEventListener("click", () => { upiOverlay.hidden = true; });
+
+  if (copyUpiBtn) {
+    copyUpiBtn.addEventListener("click", async () => {
+      const upiId = document.getElementById("upiIdText").textContent;
+      try {
+        await navigator.clipboard.writeText(upiId);
+        toast("UPI ID copied: " + upiId);
+      } catch {
+        toast("UPI ID: arasu9629hf@okhdfcbank");
+      }
+    });
+  }
+
+  if (confirmUpiBtn) {
+    confirmUpiBtn.addEventListener("click", () => {
+      upiOverlay.hidden = true;
+      toast("Thank you for your support! Pro status pending verification.");
+    });
+  }
+
   // ESC Key listener
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {

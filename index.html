@@ -29,9 +29,13 @@
       <a href="#ports">Ports</a>
       <a href="#mydock">My Dock <span class="badge" id="dockBadge">0</span></a>
       <a href="#playground" id="openPlaygroundNavLink">Playground</a>
+      <a href="#pro" id="openUpiModalNavLink">⚡ Pro / Donate</a>
       <a href="#advertise">Advertise</a>
     </nav>
     <div class="topbar-actions">
+      <button class="btn btn-ghost btn-icon-text" id="openUpiModalBtn" type="button" title="Support Victor & UPI Subscription">
+        <span>❤️ Support</span>
+      </button>
       <button class="btn btn-ghost btn-icon-text" id="openApiKeysBtn" type="button" title="Configure API Keys">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
         <span>API Keys</span>
@@ -404,6 +408,58 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
         </button>
       </form>
+    </div>
+  </div>
+<!-- UPI DONATION & SUBSCRIPTION MODAL -->
+<div class="modal-overlay" id="upiModalOverlay" hidden>
+  <div class="modal upi-modal" role="dialog" aria-modal="true" aria-labelledby="upiModalTitle">
+    <button class="modal-close" id="upiModalClose" aria-label="Close">&times;</button>
+    
+    <div class="upi-head">
+      <span class="badge-live">SUPPORT VICTOR DOCK</span>
+      <h3 id="upiModalTitle">Support Victor &amp; Unlock Pro Dock</h3>
+      <p class="modal-desc">Victor is an open-source model registry. Support our independent infrastructure via UPI subscription or donation!</p>
+    </div>
+
+    <!-- UPI Payment Details -->
+    <div class="upi-box">
+      <div class="upi-id-row">
+        <div>
+          <span class="upi-label">DIRECT UPI VPA ID</span>
+          <strong class="upi-id-text" id="upiIdText">arasu9629hf@okhdfcbank</strong>
+        </div>
+        <button class="btn btn-primary btn-small" id="copyUpiBtn" type="button">Copy ID</button>
+      </div>
+
+      <!-- QR Code -->
+      <div class="qr-container">
+        <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Model%20Dock&cu=INR" alt="UPI Payment QR Code" width="200" height="200">
+        <p class="qr-hint">Scan with GPay, PhonePe, Paytm, BHIM, or any UPI app</p>
+      </div>
+    </div>
+
+    <!-- Tier Options -->
+    <div class="tier-grid">
+      <div class="tier-card active">
+        <div class="tier-badge">POPULAR</div>
+        <h4>⚡ Pro Dock Member</h4>
+        <p class="tier-price">₹199 <span>/ month</span></p>
+        <ul class="tier-list">
+          <li>✔ Priority cloud model layer bandwidth</li>
+          <li>✔ Save unlimited IndexedDB models &amp; logs</li>
+          <li>✔ Direct CLI system integration</li>
+        </ul>
+      </div>
+
+      <div class="tier-card">
+        <h4>☕ Coffee Supporter</h4>
+        <p class="tier-price">Any Amount</p>
+        <p class="tier-desc">One-time UPI contribution to keep Victor servers running.</p>
+      </div>
+    </div>
+
+    <div class="upi-footer">
+      <button class="btn btn-ghost btn-full" id="confirmUpiPayBtn" type="button">I Have Sent Payment / Done</button>
     </div>
   </div>
 </div>
