@@ -3,754 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICTOR OG — ULTIMATE AI ASSISTANT & COMMAND CENTER</title>
+    <title>VictorX — Open-Source AI Model Hub, Spaces & Playground</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <style>
-/* ==========================================================================
-   VICTOR OG — FUTURISTIC DEEP BLACK & ELECTRIC BLUE CYBERPUNK HUD (INLINE)
-   ========================================================================== */
-
-:root {
-  --bg-dark: #00040a;
-  --panel-bg: rgba(2, 10, 25, 0.92);
-  --panel-border: rgba(0, 136, 255, 0.4);
-  --panel-glow: 0 0 25px rgba(0, 136, 255, 0.25);
-  
-  --electric-blue: #0088ff;
-  --electric-cyan: #00f0ff;
-  --neon-blue: #38bdf8;
-  --neon-green: #00ff88;
-  --neon-red: #ff0055;
-
-  --text-main: #f0f9ff;
-  --text-sub: #7dd3fc;
-  --text-muted: #385e72;
-
-  --font-orbitron: 'Orbitron', 'Rajdhani', sans-serif;
-  --font-rajdhani: 'Rajdhani', sans-serif;
-  --font-mono: 'Share Tech Mono', monospace;
-
-  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-rajdhani);
-}
-
-html, body {
-  background-color: var(--bg-dark) !important;
-  color: var(--text-main) !important;
-  min-height: 100vh;
-  background-image: 
-    radial-gradient(circle at 50% 15%, rgba(0, 136, 255, 0.18) 0%, transparent 70%),
-    radial-gradient(circle at 85% 85%, rgba(0, 240, 255, 0.12) 0%, transparent 60%),
-    linear-gradient(rgba(0, 136, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 136, 255, 0.04) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #00040a; }
-::-webkit-scrollbar-thumb { background: rgba(0, 136, 255, 0.5); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--electric-cyan); box-shadow: 0 0 10px var(--electric-cyan); }
-
-/* HUD PANELS */
-.hud-panel {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-glow), inset 0 0 15px rgba(0, 136, 255, 0.08);
-  border-radius: 4px;
-  padding: 14px;
-  position: relative;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-  backdrop-filter: blur(12px);
-}
-
-.hud-panel::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; width: 8px; height: 8px;
-  border-top: 2px solid var(--electric-cyan);
-  border-left: 2px solid var(--electric-cyan);
-}
-.hud-panel::after {
-  content: '';
-  position: absolute;
-  bottom: 0; right: 0; width: 8px; height: 8px;
-  border-bottom: 2px solid var(--electric-cyan);
-  border-right: 2px solid var(--electric-cyan);
-}
-
-.hud-panel-head {
-  font-family: var(--font-orbitron);
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--electric-cyan);
-  letter-spacing: 0.1em;
-  border-bottom: 1px solid rgba(0, 136, 255, 0.3);
-  padding-bottom: 6px;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
-}
-
-/* TOP HEADER */
-.hud-top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background: rgba(0, 4, 10, 0.95);
-  border-bottom: 1px solid var(--panel-border);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(16px);
-}
-.brand-title { font-family: var(--font-orbitron); font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 0 16px var(--electric-cyan); line-height: 1; }
-.brand-sub { font-family: var(--font-mono); font-size: 10px; color: var(--electric-cyan); letter-spacing: 0.25em; display: block; margin-top: 2px; }
-
-.hud-header-center { display: flex; align-items: center; gap: 12px; }
-.hud-status-pill {
-  font-family: var(--font-orbitron); font-size: 11px; font-weight: 800; color: var(--electric-cyan);
-  background: rgba(0, 136, 255, 0.15); border: 1px solid var(--electric-cyan); padding: 5px 16px; border-radius: 99px;
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
-}
-
-.wave-lines { display: flex; align-items: center; gap: 3px; }
-.wave-lines span { width: 3px; height: 16px; background: var(--electric-cyan); box-shadow: 0 0 8px var(--electric-cyan); animation: wave 1s infinite alternate; }
-.wave-lines span:nth-child(even) { animation-delay: 0.3s; }
-@keyframes wave { 0% { height: 4px; } 100% { height: 20px; } }
-
-.hud-time-display { font-family: var(--font-mono); font-size: 12px; color: var(--electric-cyan); background: rgba(0, 136, 255, 0.08); padding: 5px 12px; border: 1px solid rgba(0, 136, 255, 0.3); border-radius: 4px; }
-.hud-power-btn { background: rgba(0, 136, 255, 0.1); border: 1px solid var(--electric-cyan); color: var(--electric-cyan); width: 34px; height: 34px; border-radius: 4px; font-size: 16px; cursor: pointer; transition: var(--transition); box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
-.hud-power-btn:hover { background: var(--electric-cyan); color: #000; box-shadow: 0 0 20px var(--electric-cyan); }
-
-/* MAIN GRID LAYOUT */
-.hud-grid-container {
-  display: grid;
-  grid-template-columns: 240px 1fr 280px;
-  gap: 14px;
-  padding: 16px;
-  max-width: 1600px;
-  margin: 0 auto;
-}
-.hud-col { display: flex; flex-direction: column; gap: 14px; }
-
-/* NAVIGATION */
-.hud-nav-list { display: flex; flex-direction: column; gap: 6px; }
-.nav-btn {
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(0, 136, 255, 0.05); border: 1px solid rgba(0, 136, 255, 0.2);
-  padding: 8px 12px; border-radius: 4px; color: var(--text-main); font-size: 12px; font-weight: 600;
-  cursor: pointer; transition: var(--transition);
-}
-.nav-btn:hover, .nav-btn.active {
-  background: linear-gradient(90deg, rgba(0, 136, 255, 0.3), rgba(0, 240, 255, 0.2));
-  border-color: var(--electric-cyan); color: #fff;
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-}
-.nav-arr { color: var(--electric-cyan); font-weight: bold; }
-
-/* SYSTEM STATUS METRICS */
-.status-metrics { display: flex; flex-direction: column; gap: 10px; font-family: var(--font-mono); }
-.metric-row-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--electric-cyan); }
-.metric-graph-spark { height: 12px; background: rgba(0, 136, 255, 0.06); border-bottom: 1px dashed rgba(0, 240, 255, 0.3); }
-.metric-bar-bg { height: 6px; background: rgba(0, 136, 255, 0.15); border-radius: 3px; overflow: hidden; border: 1px solid rgba(0, 136, 255, 0.3); }
-.metric-bar-fill { height: 100%; background: linear-gradient(90deg, var(--electric-blue), var(--electric-cyan)); box-shadow: 0 0 10px var(--electric-cyan); }
-.status-footer-row { display: flex; justify-content: space-between; font-size: 11px; border-top: 1px solid rgba(0, 136, 255, 0.2); padding-top: 8px; margin-top: 4px; }
-.text-green { color: var(--neon-green); font-weight: bold; text-shadow: 0 0 8px var(--neon-green); }
-.text-cyan { color: var(--electric-cyan); font-weight: bold; }
-
-/* CENTER AI CORE */
-.core-layout { display: flex; align-items: center; justify-content: space-around; gap: 16px; padding: 8px 0; }
-.avatar-column { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.avatar-wireframe-box {
-  width: 110px; height: 110px; border-radius: 50%;
-  border: 1.5px dashed var(--electric-cyan); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
-  position: relative; display: flex; align-items: center; justify-content: center;
-}
-.face-wireframe-mesh {
-  width: 76px; height: 76px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 240, 255, 0.5) 0%, rgba(0, 136, 255, 0.1) 70%, transparent 100%);
-  border: 1.5px solid var(--electric-cyan); animation: spin 10s linear infinite;
-  box-shadow: inset 0 0 15px var(--electric-cyan);
-}
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-.avatar-title { font-family: var(--font-orbitron); font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 0 8px var(--electric-cyan); }
-.avatar-status { font-family: var(--font-mono); font-size: 10px; color: var(--neon-green); }
-
-/* ARC ORB SPINNER */
-.orb-column { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.core-title-text { font-family: var(--font-orbitron); font-size: 18px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--electric-cyan); }
-.core-sub-text { font-family: var(--font-mono); font-size: 10px; color: var(--electric-cyan); }
-
-.arc-orb-spinner {
-  width: 150px; height: 150px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 240, 255, 0.3) 0%, rgba(0, 136, 255, 0.1) 70%, transparent 90%);
-  border: 2px solid var(--electric-cyan); box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
-  position: relative; display: flex; align-items: center; justify-content: center;
-}
-.orb-ring { position: absolute; border-radius: 50%; border: 1px solid var(--electric-cyan); }
-.ring-outer { width: 100%; height: 100%; border-style: dashed; animation: spin 10s linear infinite; }
-.ring-mid { width: 80%; height: 80%; border-style: dotted; animation: spinRev 6s linear infinite; }
-.ring-inner { width: 60%; height: 60%; animation: spin 4s linear infinite; }
-
-@keyframes spinRev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-
-.core-listening-bar { text-align: center; margin-top: 6px; }
-.listening-label { font-family: var(--font-mono); font-size: 11px; color: var(--electric-cyan); letter-spacing: 0.1em; }
-.wave-bars-dyn { display: flex; gap: 3px; justify-content: center; margin-top: 4px; }
-.wave-bars-dyn span { width: 3px; height: 14px; background: var(--electric-cyan); box-shadow: 0 0 8px var(--electric-cyan); animation: wave 0.8s infinite alternate; }
-
-/* QUICK TOOLS GRID */
-.quick-tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.qt-btn {
-  background: rgba(0, 136, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.25);
-  padding: 10px 4px; border-radius: 4px; color: #fff; font-size: 10px; font-weight: 700;
-  display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: var(--transition);
-}
-.qt-btn:hover { background: rgba(0, 240, 255, 0.2); border-color: var(--electric-cyan); transform: translateY(-2px); box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
-.qt-icon { font-size: 16px; }
-
-/* VICTOR CONSOLE */
-.console-layout { display: flex; gap: 12px; height: 170px; }
-.console-chat-area { flex: 1; display: flex; flex-direction: column; background: #000208; border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 4px; padding: 8px; }
-.chat-logs { flex: 1; font-family: var(--font-mono); font-size: 11px; overflow-y: auto; }
-.c-line { margin-bottom: 4px; }
-.c-tag { color: var(--electric-cyan); font-weight: bold; }
-.console-input-row { display: flex; gap: 8px; margin-top: 6px; }
-.hud-input-sm {
-  background: rgba(0, 136, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.3);
-  padding: 8px 10px; border-radius: 4px; color: #fff; font-family: var(--font-mono); font-size: 11px; outline: none; flex: 1;
-}
-.hud-input-sm:focus { border-color: var(--electric-cyan); box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); }
-.console-send { background: var(--electric-cyan); color: #000; border: none; padding: 0 14px; font-weight: bold; cursor: pointer; border-radius: 4px; box-shadow: 0 0 10px var(--electric-cyan); }
-
-.console-activity-side { width: 140px; background: #000208; border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 4px; padding: 8px; font-family: var(--font-mono); font-size: 9px; }
-.act-head { color: var(--electric-cyan); font-weight: bold; margin-bottom: 6px; border-bottom: 1px dashed rgba(0, 240, 255, 0.3); padding-bottom: 2px; }
-.act-list div { margin-bottom: 4px; color: var(--text-sub); }
-.act-list span { color: var(--electric-cyan); }
-
-/* OLLAMA MODELS */
-.models-running-list { display: flex; flex-direction: column; gap: 8px; }
-.m-item {
-  display: flex; align-items: center; justify-content: space-between;
-  background: rgba(0, 136, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.2);
-  padding: 8px 10px; border-radius: 4px; font-size: 11px;
-}
-.m-name { font-weight: 700; color: #fff; }
-.m-dot { color: var(--neon-green); font-family: var(--font-mono); font-size: 10px; text-shadow: 0 0 6px var(--neon-green); }
-.hud-action-btn {
-  width: 100%; padding: 8px; background: rgba(0, 136, 255, 0.1); border: 1px solid var(--electric-cyan);
-  color: var(--electric-cyan); font-family: var(--font-orbitron); font-size: 10px; font-weight: 800;
-  cursor: pointer; margin-top: 8px; border-radius: 4px; transition: var(--transition); text-shadow: 0 0 6px var(--electric-cyan);
-}
-.hud-action-btn:hover, .hud-action-btn.primary { background: var(--electric-cyan); color: #000; text-shadow: none; box-shadow: 0 0 15px var(--electric-cyan); }
-
-/* RIGHT SPLIT ROW */
-.right-split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.voice-box, .gestures-box { text-align: center; font-size: 10px; }
-.voice-wave-visual { display: flex; gap: 3px; justify-content: center; height: 18px; align-items: center; }
-.voice-wave-visual span { width: 3px; height: 100%; background: var(--electric-cyan); }
-.mic-glow-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 240, 255, 0.15); border: 2px solid var(--electric-cyan); color: #fff; font-size: 18px; margin: 6px auto; cursor: pointer; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
-
-.hand-3d-visual { height: 50px; background: #000208; border: 1px dashed rgba(0, 240, 255, 0.4); border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 6px; }
-.hand-icon { font-size: 22px; }
-.tracking-tag { font-size: 9px; color: var(--neon-green); font-family: var(--font-mono); }
-.gestures-list { font-family: var(--font-mono); font-size: 8px; text-align: left; }
-.gestures-list span:first-child { color: var(--electric-cyan); }
-
-/* CAMERA FEED */
-.camera-monitor { height: 76px; background: #000208; border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 4px; position: relative; overflow: hidden; }
-.camera-status { position: absolute; bottom: 4px; left: 8px; font-family: var(--font-mono); font-size: 9px; color: var(--neon-green); }
-
-/* LOWER SECTIONS */
-.hud-lower-sections { max-width: 1600px; margin: 16px auto; padding: 0 16px; }
-.req-bar-row { display: flex; gap: 8px; margin-bottom: 12px; }
-.workbench-split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.workbench-pane { background: #000208; border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 4px; }
-.pane-tab-bar { display: flex; background: rgba(0, 136, 255, 0.1); border-bottom: 1px solid rgba(0, 240, 255, 0.2); }
-.pane-tab { padding: 8px 12px; font-size: 11px; font-family: var(--font-mono); color: var(--text-sub); background: none; border: none; cursor: pointer; }
-.pane-tab.active { color: var(--electric-cyan); border-bottom: 2px solid var(--electric-cyan); background: #000208; }
-.code-area { width: 100%; height: 150px; background: transparent; border: none; color: var(--electric-cyan); font-family: var(--font-mono); font-size: 11px; padding: 10px; outline: none; resize: none; }
-
-.res-status-row { display: flex; gap: 10px; padding: 8px 10px; background: rgba(0, 136, 255, 0.1); border-bottom: 1px solid rgba(0, 240, 255, 0.2); font-family: var(--font-mono); font-size: 11px; }
-.hud-badge { padding: 2px 8px; border-radius: 3px; border: 1px solid rgba(0, 240, 255, 0.3); color: var(--electric-cyan); }
-.hud-badge.green { color: var(--neon-green); border-color: var(--neon-green); }
-
-.model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-.model-card { background: rgba(0, 136, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 4px; padding: 12px; border-left: 3px solid var(--electric-cyan); }
-
-/* BOTTOM BAR */
-.hud-bottom-bar {
-  position: sticky; bottom: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 20px; background: rgba(0, 4, 10, 0.96); border-top: 1px solid var(--panel-border);
-  font-family: var(--font-mono); font-size: 11px; backdrop-filter: blur(12px);
-}
-.b-center-icons { display: flex; gap: 8px; }
-.b-icon { background: rgba(0, 136, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); color: #fff; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; transition: var(--transition); }
-.b-icon:hover { border-color: var(--electric-cyan); background: rgba(0, 240, 255, 0.25); box-shadow: 0 0 12px var(--electric-cyan); }
-.indicator-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-.indicator-dot.green { background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
-
-/* MODALS */
-.modal-overlay, .pin-overlay { position: fixed; inset: 0; background: rgba(0, 4, 10, 0.9); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 999; }
-.modal-box { max-width: 460px; width: 100%; padding: 18px; }
-.pin-input-group { display: flex; gap: 6px; justify-content: center; margin: 12px 0; }
-.pin-digit { width: 34px; height: 42px; text-align: center; font-size: 18px; font-weight: bold; background: #000208; border: 1px solid var(--electric-cyan); border-radius: 4px; color: #fff; outline: none; box-shadow: 0 0 8px rgba(0, 240, 255, 0.3); }
-.toast { position: fixed; bottom: 50px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 6px; }
-
-.hidden { display: none !important; }
-.w-full { width: 100% !important; }
-.style-flex-1 { flex: 1 !important; }
-
-@media (max-width: 1000px) {
-  .hud-grid-container { grid-template-columns: 1fr; }
-  .workbench-split-grid { grid-template-columns: 1fr; }
-}
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body class="hud-body">
+<body>
 
-    <!-- TOP HUD HEADER -->
-    <header class="hud-top-bar">
-        <div class="hud-brand">
-            <h1 class="brand-title">VICTOR OG</h1>
-            <span class="brand-sub">YOUR AI ASSISTANT</span>
-        </div>
+    <!-- NAV HEADER -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="#" class="brand">
+                    <svg class="brand-logo" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="#38bdf8"/>
+                    </svg>
+                    <span class="brand-name">VictorX</span>
+                </a>
+                
+                <div class="search-bar-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search 150+ models, datasets, spaces...">
+                    <span class="search-shortcut">⌘K</span>
+                </div>
+            </div>
 
-        <div class="hud-header-center">
-            <div class="wave-lines"><span></span><span></span><span></span><span></span><span></span></div>
-            <div class="hud-status-pill">VICTOR OG ONLINE</div>
-            <div class="wave-lines"><span></span><span></span><span></span><span></span><span></span></div>
-        </div>
+            <nav class="nav-links">
+                <a href="#models" class="nav-link active">📦 Models</a>
+                <a href="#spaces" class="nav-link">🚀 Spaces</a>
+                <a href="#datasets" class="nav-link">📊 Datasets</a>
+                <a href="#workbench" class="nav-link">⚡ API Workbench</a>
+                <a href="#dock" class="nav-link">⚓ My Dock</a>
+            </nav>
 
-        <div class="hud-header-right">
-            <div id="hudClock" class="hud-time-display">24 MAY 2025 | SATURDAY | 12:45:30 PM</div>
-            <button id="adminPinBtn" class="hud-power-btn" title="Admin Security (PIN: 20032004)">⏻</button>
+            <div class="nav-right">
+                <button id="openApiKeysBtn" class="btn btn-ghost" title="API Key Manager">🔑 Keys</button>
+                <button id="openUpiModalBtn" class="btn btn-ghost">❤️ Support</button>
+                <button id="authBtn" class="btn btn-primary">Sign In</button>
+                <!-- Hidden Admin Security PIN (20032004) -->
+                <button id="adminPinBtn" class="hidden-pin-trigger" title="Admin Security (PIN: 20032004)">🛡️</button>
+            </div>
         </div>
     </header>
 
-    <!-- MAIN CONTROL CENTER GRID -->
-    <div class="hud-grid-container">
-        
-        <!-- LEFT COLUMN -->
-        <aside class="hud-col col-left">
-            
-            <!-- MAIN MODULES -->
-            <div class="hud-panel panel-modules">
-                <div class="hud-panel-head">MAIN MODULES</div>
-                <nav class="hud-nav-list">
-                    <button class="nav-btn active" onclick="switchModule('dashboard')">
-                        <span class="nav-icon">🏠</span> DASHBOARD <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="openPlayground('llama3.3-70b')">
-                        <span class="nav-icon">💬</span> AI CHAT <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="toggleVoiceListening()">
-                        <span class="nav-icon">🎙️</span> VOICE ASSISTANT <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="toast('Vision & Camera Feed Active', 'success')">
-                        <span class="nav-icon">📷</span> VISION & CAMERA <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="toast('Hand Gestures Tracking Active', 'info')">
-                        <span class="nav-icon">🖐️</span> HAND GESTURES <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="scrollToSection('mydock')">
-                        <span class="nav-icon">📁</span> FILE MANAGER <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="scrollToSection('ports')">
-                        <span class="nav-icon">🛠️</span> SYSTEM TOOLS <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="scrollToSection('apidogWorkbench')">
-                        <span class="nav-icon">🌐</span> WEB BROWSER <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="toast('Notepad Active', 'info')">
-                        <span class="nav-icon">📝</span> NOTE PAD <span class="nav-arr">›</span>
-                    </button>
-                    <button class="nav-btn" onclick="openModal('apiKeysModalOverlay')">
-                        <span class="nav-icon">⚙️</span> SETTINGS <span class="nav-arr">›</span>
-                    </button>
-                </nav>
-            </div>
-
-            <!-- SYSTEM STATUS -->
-            <div class="hud-panel panel-status">
-                <div class="hud-panel-head">SYSTEM STATUS</div>
-                <div class="status-metrics">
-                    <div class="metric-block">
-                        <div class="metric-row-label"><span>CPU USAGE</span><span id="cpuVal">23%</span></div>
-                        <div class="metric-graph-spark" id="cpuSpark"></div>
-                        <div class="metric-bar-bg"><div class="metric-bar-fill" id="cpuBar" style="width: 23%;"></div></div>
-                    </div>
-
-                    <div class="metric-block">
-                        <div class="metric-row-label"><span>RAM USAGE</span><span id="ramVal">48%</span></div>
-                        <div class="metric-bar-bg"><div class="metric-bar-fill" id="ramBar" style="width: 48%;"></div></div>
-                    </div>
-
-                    <div class="metric-block">
-                        <div class="metric-row-label"><span>GPU USAGE</span><span id="gpuVal">31%</span></div>
-                        <div class="metric-graph-spark" id="gpuSpark"></div>
-                        <div class="metric-bar-bg"><div class="metric-bar-fill" id="gpuBar" style="width: 31%;"></div></div>
-                    </div>
-
-                    <div class="metric-block">
-                        <div class="metric-row-label"><span>DISK USAGE</span><span id="diskVal">62%</span></div>
-                        <div class="metric-bar-bg"><div class="metric-bar-fill" id="diskBar" style="width: 62%;"></div></div>
-                    </div>
-
-                    <div class="status-footer-row">
-                        <div><span>UPTIME</span><strong id="uptimeVal">02:14:35</strong></div>
-                        <div><span>VICTOR STATUS</span><strong class="text-green">• ACTIVE</strong></div>
-                    </div>
-                </div>
-            </div>
-
-        </aside>
-
-        <!-- CENTER COLUMN -->
-        <main class="hud-col col-center">
-            
-            <!-- AI CORE -->
-            <div class="hud-panel panel-core">
-                <div class="hud-panel-head">AI CORE</div>
-                <div class="core-layout">
-                    
-                    <!-- Avatar Hologram Wireframe -->
-                    <div class="avatar-column">
-                        <div class="avatar-wireframe-box">
-                            <div class="face-wireframe-mesh"></div>
-                        </div>
-                        <div class="avatar-text">
-                            <div class="avatar-title">VICTOR OG CORE</div>
-                            <div class="avatar-status">STATUS: ONLINE</div>
-                        </div>
-                    </div>
-
-                    <!-- Bat-wing Emblem & Orb Reactor -->
-                    <div class="orb-column">
-                        <div class="bat-emblem-header">
-                            <svg class="bat-wings-icon" viewBox="0 0 100 40" width="80" height="32">
-                                <path d="M50 30 C30 10 10 25 0 15 C15 35 35 30 50 40 C65 30 85 35 100 15 C90 25 70 10 50 30 Z" fill="#00f0ff" />
-                            </svg>
-                            <div class="core-title-text">VICTOR OG</div>
-                            <div class="core-sub-text">v1.0.0 ULTIMATE</div>
-                        </div>
-
-                        <!-- Arc Reactor Orb Spinner -->
-                        <div class="arc-orb-spinner">
-                            <div class="orb-ring ring-outer"></div>
-                            <div class="orb-ring ring-mid"></div>
-                            <div class="orb-ring ring-inner"></div>
-                            <div class="orb-core-center">
-                                <div class="sacred-geometry"></div>
-                            </div>
-                        </div>
-
-                        <div class="core-listening-bar">
-                            <div class="listening-label" id="listeningText">VICTOR IS LISTENING...</div>
-                            <div class="wave-bars-dyn">
-                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- QUICK TOOLS -->
-            <div class="hud-panel panel-quicktools">
-                <div class="hud-panel-head">QUICK TOOLS</div>
-                <div class="quick-tools-grid">
-                    <button class="qt-btn" onclick="toast('Screenshot Captured', 'success')">
-                        <div class="qt-icon">📸</div><span>SCREENSHOT</span>
-                    </button>
-                    <button class="qt-btn" onclick="toast('OCR Camera Ready', 'info')">
-                        <div class="qt-icon">🔍</div><span>OCR READER</span>
-                    </button>
-                    <button class="qt-btn" onclick="toast('Notebook Active', 'info')">
-                        <div class="qt-icon">📝</div><span>NOTE PAD</span>
-                    </button>
-                    <button class="qt-btn" onclick="toast('Calculator Running', 'info')">
-                        <div class="qt-icon">🧮</div><span>CALCULATOR</span>
-                    </button>
-                    <button class="qt-btn" onclick="toast('PDF Reader Active', 'info')">
-                        <div class="qt-icon">📄</div><span>PDF READER</span>
-                    </button>
-                    <button class="qt-btn" onclick="toast('Clipboard Synced', 'success')">
-                        <div class="qt-icon">📋</div><span>CLIPBOARD</span>
-                    </button>
-                    <button class="qt-btn" onclick="toast('Task Manager Active', 'info')">
-                        <div class="qt-icon">📊</div><span>TASK MANAGER</span>
-                    </button>
-                    <button class="qt-btn" onclick="scrollToSection('apidogWorkbench')">
-                        <div class="qt-icon">💻</div><span>TERMINAL</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- VICTOR CONSOLE -->
-            <div class="hud-panel panel-console">
-                <div class="hud-panel-head">VICTOR CONSOLE</div>
-                <div class="console-layout">
-                    
-                    <div class="console-chat-area">
-                        <div class="chat-logs" id="consoleOutput">
-                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Hello Boss, How can I help you today?</div>
-                            <div class="c-line usr"><span class="c-tag">YOU:</span> open youtube and play lo-fi music</div>
-                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Opening YouTube...</div>
-                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Playing Lo-fi music for you</div>
-                            <div class="c-line usr"><span class="c-tag">YOU:</span> summarize the ai news today</div>
-                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Here is your AI news summary...</div>
-                            <div class="c-line usr"><span class="c-tag">YOU:</span> good job victor</div>
-                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Thank you Boss! At your service.</div>
-                        </div>
-
-                        <form id="consoleForm" class="console-input-row">
-                            <input type="text" id="consoleInput" placeholder="TYPE YOUR COMMAND..." autocomplete="off">
-                            <button type="submit" class="console-send">➤</button>
-                        </form>
-                    </div>
-
-                    <div class="console-activity-side">
-                        <div class="act-head">✦ ACTIVITY LOG</div>
-                        <div class="act-list" id="activityLog">
-                            <div><span>12:45:18</span> SYSTEM STARTED</div>
-                            <div><span>12:45:20</span> ALL SYSTEMS ONLINE</div>
-                            <div><span>12:45:22</span> CAMERA CONNECTED</div>
-                            <div><span>12:45:23</span> MIC CONNECTED</div>
-                            <div><span>12:45:24</span> HAND TRACKING READY</div>
-                            <div><span>12:45:25</span> OLLAMA CONNECTED</div>
-                            <div><span>12:45:25</span> MODELS LOADED</div>
-                            <div><span>12:45:26</span> VICTOR OG READY</div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-        </main>
-
-        <!-- RIGHT COLUMN -->
-        <aside class="hud-col col-right">
-            
-            <!-- OLLAMA MODELS -->
-            <div class="hud-panel panel-models">
-                <div class="hud-panel-head">OLLAMA MODELS</div>
-                <div class="models-running-list">
-                    <div class="m-item">
-                        <span class="m-logo">⚛️</span>
-                        <span class="m-name">GEMMA 3 12B</span>
-                        <span class="m-dot">• RUNNING</span>
-                    </div>
-                    <div class="m-item">
-                        <span class="m-logo">⚡</span>
-                        <span class="m-name">QWEN 2.5 14B</span>
-                        <span class="m-dot">• RUNNING</span>
-                    </div>
-                    <div class="m-item">
-                        <span class="m-logo">🦙</span>
-                        <span class="m-name">LLAMA 3.3 70B</span>
-                        <span class="m-dot">• RUNNING</span>
-                    </div>
-                    <div class="m-item">
-                        <span class="m-logo">🌀</span>
-                        <span class="m-name">DEEPSEEK R1 14B</span>
-                        <span class="m-dot">• RUNNING</span>
-                    </div>
-                    <div class="m-item">
-                        <span class="m-logo">🌐</span>
-                        <span class="m-name">GLM 4 9B</span>
-                        <span class="m-dot">• RUNNING</span>
-                    </div>
-                    <div class="m-item">
-                        <span class="m-logo">🔥</span>
-                        <span class="m-name">MISTRAL 7B</span>
-                        <span class="m-dot">• RUNNING</span>
-                    </div>
-                </div>
-                <button class="hud-action-btn" onclick="scrollToSection('explore')">MODEL ROUTER ACTIVE</button>
-            </div>
-
-            <!-- RIGHT SPLIT ROW: VOICE ASSISTANT & HAND GESTURES -->
-            <div class="right-split-row">
+    <!-- HERO BANNER -->
+    <section class="hero-banner">
+        <div class="wrap">
+            <div class="hero-text-box">
+                <span class="badge yellow-badge">🔥 THE AI COMMUNITY PLATFORM</span>
+                <h1>Build, Test & Host Open-Source LLMs</h1>
+                <p>Discover 150+ open-weights foundation models, run zero-setup API inferences, and pull model layers directly to your dock.</p>
                 
-                <!-- VOICE ASSISTANT -->
-                <div class="hud-panel panel-voice">
-                    <div class="hud-panel-head">VOICE ASSISTANT</div>
-                    <div class="voice-box">
-                        <div class="voice-wave-visual">
-                            <span></span><span></span><span></span><span></span><span></span>
-                        </div>
-                        <div class="voice-state-text">LISTENING...</div>
-                        <button class="mic-glow-btn" id="micBtn" onclick="toggleVoiceListening()">🎙️</button>
-                        <div class="voice-select-label">VOICE: <strong>JARVIS PRIME</strong></div>
-                        <button class="hud-action-btn" onclick="toggleVoiceListening()">START VOICE CHAT</button>
-                    </div>
-                </div>
-
-                <!-- HAND GESTURES -->
-                <div class="hud-panel panel-gestures">
-                    <div class="hud-panel-head">HAND GESTURES</div>
-                    <div class="gestures-box">
-                        <div class="hand-3d-visual">
-                            <div class="hand-icon">🖐️</div>
-                            <div class="tracking-tag">STATUS: TRACKING</div>
-                        </div>
-                        <div class="gestures-list">
-                            <div><span>OPEN HAND</span> <span>→ MENU</span></div>
-                            <div><span>FIST</span> <span>→ CANCEL</span></div>
-                            <div><span>POINT INDEX</span> <span>→ SELECT</span></div>
-                            <div><span>PINCH</span> <span>→ CLICK</span></div>
-                            <div><span>PINCH + MOVE</span> <span>→ DRAG</span></div>
-                            <div><span>TWO FINGERS</span> <span>→ SCROLL</span></div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- CAMERA FEED -->
-            <div class="hud-panel panel-camera">
-                <div class="hud-panel-head">CAMERA FEED</div>
-                <div class="camera-monitor">
-                    <div class="camera-grid-overlay"></div>
-                    <div class="cam-nodes"><span></span><span></span></div>
-                    <span class="camera-status">• ACTIVE</span>
+                <div class="hero-stats-row">
+                    <div class="h-stat"><strong>150+</strong> <span>Models Indexed</span></div>
+                    <div class="h-stat"><strong>100%</strong> <span>OpenAPI Compliant</span></div>
+                    <div class="h-stat"><strong id="statInstalled">6</strong> <span>Weights Docked</span></div>
                 </div>
             </div>
+        </div>
+    </section>
 
-        </aside>
+    <!-- MAIN CONTENT AREA -->
+    <main class="wrap main-content">
 
-    </div>
+        <!-- FILTER & SORT CONTROLS -->
+        <section class="controls-bar">
+            <div class="filter-chips-wrap" id="portChips">
+                <button class="chip active" data-port="all">All Ecosystems</button>
+                <button class="chip" data-port="meta">Meta Open Weights</button>
+                <button class="chip" data-port="deepseek">DeepSeek Reasoning</button>
+                <button class="chip" data-port="mistral">Mistral Series</button>
+                <button class="chip" data-port="google">Google Gemma</button>
+                <button class="chip" data-port="qwen">Alibaba Qwen</button>
+            </div>
 
-    <!-- LOWER WORKBENCH & MANIFEST SECTIONS -->
-    <div class="hud-lower-sections">
-        
-        <!-- API WORKBENCH -->
-        <section class="hud-panel" id="apidogWorkbench">
-            <div class="hud-panel-head">⚡ API TESTING WORKBENCH & REQUEST STUDIO</div>
-            <div class="req-bar-row">
-                <select id="apiMethod" class="hud-select-sm">
-                    <option value="POST">POST</option>
-                    <option value="GET">GET</option>
-                    <option value="PUT">PUT</option>
-                    <option value="DELETE">DELETE</option>
+            <div class="sort-wrap">
+                <select id="sortSelect" class="select-dropdown">
+                    <option value="most_hauled">Most Hauled (Downloads)</option>
+                    <option value="newest">Recently Updated</option>
+                    <option value="name_asc">Name A-Z</option>
                 </select>
-                <input type="text" id="apiEndpointInput" class="hud-input-sm" value="https://openrouter.ai/api/v1/chat/completions">
-                <button id="apiSendBtn" class="hud-action-btn primary">⚡ SEND REQUEST</button>
-                <button id="apiSaveBtn" class="hud-action-btn">💾 SAVE</button>
             </div>
-            <div class="workbench-split-grid">
-                <div class="workbench-pane">
-                    <div class="pane-tab-bar">
-                        <button class="pane-tab active" data-tab="body">Body (JSON)</button>
-                        <button class="pane-tab" data-tab="headers">Headers</button>
-                        <button class="pane-tab" data-tab="params">Params</button>
-                        <button class="pane-tab" data-tab="code">Code Snippets</button>
+        </section>
+
+        <!-- 1. MODEL HUB GRID -->
+        <section class="section-block" id="models">
+            <div class="block-title">
+                <h2>📦 Open Foundation Models</h2>
+                <span class="count-tag" id="resultCount">12 Models</span>
+            </div>
+
+            <div class="model-grid" id="modelGrid"></div>
+            <div id="emptyState" class="empty-state hidden"><p>No models matching search filter.</p></div>
+        </section>
+
+        <!-- 2. SPACES & APPS -->
+        <section class="section-block" id="spaces">
+            <div class="block-title">
+                <h2>🚀 Featured Spaces & Demo Apps</h2>
+            </div>
+            <div class="spaces-grid">
+                <div class="space-card">
+                    <div class="space-header">
+                        <span class="space-icon">💬</span>
+                        <div>
+                            <h3>Universal LLM Playground</h3>
+                            <p class="space-author">by VictorX Core</p>
+                        </div>
                     </div>
-                    <div id="tabBody" class="pane-panel">
-                        <textarea id="apiRequestBody" class="code-area">{
+                    <p class="space-desc">Interactive multi-model chat interface with temperature, top-p, and streaming controls.</p>
+                    <button class="btn btn-secondary w-full" onclick="openPlayground('llama3.3-70b')">⚡ Launch Space</button>
+                </div>
+
+                <div class="space-card">
+                    <div class="space-header">
+                        <span class="space-icon">🔍</span>
+                        <div>
+                            <h3>RAG Knowledge Base Search</h3>
+                            <p class="space-author">by VictorX Community</p>
+                        </div>
+                    </div>
+                    <p class="space-desc">Upload PDFs and query document embeddings using vector search pipeline.</p>
+                    <button class="btn btn-secondary w-full" onclick="toast('RAG Space launching...', 'info')">⚡ Launch Space</button>
+                </div>
+
+                <div class="space-card">
+                    <div class="space-header">
+                        <span class="space-icon">💻</span>
+                        <div>
+                            <h3>Code Generator Studio</h3>
+                            <p class="space-author">by VictorX Open</p>
+                        </div>
+                    </div>
+                    <p class="space-desc">Synthesize Python, Rust, and TypeScript code snippets with benchmark evaluation.</p>
+                    <button class="btn btn-secondary w-full" onclick="toast('Code Studio launching...', 'info')">⚡ Launch Space</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. API TESTING WORKBENCH STUDIO -->
+        <section class="section-block" id="workbench">
+            <div class="block-title">
+                <h2>⚡ API Workbench & Inference Studio</h2>
+            </div>
+
+            <div class="workbench-box">
+                <div class="req-row">
+                    <select id="apiMethod" class="select-dropdown method-select">
+                        <option value="POST">POST</option>
+                        <option value="GET">GET</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                    <input type="text" id="apiEndpointInput" class="url-input" value="https://openrouter.ai/api/v1/chat/completions">
+                    <button id="apiSendBtn" class="btn btn-primary">⚡ Send Request</button>
+                    <button id="apiSaveBtn" class="btn btn-secondary">💾 Save</button>
+                </div>
+
+                <div class="split-workbench">
+                    <div class="workbench-pane">
+                        <div class="tab-header">
+                            <button class="tab-btn active" data-tab="body">Body (JSON)</button>
+                            <button class="tab-btn" data-tab="headers">Headers</button>
+                            <button class="tab-btn" data-tab="params">Params</button>
+                            <button class="tab-btn" data-tab="code">Code Snippets</button>
+                        </div>
+                        <div id="tabBody" class="tab-pane">
+                            <textarea id="apiRequestBody" class="code-editor">{
   "model": "meta-llama/llama-3.3-70b-instruct",
   "messages": [
     {"role": "user", "content": "Explain quantum computing in 2 sentences."}
   ]
 }</textarea>
-                    </div>
-                    <div id="tabHeaders" class="pane-panel hidden">
-                        <textarea id="apiHeadersInput" class="code-area">{
+                        </div>
+                        <div id="tabHeaders" class="tab-pane hidden">
+                            <textarea id="apiHeadersInput" class="code-editor">{
   "Content-Type": "application/json",
   "Authorization": "Bearer YOUR_API_KEY"
 }</textarea>
-                    </div>
-                    <div id="tabParams" class="pane-panel hidden">
-                        <textarea id="apiParamsInput" class="code-area">{
+                        </div>
+                        <div id="tabParams" class="tab-pane hidden">
+                            <textarea id="apiParamsInput" class="code-editor">{
   "temperature": 0.7,
   "max_tokens": 150
 }</textarea>
+                        </div>
+                        <div id="tabCode" class="tab-pane hidden">
+                            <pre><code id="generatedCodeSnippet"></code></pre>
+                        </div>
                     </div>
-                    <div id="tabCode" class="pane-panel hidden">
-                        <pre><code id="generatedCodeSnippet"></code></pre>
-                    </div>
-                </div>
 
-                <div class="workbench-pane">
-                    <div class="res-status-row">
-                        <span id="apiResponseStatus" class="hud-badge green">200 OK</span>
-                        <span id="apiResponseTime" class="hud-badge">0 ms</span>
-                        <span id="apiResponseSize" class="hud-badge">0 B</span>
-                    </div>
-                    <div class="code-area-wrap">
-                        <pre><code id="apiResponseViewer">// Response payload will appear here</code></pre>
+                    <div class="workbench-pane">
+                        <div class="status-strip">
+                            <span id="apiResponseStatus" class="status-badge green">200 OK</span>
+                            <span id="apiResponseTime" class="status-badge">0 ms</span>
+                            <span id="apiResponseSize" class="status-badge">0 B</span>
+                        </div>
+                        <div class="response-viewer">
+                            <pre><code id="apiResponseViewer">// Response payload will render here</code></pre>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- MODELS HUB -->
-        <section class="hud-panel" id="explore" style="margin-top:20px;">
-            <div class="hud-panel-head">📦 MODELS HUB & OPEN-SOURCE MANIFEST</div>
-            <div class="controls-row" style="display:flex; gap:10px; margin-bottom:10px;">
-                <input type="text" id="searchInput" class="hud-input-sm" style="flex:1;" placeholder="SEARCH MODELS BY NAME, TASK OR PROVIDER...">
-                <select id="sortSelect" class="hud-select-sm">
-                    <option value="most_hauled">MOST HAULED</option>
-                    <option value="newest">NEWEST</option>
-                    <option value="name_asc">NAME A-Z</option>
-                </select>
+        <!-- 4. MY DOCKED WEIGHTS -->
+        <section class="section-block" id="dock">
+            <div class="block-title">
+                <h2>⚓ My Docked Weights</h2>
+                <span id="installedCountPill" class="count-tag">6 Models</span>
             </div>
-            <div class="chip-row" id="portChips" style="margin:10px 0;"></div>
-            <div class="model-grid" id="modelGrid"></div>
-            <div id="emptyState" class="empty-state hidden"><p>NO MODELS MATCHING SEARCH</p></div>
+            <div class="model-grid" id="installedGrid"></div>
+            <div id="emptyDockState" class="empty-state hidden"><p>Your dock is empty.</p></div>
         </section>
 
-        <!-- MY DOCK -->
-        <section class="hud-panel" id="mydock" style="margin-top:20px;">
-            <div class="hud-panel-head">⚓ MY DOCKED MODELS <span id="installedCountPill" class="text-cyan">6 MODELS</span></div>
-            <div class="model-grid" id="installedGrid" style="margin-top:10px;"></div>
-            <div id="emptyDockState" class="empty-state hidden"><p>DOCK IS EMPTY</p></div>
-        </section>
+    </main>
 
-        <!-- PORTS -->
-        <section class="hud-panel" id="ports" style="margin-top:20px;">
-            <div class="hud-panel-head">🔌 CONNECTED SYSTEM PORTS</div>
-            <div class="port-grid" id="portGrid" style="margin-top:10px;"></div>
-        </section>
-
-    </div>
-
-    <!-- BOTTOM DOCK BAR -->
-    <footer class="hud-bottom-bar">
-        <div class="b-left">
-            <span class="indicator-dot green"></span>
-            <span>PRIVACY MODE: <strong>ON</strong></span>
-        </div>
-        <div class="b-center-icons">
-            <button class="b-icon" onclick="scrollToSection('explore')">🧠</button>
-            <button class="b-icon" onclick="openPlayground('llama3.3-70b')">💬</button>
-            <button class="b-icon" onclick="toast('Camera Active', 'success')">📷</button>
-            <button class="b-icon" onclick="toggleVoiceListening()">🎙️</button>
-            <button class="b-icon" onclick="toast('Hand Gestures Active', 'info')">🖐️</button>
-            <button class="b-icon" onclick="toast('Web Gateway Active', 'info')">🌐</button>
-            <button class="b-icon" onclick="scrollToSection('apidogWorkbench')">&lt;/&gt;</button>
-            <button class="b-icon" onclick="toast('Metrics Updated', 'info')">📊</button>
-            <button class="b-icon" onclick="openModal('adminPinOverlay')">🛡️</button>
-        </div>
-        <div class="b-right">
-            <span class="indicator-dot green"></span>
-            <span>LOCALHOST: <strong>127.0.0.1</strong></span>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="wrap footer-content">
+            <p>&copy; 2026 VictorX Platform. All rights reserved. Open-Source Model Registry & API Workbench.</p>
         </div>
     </footer>
 
@@ -761,88 +234,129 @@ html, body {
 
     <!-- Admin PIN Modal (20032004) -->
     <div class="pin-overlay" id="adminPinOverlay">
-        <div class="hud-panel modal-box">
-            <div class="hud-panel-head">ADMIN SECURITY ACCESS PIN <button class="btn-close">&times;</button></div>
-            <p style="font-size:11px; color:#00f0ff; margin:10px 0;">ENTER 8-DIGIT SECURITY PIN (20032004)</p>
-            <div class="pin-input-group" id="pinInputGroup">
-                <input type="password" class="pin-digit" maxlength="1">
-                <input type="password" class="pin-digit" maxlength="1">
-                <input type="password" class="pin-digit" maxlength="1">
-                <input type="password" class="pin-digit" maxlength="1">
-                <input type="password" class="pin-digit" maxlength="1">
-                <input type="password" class="pin-digit" maxlength="1">
-                <input type="password" class="pin-digit" maxlength="1">
-                <input type="password" class="pin-digit" maxlength="1">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Admin Security Access</h3>
+                <button class="btn-close">&times;</button>
             </div>
-            <div id="pinError" class="hud-badge red hidden" style="margin-bottom:10px;">ACCESS DENIED. INCORRECT PIN.</div>
-            <div style="display:flex; gap:8px;">
-                <button id="pinCancelBtn" class="hud-action-btn style-flex-1">CANCEL</button>
-                <button id="pinVerifyBtn" class="hud-action-btn primary style-flex-1">VERIFY</button>
+            <div class="modal-body">
+                <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">Enter 8-digit Administrator PIN (20032004)</p>
+                <div class="pin-input-group" id="pinInputGroup">
+                    <input type="password" class="pin-digit" maxlength="1">
+                    <input type="password" class="pin-digit" maxlength="1">
+                    <input type="password" class="pin-digit" maxlength="1">
+                    <input type="password" class="pin-digit" maxlength="1">
+                    <input type="password" class="pin-digit" maxlength="1">
+                    <input type="password" class="pin-digit" maxlength="1">
+                    <input type="password" class="pin-digit" maxlength="1">
+                    <input type="password" class="pin-digit" maxlength="1">
+                </div>
+                <div id="pinError" class="badge red hidden" style="margin-bottom:12px;">Access Denied. Incorrect PIN.</div>
+                <div style="display:flex; gap:8px;">
+                    <button id="pinCancelBtn" class="btn btn-secondary style-flex-1">Cancel</button>
+                    <button id="pinVerifyBtn" class="btn btn-primary style-flex-1">Verify</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Admin Dashboard Modal -->
     <div class="modal-overlay" id="adminDashboardOverlay">
-        <div class="hud-panel modal-box" style="max-width:700px;">
-            <div class="hud-panel-head">ADMIN CONTROL DASHBOARD <button class="btn-close">&times;</button></div>
-            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:14px 0;">
-                <div class="stat-card"><span id="adminTotalUsers">1</span><div>Users</div></div>
-                <div class="stat-card"><span id="adminActiveSessions">1</span><div>Active Sessions</div></div>
-                <div class="stat-card"><span id="adminModelsPulled">12</span><div>Models Pulled</div></div>
-                <div class="stat-card"><span id="adminRevenue">₹0</span><div>Revenue</div></div>
+        <div class="modal-card" style="max-width:650px;">
+            <div class="modal-header">
+                <h3>VictorX Admin Control Center</h3>
+                <button class="btn-close">&times;</button>
             </div>
-            <table class="hud-table" style="width:100%;">
-                <thead><tr><th>SYSTEM PARAMETER</th><th>STATUS</th></tr></thead>
-                <tbody>
-                    <tr><td>LOCAL DATABASE</td><td>SAVED (db/data.json)</td></tr>
-                    <tr><td>VERIFIED SECURITY PIN</td><td>20032004 ACTIVE</td></tr>
-                </tbody>
-            </table>
+            <div class="modal-body">
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;">
+                    <div class="space-card text-center"><strong style="font-size:18px;">1</strong><div style="font-size:11px;">Users</div></div>
+                    <div class="space-card text-center"><strong style="font-size:18px;">1</strong><div style="font-size:11px;">Sessions</div></div>
+                    <div class="space-card text-center"><strong style="font-size:18px;">12</strong><div style="font-size:11px;">Pulled</div></div>
+                    <div class="space-card text-center"><strong style="font-size:18px;">₹0</strong><div style="font-size:11px;">Revenue</div></div>
+                </div>
+                <table style="width:100%; font-size:12px; text-align:left;">
+                    <thead><tr><th>Parameter</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr><td>Local Database</td><td>SAVED (db/data.json)</td></tr>
+                        <tr><td>Verified PIN</td><td>20032004 ACTIVE</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!-- API Keys Modal -->
     <div class="modal-overlay" id="apiKeysModalOverlay">
-        <div class="hud-panel modal-box">
-            <div class="hud-panel-head">SETTINGS & API KEYS <button class="btn-close">&times;</button></div>
-            <form id="apiKeysForm" style="margin-top:10px;">
-                <div class="form-group"><label>OPENROUTER API KEY</label><input type="password" id="keyOpenRouter" class="hud-input-sm" placeholder="sk-or-v1-..."></div>
-                <div class="form-group"><label>OPENAI KEY</label><input type="password" id="keyOpenAI" class="hud-input-sm" placeholder="sk-..."></div>
-                <div class="form-group"><label>GEMINI API KEY</label><input type="password" id="keyGemini" class="hud-input-sm" placeholder="AIza..."></div>
-                <div class="form-group"><label>OLLAMA URL</label><input type="text" id="urlOllama" class="hud-input-sm" value="http://localhost:11434"></div>
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button type="button" id="clearApiKeysBtn" class="hud-action-btn style-flex-1">CLEAR</button>
-                    <button type="button" id="saveApiKeysBtn" class="hud-action-btn primary style-flex-1">SAVE</button>
-                </div>
-            </form>
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>API Key Manager</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="apiKeysForm">
+                    <div class="form-group"><label>OpenRouter Key</label><input type="password" id="keyOpenRouter" class="input-field" placeholder="sk-or-v1-..."></div>
+                    <div class="form-group"><label>OpenAI Key</label><input type="password" id="keyOpenAI" class="input-field" placeholder="sk-..."></div>
+                    <div class="form-group"><label>Gemini API Key</label><input type="password" id="keyGemini" class="input-field" placeholder="AIza..."></div>
+                    <div class="form-group"><label>Ollama URL</label><input type="text" id="urlOllama" class="input-field" value="http://localhost:11434"></div>
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <button type="button" id="clearApiKeysBtn" class="btn btn-secondary style-flex-1">Clear</button>
+                        <button type="button" id="saveApiKeysBtn" class="btn btn-primary style-flex-1">Save Keys</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Pull Modal -->
     <div class="modal-overlay" id="pullModalOverlay">
-        <div class="hud-panel modal-box">
-            <div class="hud-panel-head"><span id="pullModalTitle">PULLING MODEL</span> <button class="btn-close">&times;</button></div>
-            <p id="pullModalDesc" style="font-size:11px; color:#00f0ff; margin:10px 0;"></p>
-            <div style="width:100%; background:#020713; height:6px; border-radius:3px; overflow:hidden; margin-bottom:10px;">
-                <div id="pullProgressBar" style="background:#00f0ff; height:100%; width:0%; transition:width 0.2s;"></div>
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="pullModalTitle">Pulling Model Weights</h3>
+                <button class="btn-close">&times;</button>
             </div>
-            <div id="pullLayers" style="font-family:var(--font-mono); font-size:11px; background:#01040a; padding:10px; border-radius:4px; max-height:100px; overflow-y:auto; margin-bottom:10px;"></div>
-            <div style="display:flex; gap:8px;">
-                <button id="pullConfirmBtn" class="hud-action-btn primary w-full">START PULL</button>
+            <div class="modal-body">
+                <p id="pullModalDesc" style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;"></p>
+                <div style="width:100%; background:var(--bg-dark); height:6px; border-radius:3px; overflow:hidden; margin-bottom:12px;">
+                    <div id="pullProgressBar" style="background:var(--accent); height:100%; width:0%; transition:width 0.2s;"></div>
+                </div>
+                <div id="pullLayers" style="font-family:var(--font-mono); font-size:11px; background:#080c14; padding:10px; border-radius:4px; max-height:100px; overflow-y:auto; margin-bottom:12px;"></div>
+                <button id="pullConfirmBtn" class="btn btn-primary w-full">Start Pull</button>
             </div>
         </div>
     </div>
 
     <!-- Playground Modal -->
     <div class="modal-overlay" id="playgroundModalOverlay">
-        <div class="hud-panel modal-box" style="max-width:650px; height:75vh; display:flex; flex-direction:column;">
-            <div class="hud-panel-head">AI PLAYGROUND CHAT <select id="pgModelSelect" class="hud-select-sm"></select> <button class="btn-close">&times;</button></div>
-            <div id="pgHistory" style="flex:1; background:#01040a; border:1px solid rgba(0,240,255,0.2); border-radius:4px; padding:10px; overflow-y:auto; margin:10px 0;"></div>
-            <form id="pgForm" style="display:flex; gap:8px;">
-                <input type="text" id="pgInput" class="hud-input-sm" placeholder="SEND COMMAND..." style="flex:1;">
-                <button type="submit" class="hud-action-btn primary">SEND</button>
-            </form>
+        <div class="modal-card" style="max-width:680px; height:75vh; display:flex; flex-direction:column;">
+            <div class="modal-header">
+                <h3>AI Playground Chat</h3>
+                <select id="pgModelSelect" class="select-dropdown" style="height:32px; padding:0 8px; font-size:12px;"></select>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" style="flex:1; display:flex; flex-direction:column;">
+                <div id="pgHistory" style="flex:1; background:#080c14; border:1px solid var(--border); border-radius:6px; padding:12px; overflow-y:auto; margin-bottom:12px;"></div>
+                <form id="pgForm" style="display:flex; gap:8px;">
+                    <input type="text" id="pgInput" placeholder="Type a prompt..." class="input-field style-flex-1">
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPI Support Modal -->
+    <div class="modal-overlay" id="upiModalOverlay">
+        <div class="modal-card text-center">
+            <div class="modal-header">
+                <h3>❤️ Support Developer</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary); margin-bottom:12px;">UPI ID: <strong>arasu9629hf@okhdfcbank</strong></p>
+                <div style="background:#fff; padding:16px; border-radius:8px; display:inline-block; margin-bottom:12px;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Support&cu=INR" alt="UPI QR Code" width="160" height="160">
+                </div>
+                <button id="confirmSupportBtn" class="btn btn-primary w-full">I've Supported</button>
+            </div>
         </div>
     </div>
 

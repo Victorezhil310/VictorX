@@ -1,10 +1,5 @@
 /* ==========================================================================
-   VictorX Platform Engine (v3.0)
-   - API Workbench & HTTP Client Runner
-   - Model Fine-Tuning & Training Simulator (LoRA / QLoRA)
-   - One-Click Cloud Hosting & Deployment Manager
-   - Local DB Storage Engine (db/data.json)
-   - Admin PIN Security (20032004)
+   VictorX Engine — Model Registry, API Workbench & Playground
    ========================================================================== */
 
 const PORTS = [
@@ -12,18 +7,17 @@ const PORTS = [
   { id: "deepseek",   name: "DeepSeek",     color: "#38BDF8", desc: "DeepSeek R1 reasoning models." },
   { id: "mistral",    name: "Mistral AI",   color: "#E5675F", desc: "Fast open weight models." },
   { id: "google",     name: "Google",       color: "#8FD14F", desc: "Gemma 3 open models." },
-  { id: "qwen",       name: "Alibaba Qwen", color: "#C792EA", desc: "Qwen 2.5 series." },
-  { id: "ollama",     name: "Local Ollama", color: "#F0A93D", desc: "Local machine execution." }
+  { id: "qwen",       name: "Alibaba Qwen", color: "#C792EA", desc: "Qwen 2.5 series." }
 ];
 
 const MODELS = [
-  { id: "llama-3.3-70b",  name: "Llama 3.3 70B", size: "70B",  port: "meta",     tags: ["reasoning","tools"], haul: 5400000, added: 1, desc: "State of the art open reasoning model.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
-  { id: "deepseek-r1",   name: "DeepSeek R1",   size: "671B", port: "deepseek", tags: ["thinking","code"],  haul: 90300000, added: 2, desc: "Open reasoning model approaching top proprietary APIs.", apiModel: "deepseek/deepseek-r1" },
-  { id: "gemma-3-12b",   name: "Gemma 3 12B",   size: "12B",  port: "google",   tags: ["vision","chat"],    haul: 38800000, added: 3, desc: "Google DeepMind frontier model for single GPU.", apiModel: "google/gemma-2-27b-it" },
-  { id: "qwen-2.5-14b",  name: "Qwen 2.5 14B",  size: "14B",  port: "qwen",     tags: ["tools","code"],     haul: 35200000, added: 4, desc: "Multilingual model with 128K context window.", apiModel: "qwen/qwen-2.5-72b-instruct" },
-  { id: "mistral-7b",    name: "Mistral 7B",    size: "7B",   port: "mistral",  tags: ["chat","general"],   haul: 31300000, added: 5, desc: "High performance compact model v0.3.", apiModel: "mistralai/mistral-7b-instruct" },
-  { id: "llama-3.1-8b",   name: "Llama 3.1 8B",  size: "8B",   port: "meta",     tags: ["tools","chat"],     haul: 81200000, added: 6, desc: "Meta general purpose fast model.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
-  { id: "codellama-13b", name: "CodeLlama 13B", size: "13B",  port: "meta",     tags: ["code"],             haul: 5800000,  added: 7, desc: "Code generation and completion model.", apiModel: "meta-llama/codellama-13b-instruct" }
+  { id: "llama-3.3-70b",  name: "Llama 3.3 70B", size: "70B",  port: "meta",     tags: ["text-generation","reasoning"], haul: 5400000, added: 1, desc: "State of the art open reasoning model fine tuned for chat & coding.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
+  { id: "deepseek-r1",   name: "DeepSeek R1",   size: "671B", port: "deepseek", tags: ["reasoning","math","code"],    haul: 90300000, added: 2, desc: "Frontier reasoning model with deep chain of thought capabilities.", apiModel: "deepseek/deepseek-r1" },
+  { id: "gemma-3-12b",   name: "Gemma 3 12B",   size: "12B",  port: "google",   tags: ["multimodal","chat"],         haul: 38800000, added: 3, desc: "Google DeepMind lightweight model for single GPU deployment.", apiModel: "google/gemma-2-27b-it" },
+  { id: "qwen-2.5-14b",  name: "Qwen 2.5 14B",  size: "14B",  port: "qwen",     tags: ["multilingual","tools"],      haul: 35200000, added: 4, desc: "High performance multilingual model with 128K context.", apiModel: "qwen/qwen-2.5-72b-instruct" },
+  { id: "mistral-7b",    name: "Mistral 7B",    size: "7B",   port: "mistral",  tags: ["text-generation","fast"],    haul: 31300000, added: 5, desc: "Fast instruction-tuned model v0.3 for low latency serving.", apiModel: "mistralai/mistral-7b-instruct" },
+  { id: "llama-3.1-8b",   name: "Llama 3.1 8B",  size: "8B",   port: "meta",     tags: ["general","lightweight"],     haul: 81200000, added: 6, desc: "Meta general purpose fast open weight model.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
+  { id: "codellama-13b", name: "CodeLlama 13B", size: "13B",  port: "meta",     tags: ["code","infilling"],          haul: 5800000,  added: 7, desc: "Specialized model for software synthesis and code completion.", apiModel: "meta-llama/codellama-13b-instruct" }
 ];
 
 const ADMIN_VERIFICATION_PIN = '20032004';
@@ -35,8 +29,7 @@ let state = {
   user: JSON.parse(localStorage.getItem("victor_user") || 'null'),
   keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","ollama":"http://localhost:11434"}'),
   installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["gemma-3-12b","qwen-2.5-14b","llama-3.3-70b","deepseek-r1","mistral-7b","llama-3.1-8b"]')),
-  adminAuthenticated: false,
-  isTraining: false
+  adminAuthenticated: false
 };
 
 function saveState() {
@@ -65,13 +58,13 @@ function toast(msg, type = "info") {
   if(!container) return;
   const t = document.createElement("div");
   t.style.padding = "10px 16px";
-  t.style.borderRadius = "6px";
+  t.style.borderRadius = "8px";
   t.style.fontSize = "13px";
   t.style.fontWeight = "600";
   t.style.boxShadow = "0 4px 14px rgba(0,0,0,0.5)";
-  t.style.background = type === "error" ? "#7f1d1d" : type === "success" ? "#064e3b" : "#1e293b";
-  t.style.color = type === "error" ? "#fca5a5" : type === "success" ? "#6ee7b7" : "#e2e8f0";
-  t.style.border = "1px solid " + (type === "error" ? "#991b1b" : type === "success" ? "#065f46" : "#334155");
+  t.style.background = type === "error" ? "#7f1d1d" : type === "success" ? "#064e3b" : "#1f2937";
+  t.style.color = type === "error" ? "#fca5a5" : type === "success" ? "#6ee7b7" : "#f9fafb";
+  t.style.border = "1px solid " + (type === "error" ? "#991b1b" : type === "success" ? "#065f46" : "#374151");
   
   t.innerText = msg;
   container.appendChild(t);
@@ -99,7 +92,7 @@ function updateStats() {
 function renderChips() {
   const c = document.getElementById("portChips");
   if(!c) return;
-  let html = `<button class="chip ${state.port === 'all' ? 'active' : ''}" data-port="all">All Ports</button>`;
+  let html = `<button class="chip ${state.port === 'all' ? 'active' : ''}" data-port="all">All Ecosystems</button>`;
   PORTS.forEach(p => {
     html += `<button class="chip ${state.port === p.id ? 'active' : ''}" data-port="${p.id}">${escapeHtml(p.name)}</button>`;
   });
@@ -116,6 +109,7 @@ function renderChips() {
 
 function renderGrid() {
   const g = document.getElementById("modelGrid");
+  const resultCount = document.getElementById("resultCount");
   const emptyState = document.getElementById("emptyState");
   if(!g) return;
 
@@ -127,6 +121,8 @@ function renderGrid() {
     }
     return true;
   });
+
+  if(resultCount) resultCount.innerText = `${filtered.length} Models`;
 
   if(filtered.length === 0) {
     g.innerHTML = "";
@@ -141,21 +137,24 @@ function renderGrid() {
     const isInstalled = state.installed.has(m.id);
 
     g.innerHTML += `
-      <div class="model-card" style="border-left-color:${p.color};">
-        <div class="card-header">
+      <div class="model-card">
+        <div class="card-top">
           <div>
-            <span class="badge live-badge" style="color:${p.color};">${escapeHtml(p.name)}</span>
-            <h3 class="model-name" style="margin-top:4px;">${escapeHtml(m.name)} <span>(${m.size})</span></h3>
+            <span class="provider-badge" style="color:${p.color};">${escapeHtml(p.name)}</span>
+            <h3 class="model-title">${escapeHtml(m.name)} <span style="font-size:12px; color:var(--text-muted);">(${m.size})</span></h3>
           </div>
-          <span class="badge">⬇ ${fmt(m.haul)}</span>
+          <span class="count-tag">⬇ ${fmt(m.haul)}</span>
         </div>
-        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">${escapeHtml(m.desc)}</p>
-        <div class="card-actions">
+        <p class="model-desc">${escapeHtml(m.desc)}</p>
+        <div class="card-meta-row">
+          ${m.tags.map(t => `<span class="meta-tag">${t}</span>`).join('')}
+        </div>
+        <div class="card-bottom-actions">
           ${isInstalled 
-            ? `<button class="btn btn-sm btn-ghost launch-playground-btn" data-model="${m.id}">⚡ Playground</button>`
-            : `<button class="btn btn-sm btn-primary open-pull-modal" data-model="${m.id}">Pull Weights</button>`
+            ? `<button class="btn btn-secondary launch-playground-btn style-flex-1" data-model="${m.id}">⚡ Playground</button>`
+            : `<button class="btn btn-primary open-pull-modal style-flex-1" data-model="${m.id}">Pull Weights</button>`
           }
-          <button class="btn btn-sm btn-ghost test-api-btn" data-model="${m.apiModel}">⚡ Test API</button>
+          <button class="btn btn-secondary test-api-btn" data-model="${m.apiModel}">⚡ Test API</button>
         </div>
       </div>
     `;
@@ -179,13 +178,13 @@ function renderInstalledGrid() {
     const m = MODELS.find(x => x.id === id) || { id, name: id, size: "Weights" };
     g.innerHTML += `
       <div class="model-card">
-        <div class="card-header">
-          <h3 class="model-name">${escapeHtml(m.name)}</h3>
-          <span class="badge live-badge">DOCKED</span>
+        <div class="card-top">
+          <h3 class="model-title">${escapeHtml(m.name)}</h3>
+          <span class="badge yellow-badge">DOCKED</span>
         </div>
-        <div class="card-actions" style="margin-top:12px;">
-          <button class="btn btn-sm btn-primary launch-playground-btn" data-model="${m.id}">⚡ Launch Chat</button>
-          <button class="btn btn-sm btn-ghost remove-dock-btn" data-model="${m.id}">Remove</button>
+        <div class="card-bottom-actions" style="margin-top:12px;">
+          <button class="btn btn-primary launch-playground-btn style-flex-1" data-model="${m.id}">⚡ Launch Chat</button>
+          <button class="btn btn-secondary remove-dock-btn" data-model="${m.id}">Remove</button>
         </div>
       </div>
     `;
@@ -195,14 +194,14 @@ function renderInstalledGrid() {
 // API Workbench Runner
 function initApidogWorkbench() {
   document.getElementById("apiSendBtn")?.addEventListener("click", handleSendApiRequest);
-  document.getElementById("apiSaveBtn")?.addEventListener("click", () => toast("API Request saved to database collection", "success"));
+  document.getElementById("apiSaveBtn")?.addEventListener("click", () => toast("API Request saved to database", "success"));
 
-  document.querySelectorAll(".pane-tab-bar .pane-tab").forEach(tab => {
+  document.querySelectorAll(".tab-header .tab-btn").forEach(tab => {
     tab.addEventListener("click", (e) => {
-      document.querySelectorAll(".pane-tab-bar .pane-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab-header .tab-btn").forEach(t => t.classList.remove("active"));
       e.target.classList.add("active");
       const targetTab = e.target.dataset.tab;
-      document.querySelectorAll(".tab-content").forEach(p => p.classList.add("hidden"));
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.add("hidden"));
       if(targetTab === 'body') document.getElementById("tabBody")?.classList.remove("hidden");
       if(targetTab === 'headers') document.getElementById("tabHeaders")?.classList.remove("hidden");
       if(targetTab === 'params') document.getElementById("tabParams")?.classList.remove("hidden");
@@ -255,68 +254,7 @@ function generateCodeSnippets() {
   const method = document.getElementById("apiMethod")?.value || "POST";
   const body = document.getElementById("apiRequestBody")?.value || "";
 
-  el.innerText = `// cURL Command\ncurl -X ${method} "${endpoint}" \\\n  -H "Content-Type: application/json" \\\n  -d '${body.replace(/\n/g, '')}'\n\n// JavaScript (Fetch)\nconst res = await fetch("${endpoint}", { method: "${method}", body: JSON.stringify(${body.trim()}) });`;
-}
-
-// Model Fine-Tuning Simulator
-function initTrainingStudio() {
-  const startBtn = document.getElementById("startTrainingBtn");
-  if(!startBtn) return;
-
-  startBtn.addEventListener("click", () => {
-    if(state.isTraining) return;
-    state.isTraining = true;
-    startBtn.disabled = true;
-    startBtn.innerText = "⏳ Fine-Tuning in Progress...";
-
-    const baseModel = document.getElementById("trainBaseModel")?.value || "llama-3.3-70b";
-    const epochs = document.getElementById("trainEpochs")?.value || "3";
-    const loraRank = document.getElementById("trainLoraRank")?.value || "16";
-
-    const statusText = document.getElementById("trainStatusText");
-    const pctText = document.getElementById("trainPctText");
-    const progressBar = document.getElementById("trainProgressBar");
-    const logBox = document.getElementById("trainLogBox");
-
-    if(statusText) statusText.innerText = "TRAINING...";
-    if(logBox) logBox.innerHTML = `<div>[INFO] Initializing LoRA rank r=${loraRank} adapter for base model ${baseModel}...</div>`;
-
-    let step = 0;
-    const totalSteps = parseInt(epochs) * 10;
-    
-    const interval = setInterval(() => {
-      step++;
-      const pct = Math.round((step / totalSteps) * 100);
-      const currentLoss = (0.95 - (step / totalSteps) * 0.78).toFixed(4);
-
-      if(progressBar) progressBar.style.width = `${pct}%`;
-      if(pctText) pctText.innerText = `${pct}%`;
-
-      if(logBox) {
-        logBox.innerHTML += `<div>[STEP ${step}/${totalSteps}] Epoch ${Math.ceil(step/10)}/${epochs} — Loss: ${currentLoss}</div>`;
-        logBox.scrollTop = logBox.scrollHeight;
-      }
-
-      if(step >= totalSteps) {
-        clearInterval(interval);
-        state.isTraining = false;
-        startBtn.disabled = false;
-        startBtn.innerText = "🚀 Start Training Job";
-        if(statusText) statusText.innerText = "COMPLETED";
-
-        const customModelId = `custom-finetune-${Date.now().toString().slice(-4)}`;
-        state.installed.add(customModelId);
-        MODELS.push({ id: customModelId, name: `Fine-Tuned ${baseModel}`, size: "LoRA Adapters", port: "meta", tags: ["custom", "finetuned"], haul: 1, added: Date.now(), desc: `Custom LoRA fine-tuned model (r=${loraRank}).`, apiModel: customModelId });
-        
-        saveState();
-        updateStats();
-        renderInstalledGrid();
-        renderGrid();
-
-        toast(`Model Fine-Tuning Completed! Weights saved as ${customModelId}`, "success");
-      }
-    }, 200);
-  });
+  el.innerText = `curl -X ${method} "${endpoint}" -H "Content-Type: application/json" -d '${body.replace(/\n/g, '')}'`;
 }
 
 // Pull Simulator
@@ -407,7 +345,6 @@ function initApp() {
   renderGrid();
   renderInstalledGrid();
   initApidogWorkbench();
-  initTrainingStudio();
   setupAdminPIN();
 
   // Search filter
