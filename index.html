@@ -5,166 +5,319 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com http://localhost:11434 http://127.0.0.1:11434;">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <title>VictorX — Universal AI Model Registry & API Testing Workbench</title>
+    <title>VICTOR OG — ULTIMATE AI ASSISTANT & EXECUTION DOCK</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="hud-body">
 
-    <!-- TOPBAR NAVIGATION -->
-    <header class="topbar">
-        <div class="wrap">
-            <div class="topbar-brand">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="#818cf8"/>
+    <!-- TOP HUD HEADER -->
+    <header class="hud-header">
+        <div class="hud-brand">
+            <div class="hud-logo-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="#00f0ff"/>
                 </svg>
-                <span>VictorX</span>
-                <span class="badge live-badge">v2.5 Hybrid</span>
             </div>
-
-            <nav class="topbar-nav">
-                <a href="#explore" class="active">📦 Models Hub</a>
-                <a href="#apidogWorkbench">⚡ API Workbench</a>
-                <a href="#spaces">🚀 Spaces & Apps</a>
-                <a href="#mydock">⚓ My Dock</a>
-                <a href="#ports">🔌 Ports</a>
-                <a href="#partnership">🤝 Partnership</a>
-                <a href="#legal">📜 Legal</a>
-            </nav>
-
-            <div class="topbar-actions">
-                <select id="envSelect" class="sort-select" style="height:32px; padding:0 8px; font-size:12px;">
-                    <option value="openrouter">OpenRouter Production</option>
-                    <option value="ollama">Local Ollama (11434)</option>
-                    <option value="custom">Custom Gateway</option>
-                </select>
-
-                <button id="openUpiModalBtn" class="btn btn-sm btn-ghost">❤️ Support</button>
-                <button id="openApiKeysBtn" class="btn btn-sm btn-ghost" title="API Keys">🔑 Keys</button>
-                <button id="openConnectedBtn" class="btn btn-sm btn-ghost"><span id="connectedCount">5</span> Ports</button>
-                
-                <div id="authWrap" class="auth-wrap">
-                    <button id="openAuthBtn" class="btn btn-sm btn-primary">Sign In</button>
-                    
-                    <div id="userMenu" class="user-menu" style="display: none;">
-                        <button class="user-btn" id="userMenuBtn">
-                            <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23818cf8'%3E%3Ccircle cx='12' cy='12' r='12'/%3E%3C/svg%3E" alt="Avatar" class="avatar">
-                            <span id="userName">User</span>
-                        </button>
-                        <div id="userDropdown" class="user-dropdown">
-                            <div style="padding:8px 12px; font-size:12px; color:var(--text-muted); border-bottom:1px solid var(--border);" id="dropdownEmail">user@example.com</div>
-                            <button id="dropdownDockBtn" class="dropdown-item">My Installed Models</button>
-                            <button id="dropdownKeysBtn" class="dropdown-item">Manage API Keys</button>
-                            <button id="logoutBtn" class="dropdown-item danger">Sign Out</button>
-                        </div>
-                    </div>
-                </div>
-
-                <button id="adminPinBtn" class="subtle-icon" title="Admin Access">🛡️</button>
+            <div>
+                <div class="brand-title">VICTOR OG</div>
+                <div class="brand-sub">YOUR AI ASSISTANT</div>
             </div>
+        </div>
+
+        <div class="hud-header-center">
+            <div class="waveform-mini"><span></span><span></span><span></span><span></span><span></span></div>
+            <span class="hud-online-pill">VICTOR OG ONLINE</span>
+            <div class="waveform-mini"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="hud-header-right">
+            <div class="hud-clock" id="hudClock">24 MAY 2025 | 12:45:30 PM</div>
+            <button id="adminPinBtn" class="hud-icon-btn" title="Admin Control (PIN: 20032004)">🛡️</button>
+            <button id="openApiKeysBtn" class="hud-icon-btn" title="API Keys">🔑</button>
+            <button id="openUpiModalBtn" class="hud-icon-btn" title="Support Developer">❤️</button>
+            <button id="authBtn" class="hud-btn hud-btn-primary">SIGN IN</button>
         </div>
     </header>
 
-    <!-- HERO SECTION -->
-    <section class="hero">
-        <div class="wrap">
-            <div class="hero-text-area">
-                <div class="eyebrow">⚡ Open-Source AI Infrastructure</div>
-                <h1>Universal AI Model Registry & API Testing Workbench</h1>
-                <p class="subtitle">Search top open-source LLMs (Llama 3.3, DeepSeek R1, Mistral, Gemma 3, Qwen 2.5), test API endpoints with live latency checks, and run AI apps in one unified platform.</p>
+    <!-- MAIN HUD GRID LAYOUT -->
+    <div class="hud-wrapper">
+        
+        <!-- LEFT COLUMN: NAVIGATION MODULES & SYSTEM METRICS -->
+        <aside class="hud-column col-left">
+            
+            <!-- MAIN MODULES -->
+            <div class="hud-panel">
+                <div class="hud-panel-title">MAIN MODULES</div>
+                <nav class="hud-nav">
+                    <button class="hud-nav-item active" data-target="panel-dashboard">
+                        <span class="nav-icon">🏠</span> DASHBOARD <span class="nav-arrow">›</span>
+                    </button>
+                    <button class="hud-nav-item" data-target="panel-chat" onclick="openPlayground()">
+                        <span class="nav-icon">💬</span> AI CHAT <span class="nav-arrow">›</span>
+                    </button>
+                    <button class="hud-nav-item" data-target="panel-workbench" onclick="scrollToSection('apidogWorkbench')">
+                        <span class="nav-icon">⚡</span> API WORKBENCH <span class="nav-arrow">›</span>
+                    </button>
+                    <button class="hud-nav-item" data-target="panel-models" onclick="scrollToSection('explore')">
+                        <span class="nav-icon">📦</span> MODELS HUB <span class="nav-arrow">›</span>
+                    </button>
+                    <button class="hud-nav-item" data-target="panel-vision" onclick="toast('Vision & Camera Feed Enabled', 'success')">
+                        <span class="nav-icon">📷</span> VISION & CAMERA <span class="nav-arrow">›</span>
+                    </button>
+                    <button class="hud-nav-item" data-target="panel-gestures" onclick="toast('Hand Gestures Tracking Active', 'info')">
+                        <span class="nav-icon">🖐️</span> HAND GESTURES <span class="nav-arrow">›</span>
+                    </button>
+                    <button class="hud-nav-item" data-target="panel-files" onclick="scrollToSection('mydock')">
+                        <span class="nav-icon">⚓</span> MY DOCK <span class="nav-arrow">›</span>
+                    </button>
+                    <button class="hud-nav-item" data-target="panel-tools" onclick="scrollToSection('ports')">
+                        <span class="nav-icon">🛠️</span> SYSTEM PORTS <span class="nav-arrow">›</span>
+                    </button>
+                    <button class="hud-nav-item" data-target="panel-legal" onclick="scrollToSection('legal')">
+                        <span class="nav-icon">📜</span> LEGAL & TERMS <span class="nav-arrow">›</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- SYSTEM STATUS METRICS -->
+            <div class="hud-panel">
+                <div class="hud-panel-title">SYSTEM STATUS</div>
+                <div class="hud-metrics">
+                    <div class="metric-row">
+                        <div class="metric-label"><span>CPU USAGE</span><span id="cpuVal">23%</span></div>
+                        <div class="metric-bar-wrap"><div class="metric-bar-fill" id="cpuBar" style="width:23%;"></div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label"><span>RAM USAGE</span><span id="ramVal">48%</span></div>
+                        <div class="metric-bar-wrap"><div class="metric-bar-fill" id="ramBar" style="width:48%;"></div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label"><span>GPU USAGE</span><span id="gpuVal">31%</span></div>
+                        <div class="metric-bar-wrap"><div class="metric-bar-fill" id="gpuBar" style="width:31%;"></div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-label"><span>DISK USAGE</span><span id="diskVal">62%</span></div>
+                        <div class="metric-bar-wrap"><div class="metric-bar-fill" id="diskBar" style="width:62%;"></div></div>
+                    </div>
+
+                    <div class="metric-footer">
+                        <div><span>UPTIME</span><strong id="uptimeVal">02:14:35</strong></div>
+                        <div><span>VICTOR STATUS</span><strong class="text-neon-cyan">• ACTIVE</strong></div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- CENTER COLUMN: AI CORE & CONSOLE COMMANDER -->
+        <main class="hud-column col-center">
+            
+            <!-- AI CORE HOLOGRAPHIC SPHERE -->
+            <div class="hud-panel core-panel">
+                <div class="hud-panel-title">AI CORE</div>
                 
-                <div class="hero-actions">
-                    <button class="btn btn-primary" onclick="document.getElementById('explore').scrollIntoView({behavior:'smooth'})">Explore Models Hub</button>
-                    <button class="btn btn-ghost" onclick="document.getElementById('apidogWorkbench').scrollIntoView({behavior:'smooth'})">⚡ API Workbench</button>
-                    <button id="heroPlaygroundBtn" class="btn btn-ghost">⚡ Launch AI Playground</button>
-                </div>
-
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <span id="statModels">150+</span>
-                        <span>Models Indexed</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>100%</span>
-                        <span>OpenAPI Compliant</span>
-                    </div>
-                    <div class="stat-item">
-                        <span id="statPorts">6</span>
-                        <span>Ports Connected</span>
-                    </div>
-                    <div class="stat-item">
-                        <span id="statInstalled">5</span>
-                        <span>Pulled to Dock</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TERMINAL VISUAL -->
-            <div class="hero-visual">
-                <div class="interactive-shell">
-                    <div class="terminal-header">
-                        <span class="dot close"></span>
-                        <span class="dot min"></span>
-                        <span class="dot max"></span>
-                        <span style="font-size:12px; color:var(--text-muted); margin-left: auto;">victor — interactive web CLI (v1.4.0)</span>
-                        <button id="clearTermBtn" class="btn-close" style="font-size:12px; margin-left:8px;" title="Clear">Clear</button>
-                    </div>
-                    <div class="terminal-body" id="termBody">
-                        <div id="termHistory">
-                            <div class="term-line out">Welcome to VictorX CLI. Type 'help' for commands.</div>
-                            <div class="term-line out">Try: <span class="cmd-chip" onclick="processCliCommand('victor pull llama3.3')">victor pull llama3.3</span> or <span class="cmd-chip" onclick="processCliCommand('victor ls')">victor ls</span></div>
+                <div class="core-container">
+                    <!-- Face Hologram Wireframe -->
+                    <div class="avatar-box">
+                        <div class="hologram-avatar">
+                            <div class="wireframe-face"></div>
                         </div>
-                        <form id="termForm" class="term-form">
-                            <span class="prompt">$</span>
-                            <input type="text" id="cliInput" autocomplete="off" spellcheck="false" placeholder="type CLI command...">
-                        </form>
+                        <div class="avatar-label">
+                            <div class="avatar-name">VICTOR OG CORE</div>
+                            <div class="avatar-status">STATUS: ONLINE</div>
+                        </div>
+                    </div>
+
+                    <!-- Holographic Sphere Core -->
+                    <div class="sphere-box">
+                        <div class="core-sphere">
+                            <div class="sphere-ring ring-1"></div>
+                            <div class="sphere-ring ring-2"></div>
+                            <div class="sphere-ring ring-3"></div>
+                            <div class="sphere-center-glow">
+                                <span class="core-logo-text">VICTOR OG</span>
+                                <span class="core-ver-text">v1.0.0 ULTIMATE</span>
+                            </div>
+                        </div>
+                        <div class="voice-listening-bar">
+                            <div class="waveform-dynamic">
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                            <div class="listening-text" id="listeningState">VICTOR IS LISTENING...</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- MAIN CONTAINER -->
-    <main class="wrap">
-
-        <!-- API TESTING WORKBENCH -->
-        <section class="apidog-workbench" id="apidogWorkbench">
-            <div class="workbench-header">
-                <div>
-                    <h2 style="font-size:18px; margin:0;">⚡ API Testing Workbench & Request Studio</h2>
-                    <span class="subtitle" style="font-size:12px;">Interactive HTTP request builder, auto-mock server, & multi-language code generator</span>
-                </div>
-                <div class="status-pill">
-                    <span class="status-dot green"></span>
-                    <span id="activeEnvLabel">Production Gateway</span>
+            <!-- QUICK TOOLS -->
+            <div class="hud-panel">
+                <div class="hud-panel-title">QUICK TOOLS</div>
+                <div class="quick-tools-grid">
+                    <button class="tool-btn" onclick="toast('Screenshot Captured', 'success')"><span class="tool-icon">📸</span>SCREENSHOT</button>
+                    <button class="tool-btn" onclick="toast('OCR Camera Ready', 'info')"><span class="tool-icon">🔍</span>OCR READER</button>
+                    <button class="tool-btn" onclick="toast('Notebook Opened', 'info')"><span class="tool-icon">📝</span>NOTE PAD</button>
+                    <button class="tool-btn" onclick="toast('Calculator Running', 'info')"><span class="tool-icon">🧮</span>CALCULATOR</button>
+                    <button class="tool-btn" onclick="toast('PDF Reader Active', 'info')"><span class="tool-icon">📄</span>PDF READER</button>
+                    <button class="tool-btn" onclick="toast('Clipboard Synced', 'success')"><span class="tool-icon">📋</span>CLIPBOARD</button>
+                    <button class="tool-btn" onclick="toast('Task Manager Running', 'info')"><span class="tool-icon">📊</span>TASK MANAGER</button>
+                    <button class="tool-btn" onclick="scrollToSection('apidogWorkbench')"><span class="tool-icon">💻</span>TERMINAL</button>
                 </div>
             </div>
 
-            <!-- Feature Chips Row -->
-            <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-                <span class="tag">Design-First Specs</span>
-                <span class="tag">Visual Validation</span>
-                <span class="tag">Auto-Mock Server</span>
-                <span class="tag">MCP Agent Integration</span>
-                <span class="tag">CI/CD Orchestration</span>
+            <!-- VICTOR CONSOLE COMMANDER -->
+            <div class="hud-panel console-panel">
+                <div class="hud-panel-title">VICTOR CONSOLE</div>
+                <div class="console-body">
+                    <div class="console-output" id="consoleOutput">
+                        <div class="console-line sys"><span class="tag-sys">VICTOR:</span> Hello Boss, How can I help you today?</div>
+                        <div class="console-line usr"><span class="tag-usr">YOU:</span> open youtube and play lo-fi music</div>
+                        <div class="console-line sys"><span class="tag-sys">VICTOR:</span> Opening YouTube... Playing Lo-fi music for you</div>
+                        <div class="console-line usr"><span class="tag-usr">YOU:</span> summarize the ai news today</div>
+                        <div class="console-line sys"><span class="tag-sys">VICTOR:</span> Here is your AI news summary... All models operational.</div>
+                        <div class="console-line sys"><span class="tag-sys">VICTOR:</span> Thank you Boss! At your service.</div>
+                    </div>
+                    <div class="console-log-sidebar">
+                        <div class="log-head">ACTIVITY LOG</div>
+                        <div class="log-list" id="activityLog">
+                            <div><span>12:45:18</span> SYSTEM STARTED</div>
+                            <div><span>12:45:20</span> ALL SYSTEMS ONLINE</div>
+                            <div><span>12:45:22</span> CAMERA CONNECTED</div>
+                            <div><span>12:45:23</span> MIC CONNECTED</div>
+                            <div><span>12:45:24</span> HAND TRACKING READY</div>
+                            <div><span>12:45:25</span> OLLAMA CONNECTED</div>
+                            <div><span>12:45:25</span> MODELS LOADED</div>
+                            <div><span>12:45:26</span> VICTOR OG READY</div>
+                        </div>
+                    </div>
+                </div>
+                <form id="consoleForm" class="console-input-wrap">
+                    <input type="text" id="consoleInput" placeholder="TYPE YOUR COMMAND..." autocomplete="off">
+                    <button type="submit" class="console-send-btn">➤</button>
+                </form>
             </div>
 
-            <div class="request-bar">
-                <select id="apiMethod" class="method-select">
+        </main>
+
+        <!-- RIGHT COLUMN: OLLAMA MODELS, VOICE & HAND GESTURES -->
+        <aside class="hud-column col-right">
+            
+            <!-- OLLAMA MODELS RUNNING -->
+            <div class="hud-panel">
+                <div class="hud-panel-title">OLLAMA MODELS</div>
+                <div class="models-running-list">
+                    <div class="running-model-item">
+                        <span class="m-icon">💎</span>
+                        <div class="m-info"><strong>GEMMA 3 12B</strong></div>
+                        <span class="m-status">• RUNNING</span>
+                    </div>
+                    <div class="running-model-item">
+                        <span class="m-icon">⚡</span>
+                        <div class="m-info"><strong>QWEN 2.5 14B</strong></div>
+                        <span class="m-status">• RUNNING</span>
+                    </div>
+                    <div class="running-model-item">
+                        <span class="m-icon">🦙</span>
+                        <div class="m-info"><strong>LLAMA 3.3 70B</strong></div>
+                        <span class="m-status">• RUNNING</span>
+                    </div>
+                    <div class="running-model-item">
+                        <span class="m-icon">🌀</span>
+                        <div class="m-info"><strong>DEEPSEEK R1 14B</strong></div>
+                        <span class="m-status">• RUNNING</span>
+                    </div>
+                    <div class="running-model-item">
+                        <span class="m-icon">🌐</span>
+                        <div class="m-info"><strong>GLM 4 9B</strong></div>
+                        <span class="m-status">• RUNNING</span>
+                    </div>
+                    <div class="running-model-item">
+                        <span class="m-icon">🔥</span>
+                        <div class="m-info"><strong>MISTRAL 7B</strong></div>
+                        <span class="m-status">• RUNNING</span>
+                    </div>
+                </div>
+                <button class="hud-btn hud-btn-outline w-full" style="margin-top:12px;" onclick="scrollToSection('explore')">MODEL ROUTER ACTIVE</button>
+            </div>
+
+            <!-- VOICE ASSISTANT -->
+            <div class="hud-panel">
+                <div class="hud-panel-title">VOICE ASSISTANT</div>
+                <div class="voice-widget">
+                    <div class="waveform-large">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="voice-state">LISTENING...</div>
+                    <button class="mic-circle-btn" id="micBtn" onclick="toggleVoiceListening()">
+                        <span class="mic-icon">🎙️</span>
+                    </button>
+                    <div class="form-group" style="margin:12px 0 8px;">
+                        <label style="font-size:10px; color:var(--hud-cyan);">VOICE PROFILE</label>
+                        <select id="voiceProfileSelect" class="hud-select w-full">
+                            <option value="jarvis">JARVIS PRIME</option>
+                            <option value="friday">FRIDAY CORE</option>
+                            <option value="cyber">CYBER VICTOR</option>
+                        </select>
+                    </div>
+                    <button class="hud-btn hud-btn-primary w-full" onclick="toggleVoiceListening()">START VOICE CHAT</button>
+                </div>
+            </div>
+
+            <!-- HAND GESTURES -->
+            <div class="hud-panel">
+                <div class="hud-panel-title">HAND GESTURES</div>
+                <div class="gestures-widget">
+                    <div class="hand-skeleton-box">
+                        <div class="hand-wireframe">🖐️</div>
+                        <div class="tracking-pill">STATUS: TRACKING</div>
+                    </div>
+                    <div class="gestures-legend">
+                        <div><span>OPEN HAND</span> <span>→ MENU</span></div>
+                        <div><span>FIST</span> <span>→ CANCEL</span></div>
+                        <div><span>POINT INDEX</span> <span>→ SELECT</span></div>
+                        <div><span>PINCH</span> <span>→ CLICK</span></div>
+                        <div><span>PINCH + MOVE</span> <span>→ DRAG</span></div>
+                        <div><span>TWO FINGERS</span> <span>→ SCROLL</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAMERA FEED -->
+            <div class="hud-panel">
+                <div class="hud-panel-title">CAMERA FEED</div>
+                <div class="camera-feed-box">
+                    <div class="cam-overlay">
+                        <div class="cam-grid-lines"></div>
+                        <span class="cam-status">• ACTIVE</span>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+
+    <!-- LOWER INTEGRATED SECTIONS (WORKBENCH, MODEL HUB, MY DOCK, PORTS, LEGAL) -->
+    <div class="hud-wrapper" style="margin-top:24px;">
+
+        <!-- API WORKBENCH -->
+        <section class="hud-panel w-full" id="apidogWorkbench">
+            <div class="hud-panel-title">⚡ API TESTING WORKBENCH & REQUEST STUDIO</div>
+            <div class="request-bar" style="margin-top:12px;">
+                <select id="apiMethod" class="hud-select" style="width:100px;">
                     <option value="POST">POST</option>
                     <option value="GET">GET</option>
                     <option value="PUT">PUT</option>
                     <option value="DELETE">DELETE</option>
                 </select>
-                <input type="text" id="apiEndpointInput" class="url-input" value="https://openrouter.ai/api/v1/chat/completions">
-                <button id="apiSendBtn" class="btn-send">⚡ Send Request</button>
-                <button id="apiSaveBtn" class="btn-save">💾 Save Request</button>
+                <input type="text" id="apiEndpointInput" class="hud-input" style="flex:1;" value="https://openrouter.ai/api/v1/chat/completions">
+                <button id="apiSendBtn" class="hud-btn hud-btn-primary">⚡ SEND REQUEST</button>
+                <button id="apiSaveBtn" class="hud-btn hud-btn-outline">💾 SAVE</button>
             </div>
 
             <div class="workbench-split">
-                <!-- Request Pane -->
                 <div class="request-pane">
                     <div class="pane-tabs">
                         <button class="pane-tab active" data-tab="body">Body (JSON)</button>
@@ -172,49 +325,37 @@
                         <button class="pane-tab" data-tab="params">Params</button>
                         <button class="pane-tab" data-tab="code">Code Snippets</button>
                     </div>
-                    
                     <div id="tabBody" class="tab-panel">
-                        <textarea id="apiRequestBody" class="code-editor" spellcheck="false">{
+                        <textarea id="apiRequestBody" class="code-editor">{
   "model": "meta-llama/llama-3.3-70b-instruct",
   "messages": [
     {"role": "user", "content": "Explain quantum computing in 2 sentences."}
   ]
 }</textarea>
                     </div>
-
                     <div id="tabHeaders" class="tab-panel hidden">
-                        <textarea id="apiHeadersInput" class="code-editor" spellcheck="false">{
+                        <textarea id="apiHeadersInput" class="code-editor">{
   "Content-Type": "application/json",
   "Authorization": "Bearer YOUR_API_KEY"
 }</textarea>
                     </div>
-
                     <div id="tabParams" class="tab-panel hidden">
-                        <textarea id="apiParamsInput" class="code-editor" spellcheck="false">{
+                        <textarea id="apiParamsInput" class="code-editor">{
   "temperature": 0.7,
   "max_tokens": 150
 }</textarea>
                     </div>
-
                     <div id="tabCode" class="tab-panel hidden">
-                        <div class="code-snippet-box">
-                            <pre><code id="generatedCodeSnippet">// Code snippet will be generated here</code></pre>
-                        </div>
+                        <div class="code-snippet-box"><pre><code id="generatedCodeSnippet"></code></pre></div>
                     </div>
                 </div>
 
-                <!-- Response Pane -->
                 <div class="response-pane">
                     <div class="response-status-bar">
-                        <span id="apiResponseStatus" class="badge-green">200 OK</span>
-                        <span id="apiResponseTime" class="badge" style="color:var(--accent);">0 ms</span>
-                        <span id="apiResponseSize" class="badge" style="color:var(--text-muted);">0 B</span>
+                        <span id="apiResponseStatus" class="hud-status-badge green">200 OK</span>
+                        <span id="apiResponseTime" class="hud-status-badge">0 ms</span>
+                        <span id="apiResponseSize" class="hud-status-badge">0 B</span>
                     </div>
-
-                    <div class="pane-tabs">
-                        <button class="pane-tab active">Pretty JSON Response</button>
-                    </div>
-
                     <div class="code-snippet-box" style="flex:1;">
                         <pre><code id="apiResponseViewer">// Response payload will appear here after clicking "Send Request"</code></pre>
                     </div>
@@ -222,275 +363,83 @@
             </div>
         </section>
 
-        <!-- MODELS HUB & REPOSITORY -->
-        <section class="explore" id="explore">
-            <div class="section-head">
-                <h2>📦 Models Hub & Open-Source Index</h2>
-                <p class="subtitle">Filter over 150 open-source LLMs, parameters, vision/code tasks, and benchmark pulls.</p>
-            </div>
-
-            <div class="explore-controls">
+        <!-- MODELS HUB -->
+        <section class="hud-panel w-full" id="explore" style="margin-top:24px;">
+            <div class="hud-panel-title">📦 MODELS HUB & OPEN-SOURCE MANIFEST</div>
+            <div class="explore-controls" style="margin-top:12px;">
                 <div class="controls-row">
                     <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="Search models by name, task (e.g. reasoning, tools, vision, code)...">
+                        <input type="text" id="searchInput" class="hud-input" placeholder="SEARCH MODELS BY NAME, TASK OR PROVIDER...">
                     </div>
-                    <select id="sortSelect" class="sort-select">
-                        <option value="most_hauled">Popular (Most Pulls)</option>
-                        <option value="newest">Newest</option>
-                        <option value="name_asc">Name A-Z</option>
+                    <select id="sortSelect" class="hud-select">
+                        <option value="most_hauled">MOST HAULED</option>
+                        <option value="newest">NEWEST</option>
+                        <option value="name_asc">NAME A-Z</option>
                     </select>
                 </div>
-
                 <div class="controls-row">
-                    <div class="chip-row" id="portChips">
-                        <!-- Rendered via JS -->
-                    </div>
-                    <span id="resultCount" class="result-summary">Index loading...</span>
+                    <div class="chip-row" id="portChips"></div>
+                    <span id="resultCount" class="result-summary">MANIFEST ONLINE</span>
                 </div>
             </div>
-
-            <div class="model-grid" id="modelGrid">
-                <!-- Rendered via JS -->
-            </div>
-
-            <div id="emptyState" class="empty-state hidden">
-                <p>No models found matching your search query.</p>
-            </div>
-        </section>
-
-        <!-- SPACES & AI APPS -->
-        <section class="section spaces" id="spaces">
-            <div class="section-head">
-                <h2>🚀 Spaces & Interactive AI Apps</h2>
-                <p class="subtitle">Explore community-built interactive applications, robotics controllers, and vision tools.</p>
-            </div>
-
-            <div class="model-grid">
-                <div class="model-card">
-                    <div class="card-header">
-                        <span class="provider-tag">🤖 Robotics</span>
-                        <span class="badge live-badge">175 Likes</span>
-                    </div>
-                    <h3 class="model-name">Reachy Mini Companion</h3>
-                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Talk with Reachy Mini! Fully local AI companion stack.</p>
-                    <div class="card-actions">
-                        <button class="btn btn-sm btn-primary" onclick="openPlayground('llama3.1')">Launch App</button>
-                    </div>
-                </div>
-
-                <div class="model-card">
-                    <div class="card-header">
-                        <span class="provider-tag">🎛 Dashboard</span>
-                        <span class="badge">149 Likes</span>
-                    </div>
-                    <h3 class="model-name">Reachy Web Dashboard</h3>
-                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Control panel dashboard for remote robot monitoring.</p>
-                    <div class="card-actions">
-                        <button class="btn btn-sm btn-ghost" onclick="toast('Launching Web Dashboard', 'info')">Open Dashboard</button>
-                    </div>
-                </div>
-
-                <div class="model-card">
-                    <div class="card-header">
-                        <span class="provider-tag">🌍 Translation</span>
-                        <span class="badge">106 Likes</span>
-                    </div>
-                    <h3 class="model-name">Language Partner AI</h3>
-                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Practice 55+ languages with live conversational feedback.</p>
-                    <div class="card-actions">
-                        <button class="btn btn-sm btn-primary" onclick="openPlayground('qwen2.5')">Start Practice</button>
-                    </div>
-                </div>
-
-                <div class="model-card">
-                    <div class="card-header">
-                        <span class="provider-tag">🧑 Meeting AI</span>
-                        <span class="badge">360 Likes</span>
-                    </div>
-                    <h3 class="model-name">Reachy Meeting Companion</h3>
-                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Attentive meeting companion reacting to voice and transcription.</p>
-                    <div class="card-actions">
-                        <button class="btn btn-sm btn-ghost" onclick="toast('Connecting meeting audio feed', 'info')">Launch Companion</button>
-                    </div>
-                </div>
-            </div>
+            <div class="model-grid" id="modelGrid"></div>
+            <div id="emptyState" class="empty-state hidden"><p>NO MODELS MATCHING SEARCH</p></div>
         </section>
 
         <!-- MY DOCK -->
-        <section class="section mydock" id="mydock">
-            <div class="section-head with-badge">
-                <h2>⚓ My Dock</h2>
-                <span id="installedCountPill" class="badge live-badge">5 Models</span>
-            </div>
+        <section class="hud-panel w-full" id="mydock" style="margin-top:24px;">
+            <div class="hud-panel-title">⚓ MY DOCKED MODELS <span id="installedCountPill" class="text-neon-cyan" style="margin-left:8px;">5 MODELS</span></div>
+            <div class="model-grid" id="installedGrid" style="margin-top:12px;"></div>
+            <div id="emptyDockState" class="empty-state hidden"><p>DOCK IS EMPTY</p></div>
+        </section>
 
-            <div class="model-grid" id="installedGrid">
-                <!-- Installed models rendered via JS -->
-            </div>
+        <!-- PORTS & INTEGRATIONS -->
+        <section class="hud-panel w-full" id="ports" style="margin-top:24px;">
+            <div class="hud-panel-title">🔌 CONNECTED SYSTEM PORTS</div>
+            <div class="port-grid" id="portGrid" style="margin-top:12px;"></div>
+        </section>
 
-            <div id="emptyDockState" class="empty-state hidden">
-                <p>Your dock is empty. Pull models from the hub above to start testing.</p>
+        <!-- LEGAL SECTION -->
+        <section class="hud-panel w-full" id="legal" style="margin-top:24px;">
+            <div class="hud-panel-title">📜 LEGAL & COMPLIANCE</div>
+            <div class="legal-tabs" style="margin-top:12px;">
+                <button class="tab-btn active" data-target="legalTerms">Terms of Service</button>
+                <button class="tab-btn" data-target="legalPrivacy">Privacy Policy</button>
+                <button class="tab-btn" data-target="legalCookies">Cookie Policy</button>
+            </div>
+            <div id="legalTerms" class="legal-panel active">
+                <p>VictorX is subject to open-source model execution licenses (Apache 2.0, MIT, Llama Community License).</p>
+            </div>
+            <div id="legalPrivacy" class="legal-panel hidden">
+                <p>All API keys and local requests are persisted securely within your browser and local database (`db/data.json`).</p>
+            </div>
+            <div id="legalCookies" class="legal-panel hidden">
+                <p>Session state saved locally.</p>
             </div>
         </section>
 
-        <!-- PORTS -->
-        <section class="section ports" id="ports">
-            <div class="section-head">
-                <h2>🔌 Connected Ports & Runtimes</h2>
-                <p class="subtitle">Supported open model providers and API execution runtimes.</p>
-            </div>
-            <div class="port-grid" id="portGrid">
-                <!-- Rendered via JS -->
-            </div>
-        </section>
+    </div>
 
-        <!-- PARTNERSHIP -->
-        <section class="section partnership" id="partnership">
-            <div class="section-head">
-                <span class="eyebrow">Strategic Alliances</span>
-                <h2>Partner with VictorX</h2>
-                <p class="subtitle">Join our ecosystem of AI model providers, cloud platforms, and infrastructure builders.</p>
-            </div>
-
-            <div class="partner-grid">
-                <div class="partner-card">
-                    <h3>🥉 Bronze Partner</h3>
-                    <div class="partner-price">₹19,999<span>/mo</span></div>
-                    <ul class="partner-benefits">
-                        <li>Standard model listing</li>
-                        <li>Basic analytics dashboard</li>
-                        <li>Community support</li>
-                    </ul>
-                    <button class="btn btn-ghost w-full">Get Started</button>
-                </div>
-
-                <div class="partner-card featured-tier">
-                    <span class="badge live-badge" style="position:absolute; top:-12px; right:20px;">POPULAR</span>
-                    <h3>🥈 Silver Partner</h3>
-                    <div class="partner-price">₹49,999<span>/mo</span></div>
-                    <ul class="partner-benefits">
-                        <li>Featured model placement</li>
-                        <li>API testing workbench integration</li>
-                        <li>24/7 priority support</li>
-                    </ul>
-                    <button class="btn btn-primary w-full">Become Partner</button>
-                </div>
-
-                <div class="partner-card">
-                    <h3>🥇 Gold Partner</h3>
-                    <div class="partner-price">Custom</div>
-                    <ul class="partner-benefits">
-                        <li>Priority dock placement</li>
-                        <li>Dedicated API gateway integration</li>
-                        <li>Custom model indexing</li>
-                    </ul>
-                    <button class="btn btn-ghost w-full">Contact for Pricing</button>
-                </div>
-            </div>
-
-            <div class="partner-form-container">
-                <h3 style="margin-bottom:1rem; text-align:center;">Request Partnership Details</h3>
-                <form id="partnerForm" class="partner-form">
-                    <div class="form-group">
-                        <label for="partnerCompany">Company Name</label>
-                        <input type="text" id="partnerCompany" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="partnerEmail">Contact Email</label>
-                        <input type="email" id="partnerEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="partnerTier">Partnership Tier</label>
-                        <select id="partnerTier" style="width:100%; padding:10px; border-radius:4px; background:var(--bg-input); border:1px solid var(--border); color:var(--text);">
-                            <option value="Gold Partner">Gold Partner</option>
-                            <option value="Silver Partner">Silver Partner</option>
-                            <option value="Bronze Partner">Bronze Partner</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="partnerMessage">Message</label>
-                        <textarea id="partnerMessage" rows="4" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-full">Submit Inquiry</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- LEGAL & COMPLIANCE -->
-        <section class="section legal" id="legal">
-            <div class="legal-container">
-                <div class="section-head">
-                    <h2>📜 Legal & Compliance</h2>
-                    <p class="subtitle">Official terms, privacy guidelines, and model licenses.</p>
-                </div>
-
-                <div class="legal-tabs">
-                    <button class="tab-btn active" data-target="legalTerms">Terms of Service</button>
-                    <button class="tab-btn" data-target="legalPrivacy">Privacy Policy</button>
-                    <button class="tab-btn" data-target="legalCookies">Cookie Policy</button>
-                </div>
-
-                <div id="legalTerms" class="legal-panel active">
-                    <span class="last-updated">Last updated: October 2024</span>
-                    <h3>1. Acceptance of Terms</h3>
-                    <p>By accessing or using VictorX, you agree to comply with these terms, model licenses, and acceptable use policies.</p>
-                    <h3>2. Service Description</h3>
-                    <p>VictorX provides a unified registry, execution dock, and API testing workbench for AI models.</p>
-                    <h3>3. Open Source Model Usage</h3>
-                    <p>All model weights and execution endpoints are subject to their respective open-source licenses (Apache 2.0, MIT, Llama Community License).</p>
-                </div>
-
-                <div id="legalPrivacy" class="legal-panel hidden">
-                    <span class="last-updated">Last updated: October 2024</span>
-                    <h3>Privacy Policy</h3>
-                    <p>VictorX respects user privacy. Your API keys and local requests are stored securely in your browser and local workspace database.</p>
-                </div>
-
-                <div id="legalCookies" class="legal-panel hidden">
-                    <span class="last-updated">Last updated: October 2024</span>
-                    <h3>Cookie Policy</h3>
-                    <p>We use local storage and session markers solely to persist your UI preferences and dock state.</p>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="site-footer">
-        <div class="wrap">
-            <div class="footer-grid">
-                <div class="footer-col brand-col">
-                    <h4>VictorX</h4>
-                    <p>Universal AI Model Registry & Execution Dock.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="#explore">Models Hub</a></li>
-                        <li><a href="#apidogWorkbench">API Workbench</a></li>
-                        <li><a href="#spaces">Spaces & Apps</a></li>
-                        <li><a href="#mydock">My Dock</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="#partnership">Partnership</a></li>
-                        <li><a href="#openUpiModalBtn">Support</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Legal</h4>
-                    <ul>
-                        <li><a href="#legal">Terms of Service</a></li>
-                        <li><a href="#legal">Privacy Policy</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2026 VictorX. All rights reserved.</p>
-            </div>
+    <!-- BOTTOM HUD DOCK BAR -->
+    <footer class="hud-bottom-dock">
+        <div class="dock-left">
+            <span class="hud-indicator active"></span>
+            <span>PRIVACY MODE: <strong>ON</strong></span>
+        </div>
+        <div class="dock-center-icons">
+            <button class="dock-icon" title="Brain Core" onclick="scrollToSection('explore')">🧠</button>
+            <button class="dock-icon" title="Console Chat" onclick="openPlayground()">💬</button>
+            <button class="dock-icon" title="Camera" onclick="toast('Camera Active', 'success')">📷</button>
+            <button class="dock-icon" title="Mic" onclick="toggleVoiceListening()">🎙️</button>
+            <button class="dock-icon" title="Hand Gestures" onclick="toast('Hand Gestures Tracking', 'info')">🖐️</button>
+            <button class="dock-icon" title="Web Browser" onclick="toast('Web Gateway Ready', 'info')">🌐</button>
+            <button class="dock-icon" title="Code Editor" onclick="scrollToSection('apidogWorkbench')">&lt;/&gt;</button>
+            <button class="dock-icon" title="System Metrics" onclick="toast('Metrics Refreshed', 'info')">📊</button>
+            <button class="dock-icon" title="Admin Control" onclick="openModal('adminPinOverlay')">🛡️</button>
+        </div>
+        <div class="dock-right">
+            <span class="hud-indicator active"></span>
+            <span>LOCALHOST: <strong>127.0.0.1</strong></span>
         </div>
     </footer>
 
@@ -501,66 +450,33 @@
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModalOverlay">
-        <div class="modal auth-modal">
-            <div class="modal-header">
-                <h2>Welcome to VictorX</h2>
-                <button class="btn-close">&times;</button>
+        <div class="hud-panel modal">
+            <div class="hud-panel-title">AUTHENTICATION <button class="btn-close">&times;</button></div>
+            <div class="auth-tabs-container" style="margin-top:12px;">
+                <button class="auth-tab active" id="authTabLogin">LOGIN</button>
+                <button class="auth-tab" id="authTabRegister">REGISTER</button>
             </div>
-            <div class="modal-body">
-                <div class="auth-tabs-container">
-                    <button class="auth-tab active" id="authTabLogin">Login</button>
-                    <button class="auth-tab" id="authTabRegister">Register</button>
-                </div>
-
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="loginUsername">Username or Email</label>
-                        <input type="text" id="loginUsername" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" required>
-                    </div>
-                    <button type="submit" id="loginSubmitBtn" class="btn btn-primary w-full">Sign In</button>
-                </form>
-
-                <form id="registerForm" class="hidden">
-                    <div class="form-group">
-                        <label for="regFullName">Full Name</label>
-                        <input type="text" id="regFullName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="regUsername">Username</label>
-                        <input type="text" id="regUsername" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="regEmail">Email</label>
-                        <input type="email" id="regEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="regPassword">Password</label>
-                        <input type="password" id="regPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="regConfirmPassword">Confirm Password</label>
-                        <input type="password" id="regConfirmPassword" required>
-                    </div>
-                    <button type="submit" id="registerSubmitBtn" class="btn btn-primary w-full">Create Account</button>
-                </form>
-
-                <div class="auth-divider">── OR ──</div>
-
-                <button id="googleSignInBtn" class="btn btn-ghost w-full mb-2">Continue with Google</button>
-                <button id="quickGuestLoginBtn" class="btn btn-ghost w-full">Continue as Guest</button>
-            </div>
+            <form id="loginForm">
+                <div class="form-group"><label>USERNAME</label><input type="text" id="loginUsername" class="hud-input" required></div>
+                <div class="form-group"><label>PASSWORD</label><input type="password" id="loginPassword" class="hud-input" required></div>
+                <button type="submit" id="loginSubmitBtn" class="hud-btn hud-btn-primary w-full">SIGN IN</button>
+            </form>
+            <form id="registerForm" class="hidden">
+                <div class="form-group"><label>FULL NAME</label><input type="text" id="regFullName" class="hud-input" required></div>
+                <div class="form-group"><label>USERNAME</label><input type="text" id="regUsername" class="hud-input" required></div>
+                <div class="form-group"><label>EMAIL</label><input type="email" id="regEmail" class="hud-input" required></div>
+                <div class="form-group"><label>PASSWORD</label><input type="password" id="regPassword" class="hud-input" required></div>
+                <button type="submit" id="registerSubmitBtn" class="hud-btn hud-btn-primary w-full">CREATE ACCOUNT</button>
+            </form>
+            <button id="quickGuestLoginBtn" class="hud-btn hud-btn-outline w-full" style="margin-top:8px;">CONTINUE AS GUEST</button>
         </div>
     </div>
 
     <!-- Admin PIN Modal -->
     <div class="pin-overlay" id="adminPinOverlay">
-        <div class="pin-modal">
-            <h2>Admin Access</h2>
-            <p class="subtitle" style="margin-bottom:1rem;">Enter administrator 8-digit PIN</p>
+        <div class="hud-panel pin-modal">
+            <div class="hud-panel-title">ADMIN ACCESS PIN <button class="btn-close">&times;</button></div>
+            <p style="font-size:12px; color:var(--hud-cyan); margin:12px 0;">ENTER 8-DIGIT SECURITY PIN (20032004)</p>
             <div class="pin-input-group" id="pinInputGroup">
                 <input type="password" class="pin-digit" maxlength="1">
                 <input type="password" class="pin-digit" maxlength="1">
@@ -571,187 +487,88 @@
                 <input type="password" class="pin-digit" maxlength="1">
                 <input type="password" class="pin-digit" maxlength="1">
             </div>
-            <div id="pinError" class="badge badge-red hidden" style="margin-bottom:1rem;">Access Denied. Incorrect PIN.</div>
+            <div id="pinError" class="hud-status-badge red hidden" style="margin-bottom:12px;">ACCESS DENIED. INCORRECT PIN.</div>
             <div style="display:flex; gap:8px;">
-                <button id="pinCancelBtn" class="btn btn-ghost style-flex-1">Cancel</button>
-                <button id="pinVerifyBtn" class="btn btn-primary style-flex-1">Verify</button>
+                <button id="pinCancelBtn" class="hud-btn hud-btn-outline style-flex-1">CANCEL</button>
+                <button id="pinVerifyBtn" class="hud-btn hud-btn-primary style-flex-1">VERIFY</button>
             </div>
         </div>
     </div>
 
     <!-- Admin Dashboard Modal -->
     <div class="modal-overlay" id="adminDashboardOverlay">
-        <div class="modal admin-modal" style="max-width:800px;">
-            <div class="modal-header">
-                <div>
-                    <span class="badge admin-badge">ADMIN CONTROL</span>
-                    <h2>VictorX Admin Dashboard</h2>
-                </div>
-                <button class="btn-close">&times;</button>
+        <div class="hud-panel modal" style="max-width:800px;">
+            <div class="hud-panel-title">ADMIN CONTROL DASHBOARD <button class="btn-close">&times;</button></div>
+            <div class="admin-stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:16px 0;">
+                <div class="stat-card"><span id="adminTotalUsers">1</span><div>Users</div></div>
+                <div class="stat-card"><span id="adminActiveSessions">1</span><div>Active Sessions</div></div>
+                <div class="stat-card"><span id="adminModelsPulled">12</span><div>Models Pulled</div></div>
+                <div class="stat-card"><span id="adminRevenue">₹0</span><div>Revenue</div></div>
             </div>
-            <div class="modal-body">
-                <div class="admin-stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px;">
-                    <div class="stat-card">
-                        <span id="adminTotalUsers" style="font-size:20px; font-weight:bold;">1</span>
-                        <div style="font-size:12px; color:var(--text-muted);">Users</div>
-                    </div>
-                    <div class="stat-card">
-                        <span id="adminActiveSessions" style="font-size:20px; font-weight:bold;">1</span>
-                        <div style="font-size:12px; color:var(--text-muted);">Active Sessions</div>
-                    </div>
-                    <div class="stat-card">
-                        <span id="adminModelsPulled" style="font-size:20px; font-weight:bold;">12</span>
-                        <div style="font-size:12px; color:var(--text-muted);">Models Pulled</div>
-                    </div>
-                    <div class="stat-card">
-                        <span id="adminRevenue" style="font-size:20px; font-weight:bold;">₹0</span>
-                        <div style="font-size:12px; color:var(--text-muted);">Revenue</div>
-                    </div>
-                </div>
-
-                <div class="admin-tabs" style="display:flex; gap:8px; border-bottom:1px solid var(--border); margin-bottom:12px;">
-                    <button class="pane-tab active" data-target="adminUsersPanel">Users</button>
-                    <button class="pane-tab" data-target="adminModelsPanel">Models</button>
-                    <button class="pane-tab" data-target="adminKeysPanel">API Keys</button>
-                    <button class="pane-tab" data-target="adminSettingsPanel">Settings</button>
-                </div>
-
-                <div id="adminUsersPanel" class="admin-panel">
-                    <table class="admin-table" style="width:100%; font-size:12px; text-align:left;">
-                        <thead>
-                            <tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody id="adminUsersTableBody"></tbody>
-                    </table>
-                </div>
-
-                <div id="adminModelsPanel" class="admin-panel hidden">
-                    <table class="admin-table" style="width:100%; font-size:12px; text-align:left;">
-                        <thead>
-                            <tr><th>Model ID</th><th>Developer</th><th>Status</th></tr>
-                        </thead>
-                        <tbody id="adminModelsTableBody"></tbody>
-                    </table>
-                </div>
-
-                <div id="adminKeysPanel" class="admin-panel hidden">
-                    <table class="admin-table" style="width:100%; font-size:12px; text-align:left;">
-                        <thead>
-                            <tr><th>Provider</th><th>Key Configured</th></tr>
-                        </thead>
-                        <tbody id="adminKeysTableBody"></tbody>
-                    </table>
-                </div>
-
-                <div id="adminSettingsPanel" class="admin-panel hidden">
-                    <div class="form-group">
-                        <label for="maintModeToggle">Maintenance Mode</label>
-                        <input type="checkbox" id="maintModeToggle">
-                    </div>
-                </div>
-            </div>
+            <table class="hud-table" style="width:100%;">
+                <thead><tr><th>SYSTEM PARAMETER</th><th>STATUS</th></tr></thead>
+                <tbody>
+                    <tr><td>LOCAL DATABASE</td><td>SAVED (db/data.json)</td></tr>
+                    <tr><td>VERIFIED PIN</td><td>20032004 ACTIVE</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- API Keys Modal -->
     <div class="modal-overlay" id="apiKeysModalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>API Key Manager</h2>
-                <button class="btn-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="apiKeysForm">
-                    <div class="form-group">
-                        <label for="keyOpenRouter">OpenRouter API Key</label>
-                        <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-...">
-                    </div>
-                    <div class="form-group">
-                        <label for="keyOpenAI">OpenAI / Claude API Key</label>
-                        <input type="password" id="keyOpenAI" placeholder="sk-...">
-                    </div>
-                    <div class="form-group">
-                        <label for="keyGemini">Google Gemini API Key</label>
-                        <input type="password" id="keyGemini" placeholder="AIza...">
-                    </div>
-                    <div class="form-group">
-                        <label for="urlOllama">Ollama Endpoint URL</label>
-                        <input type="text" id="urlOllama" value="http://localhost:11434">
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button type="button" id="clearApiKeysBtn" class="btn btn-ghost w-full">Clear Keys</button>
-                        <button type="button" id="saveApiKeysBtn" class="btn btn-primary w-full">Save Keys</button>
-                    </div>
-                </form>
-            </div>
+        <div class="hud-panel modal">
+            <div class="hud-panel-title">API KEY MANAGER <button class="btn-close">&times;</button></div>
+            <form id="apiKeysForm" style="margin-top:12px;">
+                <div class="form-group"><label>OPENROUTER API KEY</label><input type="password" id="keyOpenRouter" class="hud-input" placeholder="sk-or-v1-..."></div>
+                <div class="form-group"><label>OPENAI / CLAUDE KEY</label><input type="password" id="keyOpenAI" class="hud-input" placeholder="sk-..."></div>
+                <div class="form-group"><label>GEMINI API KEY</label><input type="password" id="keyGemini" class="hud-input" placeholder="AIza..."></div>
+                <div class="form-group"><label>OLLAMA URL</label><input type="text" id="urlOllama" class="hud-input" value="http://localhost:11434"></div>
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <button type="button" id="clearApiKeysBtn" class="hud-btn hud-btn-outline style-flex-1">CLEAR</button>
+                    <button type="button" id="saveApiKeysBtn" class="hud-btn hud-btn-primary style-flex-1">SAVE</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Pull Modal -->
     <div class="modal-overlay" id="pullModalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <span id="pullModalPort" class="provider-tag">Port</span>
-                <h2 id="pullModalTitle">Pulling Model</h2>
-                <button class="btn-close">&times;</button>
+        <div class="hud-panel modal">
+            <div class="hud-panel-title"><span id="pullModalTitle">PULLING MODEL</span> <button class="btn-close">&times;</button></div>
+            <p id="pullModalDesc" style="font-size:12px; color:var(--hud-cyan); margin:12px 0;"></p>
+            <div style="width:100%; background:#07111e; height:8px; border-radius:4px; overflow:hidden; margin-bottom:12px;">
+                <div id="pullProgressBar" style="background:var(--hud-cyan); height:100%; width:0%; transition:width 0.2s;"></div>
             </div>
-            <div class="modal-body">
-                <p id="pullModalDesc" class="subtitle" style="margin-bottom:12px;"></p>
-                <div style="width:100%; background:var(--bg-input); height:8px; border-radius:4px; overflow:hidden; margin-bottom:12px;">
-                    <div id="pullProgressBar" style="background:var(--accent); height:100%; width:0%; transition:width 0.2s;"></div>
-                </div>
-                <div id="pullLayers" style="font-family:var(--font-mono); font-size:12px; background:#070a12; padding:12px; border-radius:4px; max-height:120px; overflow-y:auto; margin-bottom:12px;">
-                </div>
-                <div id="pullCodeSnippet" class="hidden"></div>
-                <div style="display:flex; gap:8px;">
-                    <button id="pullConfirmBtn" class="btn btn-primary w-full">Start Pull</button>
-                    <button id="pullPlaygroundBtn" class="btn btn-ghost w-full hidden">Launch Playground</button>
-                </div>
+            <div id="pullLayers" style="font-family:var(--font-mono); font-size:11px; background:#020610; padding:12px; border-radius:4px; max-height:120px; overflow-y:auto; margin-bottom:12px;"></div>
+            <div style="display:flex; gap:8px;">
+                <button id="pullConfirmBtn" class="hud-btn hud-btn-primary w-full">START PULL</button>
+                <button id="pullPlaygroundBtn" class="hud-btn hud-btn-outline w-full hidden">LAUNCH PLAYGROUND</button>
             </div>
         </div>
     </div>
 
     <!-- Playground Modal -->
     <div class="modal-overlay" id="playgroundModalOverlay">
-        <div class="modal" style="max-width:700px; height:80vh; display:flex; flex-direction:column;">
-            <div class="modal-header">
-                <div>
-                    <span class="badge live-badge">LIVE DOCK</span>
-                    <h2 style="display:inline-block; margin-left:8px;">AI Playground</h2>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <select id="pgModelSelect" class="sort-select" style="height:32px; padding:0 8px; font-size:12px;"></select>
-                    <button id="pgApiKeysBtn" class="btn btn-sm btn-ghost">Keys</button>
-                    <button class="btn-close">&times;</button>
-                </div>
-            </div>
-            <div class="modal-body" style="flex:1; display:flex; flex-direction:column;">
-                <div id="pgHistory" style="flex:1; background:#070a12; border:1px solid var(--border); border-radius:4px; padding:12px; overflow-y:auto; margin-bottom:12px;">
-                    <div class="msg system" style="text-align:center; color:var(--text-muted); margin:16px 0;">System: Connected to AI Playground. Type a message below.</div>
-                </div>
-                <form id="pgForm" style="display:flex; gap:8px;">
-                    <input type="text" id="pgInput" placeholder="Type a message... (Press Enter to send)" style="flex:1; padding:10px; background:var(--bg-input); border:1px solid var(--border); border-radius:4px; color:var(--text);">
-                    <button type="submit" class="btn btn-primary">Send</button>
-                </form>
-            </div>
+        <div class="hud-panel modal" style="max-width:700px; height:80vh; display:flex; flex-direction:column;">
+            <div class="hud-panel-title">AI PLAYGROUND <select id="pgModelSelect" class="hud-select" style="font-size:11px;"></select> <button class="btn-close">&times;</button></div>
+            <div id="pgHistory" style="flex:1; background:#020610; border:1px solid var(--hud-border); border-radius:4px; padding:12px; overflow-y:auto; margin:12px 0;"></div>
+            <form id="pgForm" style="display:flex; gap:8px;">
+                <input type="text" id="pgInput" class="hud-input" placeholder="SEND COMMAND..." style="flex:1;">
+                <button type="submit" class="hud-btn hud-btn-primary">SEND</button>
+            </form>
         </div>
     </div>
 
     <!-- UPI Support Modal -->
     <div class="modal-overlay" id="upiModalOverlay">
-        <div class="modal text-center">
-            <div class="modal-header">
-                <h2>❤️ Support VictorX</h2>
-                <button class="btn-close">&times;</button>
+        <div class="hud-panel modal text-center">
+            <div class="hud-panel-title">❤️ SUPPORT VICTOR OG <button class="btn-close">&times;</button></div>
+            <p style="color:var(--hud-cyan); margin:12px 0;">UPI ID: <strong>arasu9629hf@okhdfcbank</strong></p>
+            <div style="background:#fff; padding:16px; border-radius:8px; display:inline-block; margin-bottom:12px;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Support&cu=INR" alt="UPI QR Code" width="160" height="160">
             </div>
-            <div class="modal-body">
-                <p style="color:var(--text-secondary); margin-bottom:16px;">Scan QR or pay via UPI:</p>
-                <div style="background:#fff; padding:16px; border-radius:8px; display:inline-block; margin-bottom:16px;">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Support&cu=INR" alt="UPI QR Code" width="160" height="160">
-                </div>
-                <p style="font-family:var(--font-mono); color:var(--accent); font-size:16px; font-weight:bold; margin-bottom:16px;">arasu9629hf@okhdfcbank</p>
-                <button id="confirmSupportBtn" class="btn btn-primary w-full">I've Supported</button>
-            </div>
+            <button id="confirmSupportBtn" class="hud-btn hud-btn-primary w-full">I'VE SUPPORTED</button>
         </div>
     </div>
 
