@@ -98,9 +98,9 @@ function startHudTimers() {
   setInterval(() => {
     const now = new Date();
     const clockEl = document.getElementById("hudClock");
-    if(clockEl) {
-      clockEl.innerText = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'SHORT', year: 'numeric' }).toUpperCase() + " | " + now.toLocaleTimeString();
-    }
+      const dayName = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+      const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+      clockEl.innerText = `${dateStr} | ${dayName} | ${now.toLocaleTimeString()}`;
 
     // Uptime
     state.uptimeSeconds++;

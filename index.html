@@ -3,185 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com http://localhost:11434 http://127.0.0.1:11434;">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <title>VICTOR OG — ULTIMATE AI ASSISTANT & EXECUTION DOCK</title>
+    <title>VICTOR OG — YOUR AI ASSISTANT</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="hud-body">
 
     <!-- TOP HUD HEADER -->
-    <header class="hud-header">
+    <header class="hud-top-bar">
         <div class="hud-brand">
-            <div class="hud-logo-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="#00f0ff"/>
-                </svg>
-            </div>
-            <div>
-                <div class="brand-title">VICTOR OG</div>
-                <div class="brand-sub">YOUR AI ASSISTANT</div>
-            </div>
+            <h1 class="brand-title">VICTOR OG</h1>
+            <span class="brand-sub">YOUR AI ASSISTANT</span>
         </div>
 
         <div class="hud-header-center">
-            <div class="waveform-mini"><span></span><span></span><span></span><span></span><span></span></div>
-            <span class="hud-online-pill">VICTOR OG ONLINE</span>
-            <div class="waveform-mini"><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="wave-lines"><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="hud-status-pill">VICTOR OG ONLINE</div>
+            <div class="wave-lines"><span></span><span></span><span></span><span></span><span></span></div>
         </div>
 
         <div class="hud-header-right">
-            <div class="hud-clock" id="hudClock">24 MAY 2025 | 12:45:30 PM</div>
-            <button id="adminPinBtn" class="hud-icon-btn" title="Admin Control (PIN: 20032004)">🛡️</button>
-            <button id="openApiKeysBtn" class="hud-icon-btn" title="API Keys">🔑</button>
-            <button id="openUpiModalBtn" class="hud-icon-btn" title="Support Developer">❤️</button>
-            <button id="authBtn" class="hud-btn hud-btn-primary">SIGN IN</button>
+            <div id="hudClock" class="hud-time-display">24 MAY 2025 | SATURDAY | 12:45:30 PM</div>
+            <button id="adminPinBtn" class="hud-power-btn" title="Admin Security (PIN: 20032004)">⏻</button>
         </div>
     </header>
 
-    <!-- MAIN HUD GRID LAYOUT -->
-    <div class="hud-wrapper">
+    <!-- MAIN CONTROL CENTER GRID -->
+    <div class="hud-grid-container">
         
-        <!-- LEFT COLUMN: NAVIGATION MODULES & SYSTEM METRICS -->
-        <aside class="hud-column col-left">
+        <!-- LEFT COLUMN -->
+        <aside class="hud-col col-left">
             
             <!-- MAIN MODULES -->
-            <div class="hud-panel">
-                <div class="hud-panel-title">MAIN MODULES</div>
-                <nav class="hud-nav">
-                    <button class="hud-nav-item active" data-target="panel-dashboard">
-                        <span class="nav-icon">🏠</span> DASHBOARD <span class="nav-arrow">›</span>
+            <div class="hud-panel panel-modules">
+                <div class="hud-panel-head">MAIN MODULES</div>
+                <nav class="hud-nav-list">
+                    <button class="nav-btn active" onclick="switchModule('dashboard')">
+                        <span class="nav-icon">🏠</span> DASHBOARD <span class="nav-arr">›</span>
                     </button>
-                    <button class="hud-nav-item" data-target="panel-chat" onclick="openPlayground()">
-                        <span class="nav-icon">💬</span> AI CHAT <span class="nav-arrow">›</span>
+                    <button class="nav-btn" onclick="openPlayground()">
+                        <span class="nav-icon">💬</span> AI CHAT <span class="nav-arr">›</span>
                     </button>
-                    <button class="hud-nav-item" data-target="panel-workbench" onclick="scrollToSection('apidogWorkbench')">
-                        <span class="nav-icon">⚡</span> API WORKBENCH <span class="nav-arrow">›</span>
+                    <button class="nav-btn" onclick="toggleVoiceListening()">
+                        <span class="nav-icon">🎙️</span> VOICE ASSISTANT <span class="nav-arr">›</span>
                     </button>
-                    <button class="hud-nav-item" data-target="panel-models" onclick="scrollToSection('explore')">
-                        <span class="nav-icon">📦</span> MODELS HUB <span class="nav-arrow">›</span>
+                    <button class="nav-btn" onclick="toast('Vision & Camera Feed Active', 'success')">
+                        <span class="nav-icon">📷</span> VISION & CAMERA <span class="nav-arr">›</span>
                     </button>
-                    <button class="hud-nav-item" data-target="panel-vision" onclick="toast('Vision & Camera Feed Enabled', 'success')">
-                        <span class="nav-icon">📷</span> VISION & CAMERA <span class="nav-arrow">›</span>
+                    <button class="nav-btn" onclick="toast('Hand Gestures Tracking Active', 'info')">
+                        <span class="nav-icon">🖐️</span> HAND GESTURES <span class="nav-arr">›</span>
                     </button>
-                    <button class="hud-nav-item" data-target="panel-gestures" onclick="toast('Hand Gestures Tracking Active', 'info')">
-                        <span class="nav-icon">🖐️</span> HAND GESTURES <span class="nav-arrow">›</span>
+                    <button class="nav-btn" onclick="scrollToSection('mydock')">
+                        <span class="nav-icon">📁</span> FILE MANAGER <span class="nav-arr">›</span>
                     </button>
-                    <button class="hud-nav-item" data-target="panel-files" onclick="scrollToSection('mydock')">
-                        <span class="nav-icon">⚓</span> MY DOCK <span class="nav-arrow">›</span>
+                    <button class="nav-btn" onclick="scrollToSection('ports')">
+                        <span class="nav-icon">🛠️</span> SYSTEM TOOLS <span class="nav-arr">›</span>
                     </button>
-                    <button class="hud-nav-item" data-target="panel-tools" onclick="scrollToSection('ports')">
-                        <span class="nav-icon">🛠️</span> SYSTEM PORTS <span class="nav-arrow">›</span>
+                    <button class="nav-btn" onclick="scrollToSection('apidogWorkbench')">
+                        <span class="nav-icon">🌐</span> WEB BROWSER <span class="nav-arr">›</span>
                     </button>
-                    <button class="hud-nav-item" data-target="panel-legal" onclick="scrollToSection('legal')">
-                        <span class="nav-icon">📜</span> LEGAL & TERMS <span class="nav-arrow">›</span>
+                    <button class="nav-btn" onclick="toast('Notepad Saved', 'info')">
+                        <span class="nav-icon">📝</span> NOTE PAD <span class="nav-arr">›</span>
+                    </button>
+                    <button class="nav-btn" onclick="openModal('apiKeysModalOverlay')">
+                        <span class="nav-icon">⚙️</span> SETTINGS <span class="nav-arr">›</span>
                     </button>
                 </nav>
             </div>
 
-            <!-- SYSTEM STATUS METRICS -->
-            <div class="hud-panel">
-                <div class="hud-panel-title">SYSTEM STATUS</div>
-                <div class="hud-metrics">
-                    <div class="metric-row">
-                        <div class="metric-label"><span>CPU USAGE</span><span id="cpuVal">23%</span></div>
-                        <div class="metric-bar-wrap"><div class="metric-bar-fill" id="cpuBar" style="width:23%;"></div></div>
-                    </div>
-                    <div class="metric-row">
-                        <div class="metric-label"><span>RAM USAGE</span><span id="ramVal">48%</span></div>
-                        <div class="metric-bar-wrap"><div class="metric-bar-fill" id="ramBar" style="width:48%;"></div></div>
-                    </div>
-                    <div class="metric-row">
-                        <div class="metric-label"><span>GPU USAGE</span><span id="gpuVal">31%</span></div>
-                        <div class="metric-bar-wrap"><div class="metric-bar-fill" id="gpuBar" style="width:31%;"></div></div>
-                    </div>
-                    <div class="metric-row">
-                        <div class="metric-label"><span>DISK USAGE</span><span id="diskVal">62%</span></div>
-                        <div class="metric-bar-wrap"><div class="metric-bar-fill" id="diskBar" style="width:62%;"></div></div>
+            <!-- SYSTEM STATUS -->
+            <div class="hud-panel panel-status">
+                <div class="hud-panel-head">SYSTEM STATUS</div>
+                <div class="status-metrics">
+                    <div class="metric-block">
+                        <div class="metric-row-label"><span>CPU USAGE</span><span id="cpuVal">23%</span></div>
+                        <div class="metric-graph-spark" id="cpuSpark"></div>
+                        <div class="metric-bar-bg"><div class="metric-bar-fill" id="cpuBar" style="width: 23%;"></div></div>
                     </div>
 
-                    <div class="metric-footer">
+                    <div class="metric-block">
+                        <div class="metric-row-label"><span>RAM USAGE</span><span id="ramVal">48%</span></div>
+                        <div class="metric-bar-bg"><div class="metric-bar-fill" id="ramBar" style="width: 48%;"></div></div>
+                    </div>
+
+                    <div class="metric-block">
+                        <div class="metric-row-label"><span>GPU USAGE</span><span id="gpuVal">31%</span></div>
+                        <div class="metric-graph-spark" id="gpuSpark"></div>
+                        <div class="metric-bar-bg"><div class="metric-bar-fill" id="gpuBar" style="width: 31%;"></div></div>
+                    </div>
+
+                    <div class="metric-block">
+                        <div class="metric-row-label"><span>DISK USAGE</span><span id="diskVal">62%</span></div>
+                        <div class="metric-bar-bg"><div class="metric-bar-fill" id="diskBar" style="width: 62%;"></div></div>
+                    </div>
+
+                    <div class="status-footer-row">
                         <div><span>UPTIME</span><strong id="uptimeVal">02:14:35</strong></div>
-                        <div><span>VICTOR STATUS</span><strong class="text-neon-cyan">• ACTIVE</strong></div>
+                        <div><span>VICTOR STATUS</span><strong class="text-green">• ACTIVE</strong></div>
                     </div>
                 </div>
             </div>
 
         </aside>
 
-        <!-- CENTER COLUMN: AI CORE & CONSOLE COMMANDER -->
-        <main class="hud-column col-center">
+        <!-- CENTER COLUMN -->
+        <main class="hud-col col-center">
             
-            <!-- AI CORE HOLOGRAPHIC SPHERE -->
-            <div class="hud-panel core-panel">
-                <div class="hud-panel-title">AI CORE</div>
-                
-                <div class="core-container">
-                    <!-- Face Hologram Wireframe -->
-                    <div class="avatar-box">
-                        <div class="hologram-avatar">
-                            <div class="wireframe-face"></div>
+            <!-- AI CORE -->
+            <div class="hud-panel panel-core">
+                <div class="hud-panel-head">AI CORE</div>
+                <div class="core-layout">
+                    
+                    <!-- Avatar Hologram Wireframe -->
+                    <div class="avatar-column">
+                        <div class="avatar-wireframe-box">
+                            <div class="face-wireframe-mesh"></div>
                         </div>
-                        <div class="avatar-label">
-                            <div class="avatar-name">VICTOR OG CORE</div>
+                        <div class="avatar-text">
+                            <div class="avatar-title">VICTOR OG CORE</div>
                             <div class="avatar-status">STATUS: ONLINE</div>
                         </div>
                     </div>
 
-                    <!-- Holographic Sphere Core -->
-                    <div class="sphere-box">
-                        <div class="core-sphere">
-                            <div class="sphere-ring ring-1"></div>
-                            <div class="sphere-ring ring-2"></div>
-                            <div class="sphere-ring ring-3"></div>
-                            <div class="sphere-center-glow">
-                                <span class="core-logo-text">VICTOR OG</span>
-                                <span class="core-ver-text">v1.0.0 ULTIMATE</span>
+                    <!-- Bat-wing Emblem & Orb Reactor -->
+                    <div class="orb-column">
+                        <div class="bat-emblem-header">
+                            <svg class="bat-wings-icon" viewBox="0 0 100 40" width="80" height="32">
+                                <path d="M50 30 C30 10 10 25 0 15 C15 35 35 30 50 40 C65 30 85 35 100 15 C90 25 70 10 50 30 Z" fill="#00f0ff" />
+                            </svg>
+                            <div class="core-title-text">VICTOR OG</div>
+                            <div class="core-sub-text">v1.0.0 ULTIMATE</div>
+                        </div>
+
+                        <!-- Arc Reactor Orb Spinner -->
+                        <div class="arc-orb-spinner">
+                            <div class="orb-ring ring-outer"></div>
+                            <div class="orb-ring ring-mid"></div>
+                            <div class="orb-ring ring-inner"></div>
+                            <div class="orb-core-center">
+                                <div class="sacred-geometry"></div>
                             </div>
                         </div>
-                        <div class="voice-listening-bar">
-                            <div class="waveform-dynamic">
-                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+
+                        <div class="core-listening-bar">
+                            <div class="listening-label" id="listeningText">VICTOR IS LISTENING...</div>
+                            <div class="wave-bars-dyn">
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
                             </div>
-                            <div class="listening-text" id="listeningState">VICTOR IS LISTENING...</div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
             <!-- QUICK TOOLS -->
-            <div class="hud-panel">
-                <div class="hud-panel-title">QUICK TOOLS</div>
+            <div class="hud-panel panel-quicktools">
+                <div class="hud-panel-head">QUICK TOOLS</div>
                 <div class="quick-tools-grid">
-                    <button class="tool-btn" onclick="toast('Screenshot Captured', 'success')"><span class="tool-icon">📸</span>SCREENSHOT</button>
-                    <button class="tool-btn" onclick="toast('OCR Camera Ready', 'info')"><span class="tool-icon">🔍</span>OCR READER</button>
-                    <button class="tool-btn" onclick="toast('Notebook Opened', 'info')"><span class="tool-icon">📝</span>NOTE PAD</button>
-                    <button class="tool-btn" onclick="toast('Calculator Running', 'info')"><span class="tool-icon">🧮</span>CALCULATOR</button>
-                    <button class="tool-btn" onclick="toast('PDF Reader Active', 'info')"><span class="tool-icon">📄</span>PDF READER</button>
-                    <button class="tool-btn" onclick="toast('Clipboard Synced', 'success')"><span class="tool-icon">📋</span>CLIPBOARD</button>
-                    <button class="tool-btn" onclick="toast('Task Manager Running', 'info')"><span class="tool-icon">📊</span>TASK MANAGER</button>
-                    <button class="tool-btn" onclick="scrollToSection('apidogWorkbench')"><span class="tool-icon">💻</span>TERMINAL</button>
+                    <button class="qt-btn" onclick="toast('Screenshot Captured', 'success')">
+                        <div class="qt-icon">📸</div><span>SCREENSHOT</span>
+                    </button>
+                    <button class="qt-btn" onclick="toast('OCR Camera Ready', 'info')">
+                        <div class="qt-icon">🔍</div><span>OCR READER</span>
+                    </button>
+                    <button class="qt-btn" onclick="toast('Notebook Active', 'info')">
+                        <div class="qt-icon">📝</div><span>NOTE PAD</span>
+                    </button>
+                    <button class="qt-btn" onclick="toast('Calculator Running', 'info')">
+                        <div class="qt-icon">🧮</div><span>CALCULATOR</span>
+                    </button>
+                    <button class="qt-btn" onclick="toast('PDF Reader Active', 'info')">
+                        <div class="qt-icon">📄</div><span>PDF READER</span>
+                    </button>
+                    <button class="qt-btn" onclick="toast('Clipboard Synced', 'success')">
+                        <div class="qt-icon">📋</div><span>CLIPBOARD</span>
+                    </button>
+                    <button class="qt-btn" onclick="toast('Task Manager Active', 'info')">
+                        <div class="qt-icon">📊</div><span>TASK MANAGER</span>
+                    </button>
+                    <button class="qt-btn" onclick="scrollToSection('apidogWorkbench')">
+                        <div class="qt-icon">💻</div><span>TERMINAL</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- VICTOR CONSOLE COMMANDER -->
-            <div class="hud-panel console-panel">
-                <div class="hud-panel-title">VICTOR CONSOLE</div>
-                <div class="console-body">
-                    <div class="console-output" id="consoleOutput">
-                        <div class="console-line sys"><span class="tag-sys">VICTOR:</span> Hello Boss, How can I help you today?</div>
-                        <div class="console-line usr"><span class="tag-usr">YOU:</span> open youtube and play lo-fi music</div>
-                        <div class="console-line sys"><span class="tag-sys">VICTOR:</span> Opening YouTube... Playing Lo-fi music for you</div>
-                        <div class="console-line usr"><span class="tag-usr">YOU:</span> summarize the ai news today</div>
-                        <div class="console-line sys"><span class="tag-sys">VICTOR:</span> Here is your AI news summary... All models operational.</div>
-                        <div class="console-line sys"><span class="tag-sys">VICTOR:</span> Thank you Boss! At your service.</div>
+            <!-- VICTOR CONSOLE -->
+            <div class="hud-panel panel-console">
+                <div class="hud-panel-head">VICTOR CONSOLE</div>
+                <div class="console-layout">
+                    
+                    <div class="console-chat-area">
+                        <div class="chat-logs" id="consoleOutput">
+                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Hello Boss, How can I help you today?</div>
+                            <div class="c-line usr"><span class="c-tag">YOU:</span> open youtube and play lo-fi music</div>
+                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Opening YouTube...</div>
+                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Playing Lo-fi music for you</div>
+                            <div class="c-line usr"><span class="c-tag">YOU:</span> summarize the ai news today</div>
+                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Here is your AI news summary...</div>
+                            <div class="c-line usr"><span class="c-tag">YOU:</span> good job victor</div>
+                            <div class="c-line sys"><span class="c-tag">VICTOR:</span> Thank you Boss! At your service.</div>
+                        </div>
+
+                        <form id="consoleForm" class="console-input-row">
+                            <input type="text" id="consoleInput" placeholder="TYPE YOUR COMMAND..." autocomplete="off">
+                            <button type="submit" class="console-send">➤</button>
+                        </form>
                     </div>
-                    <div class="console-log-sidebar">
-                        <div class="log-head">ACTIVITY LOG</div>
-                        <div class="log-list" id="activityLog">
+
+                    <div class="console-activity-side">
+                        <div class="act-head">✦ ACTIVITY LOG</div>
+                        <div class="act-list" id="activityLog">
                             <div><span>12:45:18</span> SYSTEM STARTED</div>
                             <div><span>12:45:20</span> ALL SYSTEMS ONLINE</div>
                             <div><span>12:45:22</span> CAMERA CONNECTED</div>
@@ -192,106 +225,98 @@
                             <div><span>12:45:26</span> VICTOR OG READY</div>
                         </div>
                     </div>
+
                 </div>
-                <form id="consoleForm" class="console-input-wrap">
-                    <input type="text" id="consoleInput" placeholder="TYPE YOUR COMMAND..." autocomplete="off">
-                    <button type="submit" class="console-send-btn">➤</button>
-                </form>
             </div>
 
         </main>
 
-        <!-- RIGHT COLUMN: OLLAMA MODELS, VOICE & HAND GESTURES -->
-        <aside class="hud-column col-right">
+        <!-- RIGHT COLUMN -->
+        <aside class="hud-col col-right">
             
-            <!-- OLLAMA MODELS RUNNING -->
-            <div class="hud-panel">
-                <div class="hud-panel-title">OLLAMA MODELS</div>
+            <!-- OLLAMA MODELS -->
+            <div class="hud-panel panel-models">
+                <div class="hud-panel-head">OLLAMA MODELS</div>
                 <div class="models-running-list">
-                    <div class="running-model-item">
-                        <span class="m-icon">💎</span>
-                        <div class="m-info"><strong>GEMMA 3 12B</strong></div>
-                        <span class="m-status">• RUNNING</span>
+                    <div class="m-item">
+                        <span class="m-logo">⚛️</span>
+                        <span class="m-name">GEMMA 3 12B</span>
+                        <span class="m-dot">• RUNNING</span>
                     </div>
-                    <div class="running-model-item">
-                        <span class="m-icon">⚡</span>
-                        <div class="m-info"><strong>QWEN 2.5 14B</strong></div>
-                        <span class="m-status">• RUNNING</span>
+                    <div class="m-item">
+                        <span class="m-logo">⚡</span>
+                        <span class="m-name">QWEN 2.5 14B</span>
+                        <span class="m-dot">• RUNNING</span>
                     </div>
-                    <div class="running-model-item">
-                        <span class="m-icon">🦙</span>
-                        <div class="m-info"><strong>LLAMA 3.3 70B</strong></div>
-                        <span class="m-status">• RUNNING</span>
+                    <div class="m-item">
+                        <span class="m-logo">🦙</span>
+                        <span class="m-name">LLAMA 3.3 70B</span>
+                        <span class="m-dot">• RUNNING</span>
                     </div>
-                    <div class="running-model-item">
-                        <span class="m-icon">🌀</span>
-                        <div class="m-info"><strong>DEEPSEEK R1 14B</strong></div>
-                        <span class="m-status">• RUNNING</span>
+                    <div class="m-item">
+                        <span class="m-logo">🌀</span>
+                        <span class="m-name">DEEPSEEK R1 14B</span>
+                        <span class="m-dot">• RUNNING</span>
                     </div>
-                    <div class="running-model-item">
-                        <span class="m-icon">🌐</span>
-                        <div class="m-info"><strong>GLM 4 9B</strong></div>
-                        <span class="m-status">• RUNNING</span>
+                    <div class="m-item">
+                        <span class="m-logo">🌐</span>
+                        <span class="m-name">GLM 4 9B</span>
+                        <span class="m-dot">• RUNNING</span>
                     </div>
-                    <div class="running-model-item">
-                        <span class="m-icon">🔥</span>
-                        <div class="m-info"><strong>MISTRAL 7B</strong></div>
-                        <span class="m-status">• RUNNING</span>
+                    <div class="m-item">
+                        <span class="m-logo">🔥</span>
+                        <span class="m-name">MISTRAL 7B</span>
+                        <span class="m-dot">• RUNNING</span>
                     </div>
                 </div>
-                <button class="hud-btn hud-btn-outline w-full" style="margin-top:12px;" onclick="scrollToSection('explore')">MODEL ROUTER ACTIVE</button>
+                <button class="hud-action-btn" onclick="scrollToSection('explore')">MODEL ROUTER ACTIVE</button>
             </div>
 
-            <!-- VOICE ASSISTANT -->
-            <div class="hud-panel">
-                <div class="hud-panel-title">VOICE ASSISTANT</div>
-                <div class="voice-widget">
-                    <div class="waveform-large">
-                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            <!-- RIGHT SPLIT ROW: VOICE ASSISTANT & HAND GESTURES -->
+            <div class="right-split-row">
+                
+                <!-- VOICE ASSISTANT -->
+                <div class="hud-panel panel-voice">
+                    <div class="hud-panel-head">VOICE ASSISTANT</div>
+                    <div class="voice-box">
+                        <div class="voice-wave-visual">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                        <div class="voice-state-text">LISTENING...</div>
+                        <button class="mic-glow-btn" id="micBtn" onclick="toggleVoiceListening()">🎙️</button>
+                        <div class="voice-select-label">VOICE: <strong>JARVIS PRIME</strong></div>
+                        <button class="hud-action-btn" onclick="toggleVoiceListening()">START VOICE CHAT</button>
                     </div>
-                    <div class="voice-state">LISTENING...</div>
-                    <button class="mic-circle-btn" id="micBtn" onclick="toggleVoiceListening()">
-                        <span class="mic-icon">🎙️</span>
-                    </button>
-                    <div class="form-group" style="margin:12px 0 8px;">
-                        <label style="font-size:10px; color:var(--hud-cyan);">VOICE PROFILE</label>
-                        <select id="voiceProfileSelect" class="hud-select w-full">
-                            <option value="jarvis">JARVIS PRIME</option>
-                            <option value="friday">FRIDAY CORE</option>
-                            <option value="cyber">CYBER VICTOR</option>
-                        </select>
-                    </div>
-                    <button class="hud-btn hud-btn-primary w-full" onclick="toggleVoiceListening()">START VOICE CHAT</button>
                 </div>
-            </div>
 
-            <!-- HAND GESTURES -->
-            <div class="hud-panel">
-                <div class="hud-panel-title">HAND GESTURES</div>
-                <div class="gestures-widget">
-                    <div class="hand-skeleton-box">
-                        <div class="hand-wireframe">🖐️</div>
-                        <div class="tracking-pill">STATUS: TRACKING</div>
-                    </div>
-                    <div class="gestures-legend">
-                        <div><span>OPEN HAND</span> <span>→ MENU</span></div>
-                        <div><span>FIST</span> <span>→ CANCEL</span></div>
-                        <div><span>POINT INDEX</span> <span>→ SELECT</span></div>
-                        <div><span>PINCH</span> <span>→ CLICK</span></div>
-                        <div><span>PINCH + MOVE</span> <span>→ DRAG</span></div>
-                        <div><span>TWO FINGERS</span> <span>→ SCROLL</span></div>
+                <!-- HAND GESTURES -->
+                <div class="hud-panel panel-gestures">
+                    <div class="hud-panel-head">HAND GESTURES</div>
+                    <div class="gestures-box">
+                        <div class="hand-3d-visual">
+                            <div class="hand-icon">🖐️</div>
+                            <div class="tracking-tag">STATUS: TRACKING</div>
+                        </div>
+                        <div class="gestures-list">
+                            <div><span>OPEN HAND</span> <span>→ MENU</span></div>
+                            <div><span>FIST</span> <span>→ CANCEL</span></div>
+                            <div><span>POINT INDEX</span> <span>→ SELECT</span></div>
+                            <div><span>PINCH</span> <span>→ CLICK</span></div>
+                            <div><span>PINCH + MOVE</span> <span>→ DRAG</span></div>
+                            <div><span>TWO FINGERS</span> <span>→ SCROLL</span></div>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
             <!-- CAMERA FEED -->
-            <div class="hud-panel">
-                <div class="hud-panel-title">CAMERA FEED</div>
-                <div class="camera-feed-box">
-                    <div class="cam-overlay">
-                        <div class="cam-grid-lines"></div>
-                        <span class="cam-status">• ACTIVE</span>
-                    </div>
+            <div class="hud-panel panel-camera">
+                <div class="hud-panel-head">CAMERA FEED</div>
+                <div class="camera-monitor">
+                    <div class="camera-grid-overlay"></div>
+                    <div class="cam-nodes"><span></span><span></span></div>
+                    <span class="camera-status">• ACTIVE</span>
                 </div>
             </div>
 
@@ -299,146 +324,119 @@
 
     </div>
 
-    <!-- LOWER INTEGRATED SECTIONS (WORKBENCH, MODEL HUB, MY DOCK, PORTS, LEGAL) -->
-    <div class="hud-wrapper" style="margin-top:24px;">
-
+    <!-- LOWER WORKBENCH & MANIFEST SECTIONS -->
+    <div class="hud-lower-sections">
+        
         <!-- API WORKBENCH -->
-        <section class="hud-panel w-full" id="apidogWorkbench">
-            <div class="hud-panel-title">⚡ API TESTING WORKBENCH & REQUEST STUDIO</div>
-            <div class="request-bar" style="margin-top:12px;">
-                <select id="apiMethod" class="hud-select" style="width:100px;">
+        <section class="hud-panel" id="apidogWorkbench">
+            <div class="hud-panel-head">⚡ API TESTING WORKBENCH & REQUEST STUDIO</div>
+            <div class="req-bar-row">
+                <select id="apiMethod" class="hud-select-sm">
                     <option value="POST">POST</option>
                     <option value="GET">GET</option>
                     <option value="PUT">PUT</option>
                     <option value="DELETE">DELETE</option>
                 </select>
-                <input type="text" id="apiEndpointInput" class="hud-input" style="flex:1;" value="https://openrouter.ai/api/v1/chat/completions">
-                <button id="apiSendBtn" class="hud-btn hud-btn-primary">⚡ SEND REQUEST</button>
-                <button id="apiSaveBtn" class="hud-btn hud-btn-outline">💾 SAVE</button>
+                <input type="text" id="apiEndpointInput" class="hud-input-sm" value="https://openrouter.ai/api/v1/chat/completions">
+                <button id="apiSendBtn" class="hud-action-btn primary">⚡ SEND REQUEST</button>
+                <button id="apiSaveBtn" class="hud-action-btn">💾 SAVE</button>
             </div>
-
-            <div class="workbench-split">
-                <div class="request-pane">
-                    <div class="pane-tabs">
+            <div class="workbench-split-grid">
+                <div class="workbench-pane">
+                    <div class="pane-tab-bar">
                         <button class="pane-tab active" data-tab="body">Body (JSON)</button>
                         <button class="pane-tab" data-tab="headers">Headers</button>
                         <button class="pane-tab" data-tab="params">Params</button>
                         <button class="pane-tab" data-tab="code">Code Snippets</button>
                     </div>
-                    <div id="tabBody" class="tab-panel">
-                        <textarea id="apiRequestBody" class="code-editor">{
+                    <div id="tabBody" class="pane-panel">
+                        <textarea id="apiRequestBody" class="code-area">{
   "model": "meta-llama/llama-3.3-70b-instruct",
   "messages": [
     {"role": "user", "content": "Explain quantum computing in 2 sentences."}
   ]
 }</textarea>
                     </div>
-                    <div id="tabHeaders" class="tab-panel hidden">
-                        <textarea id="apiHeadersInput" class="code-editor">{
+                    <div id="tabHeaders" class="pane-panel hidden">
+                        <textarea id="apiHeadersInput" class="code-area">{
   "Content-Type": "application/json",
   "Authorization": "Bearer YOUR_API_KEY"
 }</textarea>
                     </div>
-                    <div id="tabParams" class="tab-panel hidden">
-                        <textarea id="apiParamsInput" class="code-editor">{
+                    <div id="tabParams" class="pane-panel hidden">
+                        <textarea id="apiParamsInput" class="code-area">{
   "temperature": 0.7,
   "max_tokens": 150
 }</textarea>
                     </div>
-                    <div id="tabCode" class="tab-panel hidden">
-                        <div class="code-snippet-box"><pre><code id="generatedCodeSnippet"></code></pre></div>
+                    <div id="tabCode" class="pane-panel hidden">
+                        <pre><code id="generatedCodeSnippet"></code></pre>
                     </div>
                 </div>
 
-                <div class="response-pane">
-                    <div class="response-status-bar">
-                        <span id="apiResponseStatus" class="hud-status-badge green">200 OK</span>
-                        <span id="apiResponseTime" class="hud-status-badge">0 ms</span>
-                        <span id="apiResponseSize" class="hud-status-badge">0 B</span>
+                <div class="workbench-pane">
+                    <div class="res-status-row">
+                        <span id="apiResponseStatus" class="hud-badge green">200 OK</span>
+                        <span id="apiResponseTime" class="hud-badge">0 ms</span>
+                        <span id="apiResponseSize" class="hud-badge">0 B</span>
                     </div>
-                    <div class="code-snippet-box" style="flex:1;">
-                        <pre><code id="apiResponseViewer">// Response payload will appear here after clicking "Send Request"</code></pre>
+                    <div class="code-area-wrap">
+                        <pre><code id="apiResponseViewer">// Response payload will appear here</code></pre>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- MODELS HUB -->
-        <section class="hud-panel w-full" id="explore" style="margin-top:24px;">
-            <div class="hud-panel-title">📦 MODELS HUB & OPEN-SOURCE MANIFEST</div>
-            <div class="explore-controls" style="margin-top:12px;">
-                <div class="controls-row">
-                    <div class="search-box">
-                        <input type="text" id="searchInput" class="hud-input" placeholder="SEARCH MODELS BY NAME, TASK OR PROVIDER...">
-                    </div>
-                    <select id="sortSelect" class="hud-select">
-                        <option value="most_hauled">MOST HAULED</option>
-                        <option value="newest">NEWEST</option>
-                        <option value="name_asc">NAME A-Z</option>
-                    </select>
-                </div>
-                <div class="controls-row">
-                    <div class="chip-row" id="portChips"></div>
-                    <span id="resultCount" class="result-summary">MANIFEST ONLINE</span>
-                </div>
+        <section class="hud-panel" id="explore" style="margin-top:20px;">
+            <div class="hud-panel-head">📦 MODELS HUB & OPEN-SOURCE MANIFEST</div>
+            <div class="controls-row">
+                <input type="text" id="searchInput" class="hud-input-sm" placeholder="SEARCH MODELS BY NAME, TASK OR PROVIDER...">
+                <select id="sortSelect" class="hud-select-sm">
+                    <option value="most_hauled">MOST HAULED</option>
+                    <option value="newest">NEWEST</option>
+                    <option value="name_asc">NAME A-Z</option>
+                </select>
             </div>
+            <div class="chip-row" id="portChips" style="margin:10px 0;"></div>
             <div class="model-grid" id="modelGrid"></div>
             <div id="emptyState" class="empty-state hidden"><p>NO MODELS MATCHING SEARCH</p></div>
         </section>
 
         <!-- MY DOCK -->
-        <section class="hud-panel w-full" id="mydock" style="margin-top:24px;">
-            <div class="hud-panel-title">⚓ MY DOCKED MODELS <span id="installedCountPill" class="text-neon-cyan" style="margin-left:8px;">5 MODELS</span></div>
-            <div class="model-grid" id="installedGrid" style="margin-top:12px;"></div>
+        <section class="hud-panel" id="mydock" style="margin-top:20px;">
+            <div class="hud-panel-head">⚓ MY DOCKED MODELS <span id="installedCountPill" class="text-cyan">6 MODELS</span></div>
+            <div class="model-grid" id="installedGrid" style="margin-top:10px;"></div>
             <div id="emptyDockState" class="empty-state hidden"><p>DOCK IS EMPTY</p></div>
         </section>
 
-        <!-- PORTS & INTEGRATIONS -->
-        <section class="hud-panel w-full" id="ports" style="margin-top:24px;">
-            <div class="hud-panel-title">🔌 CONNECTED SYSTEM PORTS</div>
-            <div class="port-grid" id="portGrid" style="margin-top:12px;"></div>
-        </section>
-
-        <!-- LEGAL SECTION -->
-        <section class="hud-panel w-full" id="legal" style="margin-top:24px;">
-            <div class="hud-panel-title">📜 LEGAL & COMPLIANCE</div>
-            <div class="legal-tabs" style="margin-top:12px;">
-                <button class="tab-btn active" data-target="legalTerms">Terms of Service</button>
-                <button class="tab-btn" data-target="legalPrivacy">Privacy Policy</button>
-                <button class="tab-btn" data-target="legalCookies">Cookie Policy</button>
-            </div>
-            <div id="legalTerms" class="legal-panel active">
-                <p>VictorX is subject to open-source model execution licenses (Apache 2.0, MIT, Llama Community License).</p>
-            </div>
-            <div id="legalPrivacy" class="legal-panel hidden">
-                <p>All API keys and local requests are persisted securely within your browser and local database (`db/data.json`).</p>
-            </div>
-            <div id="legalCookies" class="legal-panel hidden">
-                <p>Session state saved locally.</p>
-            </div>
+        <!-- PORTS -->
+        <section class="hud-panel" id="ports" style="margin-top:20px;">
+            <div class="hud-panel-head">🔌 CONNECTED SYSTEM PORTS</div>
+            <div class="port-grid" id="portGrid" style="margin-top:10px;"></div>
         </section>
 
     </div>
 
-    <!-- BOTTOM HUD DOCK BAR -->
-    <footer class="hud-bottom-dock">
-        <div class="dock-left">
-            <span class="hud-indicator active"></span>
+    <!-- BOTTOM DOCK BAR -->
+    <footer class="hud-bottom-bar">
+        <div class="b-left">
+            <span class="indicator-dot green"></span>
             <span>PRIVACY MODE: <strong>ON</strong></span>
         </div>
-        <div class="dock-center-icons">
-            <button class="dock-icon" title="Brain Core" onclick="scrollToSection('explore')">🧠</button>
-            <button class="dock-icon" title="Console Chat" onclick="openPlayground()">💬</button>
-            <button class="dock-icon" title="Camera" onclick="toast('Camera Active', 'success')">📷</button>
-            <button class="dock-icon" title="Mic" onclick="toggleVoiceListening()">🎙️</button>
-            <button class="dock-icon" title="Hand Gestures" onclick="toast('Hand Gestures Tracking', 'info')">🖐️</button>
-            <button class="dock-icon" title="Web Browser" onclick="toast('Web Gateway Ready', 'info')">🌐</button>
-            <button class="dock-icon" title="Code Editor" onclick="scrollToSection('apidogWorkbench')">&lt;/&gt;</button>
-            <button class="dock-icon" title="System Metrics" onclick="toast('Metrics Refreshed', 'info')">📊</button>
-            <button class="dock-icon" title="Admin Control" onclick="openModal('adminPinOverlay')">🛡️</button>
+        <div class="b-center-icons">
+            <button class="b-icon" onclick="scrollToSection('explore')">🧠</button>
+            <button class="b-icon" onclick="openPlayground()">💬</button>
+            <button class="b-icon" onclick="toast('Camera Active', 'success')">📷</button>
+            <button class="b-icon" onclick="toggleVoiceListening()">🎙️</button>
+            <button class="b-icon" onclick="toast('Hand Gestures Active', 'info')">🖐️</button>
+            <button class="b-icon" onclick="toast('Web Gateway Active', 'info')">🌐</button>
+            <button class="b-icon" onclick="scrollToSection('apidogWorkbench')">&lt;/&gt;</button>
+            <button class="b-icon" onclick="toast('Metrics Updated', 'info')">📊</button>
+            <button class="b-icon" onclick="openModal('adminPinOverlay')">🛡️</button>
         </div>
-        <div class="dock-right">
-            <span class="hud-indicator active"></span>
+        <div class="b-right">
+            <span class="indicator-dot green"></span>
             <span>LOCALHOST: <strong>127.0.0.1</strong></span>
         </div>
     </footer>
@@ -448,35 +446,11 @@
 
     <!-- MODALS -->
 
-    <!-- Auth Modal -->
-    <div class="modal-overlay" id="authModalOverlay">
-        <div class="hud-panel modal">
-            <div class="hud-panel-title">AUTHENTICATION <button class="btn-close">&times;</button></div>
-            <div class="auth-tabs-container" style="margin-top:12px;">
-                <button class="auth-tab active" id="authTabLogin">LOGIN</button>
-                <button class="auth-tab" id="authTabRegister">REGISTER</button>
-            </div>
-            <form id="loginForm">
-                <div class="form-group"><label>USERNAME</label><input type="text" id="loginUsername" class="hud-input" required></div>
-                <div class="form-group"><label>PASSWORD</label><input type="password" id="loginPassword" class="hud-input" required></div>
-                <button type="submit" id="loginSubmitBtn" class="hud-btn hud-btn-primary w-full">SIGN IN</button>
-            </form>
-            <form id="registerForm" class="hidden">
-                <div class="form-group"><label>FULL NAME</label><input type="text" id="regFullName" class="hud-input" required></div>
-                <div class="form-group"><label>USERNAME</label><input type="text" id="regUsername" class="hud-input" required></div>
-                <div class="form-group"><label>EMAIL</label><input type="email" id="regEmail" class="hud-input" required></div>
-                <div class="form-group"><label>PASSWORD</label><input type="password" id="regPassword" class="hud-input" required></div>
-                <button type="submit" id="registerSubmitBtn" class="hud-btn hud-btn-primary w-full">CREATE ACCOUNT</button>
-            </form>
-            <button id="quickGuestLoginBtn" class="hud-btn hud-btn-outline w-full" style="margin-top:8px;">CONTINUE AS GUEST</button>
-        </div>
-    </div>
-
-    <!-- Admin PIN Modal -->
+    <!-- Admin PIN Modal (20032004) -->
     <div class="pin-overlay" id="adminPinOverlay">
-        <div class="hud-panel pin-modal">
-            <div class="hud-panel-title">ADMIN ACCESS PIN <button class="btn-close">&times;</button></div>
-            <p style="font-size:12px; color:var(--hud-cyan); margin:12px 0;">ENTER 8-DIGIT SECURITY PIN (20032004)</p>
+        <div class="hud-panel modal-box">
+            <div class="hud-panel-head">ADMIN SECURITY ACCESS PIN <button class="btn-close">&times;</button></div>
+            <p style="font-size:11px; color:#00f0ff; margin:10px 0;">ENTER 8-DIGIT SECURITY PIN (20032004)</p>
             <div class="pin-input-group" id="pinInputGroup">
                 <input type="password" class="pin-digit" maxlength="1">
                 <input type="password" class="pin-digit" maxlength="1">
@@ -487,19 +461,19 @@
                 <input type="password" class="pin-digit" maxlength="1">
                 <input type="password" class="pin-digit" maxlength="1">
             </div>
-            <div id="pinError" class="hud-status-badge red hidden" style="margin-bottom:12px;">ACCESS DENIED. INCORRECT PIN.</div>
+            <div id="pinError" class="hud-badge red hidden" style="margin-bottom:10px;">ACCESS DENIED. INCORRECT PIN.</div>
             <div style="display:flex; gap:8px;">
-                <button id="pinCancelBtn" class="hud-btn hud-btn-outline style-flex-1">CANCEL</button>
-                <button id="pinVerifyBtn" class="hud-btn hud-btn-primary style-flex-1">VERIFY</button>
+                <button id="pinCancelBtn" class="hud-action-btn style-flex-1">CANCEL</button>
+                <button id="pinVerifyBtn" class="hud-action-btn primary style-flex-1">VERIFY</button>
             </div>
         </div>
     </div>
 
     <!-- Admin Dashboard Modal -->
     <div class="modal-overlay" id="adminDashboardOverlay">
-        <div class="hud-panel modal" style="max-width:800px;">
-            <div class="hud-panel-title">ADMIN CONTROL DASHBOARD <button class="btn-close">&times;</button></div>
-            <div class="admin-stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:16px 0;">
+        <div class="hud-panel modal-box" style="max-width:700px;">
+            <div class="hud-panel-head">ADMIN CONTROL DASHBOARD <button class="btn-close">&times;</button></div>
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:14px 0;">
                 <div class="stat-card"><span id="adminTotalUsers">1</span><div>Users</div></div>
                 <div class="stat-card"><span id="adminActiveSessions">1</span><div>Active Sessions</div></div>
                 <div class="stat-card"><span id="adminModelsPulled">12</span><div>Models Pulled</div></div>
@@ -509,7 +483,7 @@
                 <thead><tr><th>SYSTEM PARAMETER</th><th>STATUS</th></tr></thead>
                 <tbody>
                     <tr><td>LOCAL DATABASE</td><td>SAVED (db/data.json)</td></tr>
-                    <tr><td>VERIFIED PIN</td><td>20032004 ACTIVE</td></tr>
+                    <tr><td>VERIFIED SECURITY PIN</td><td>20032004 ACTIVE</td></tr>
                 </tbody>
             </table>
         </div>
@@ -517,16 +491,16 @@
 
     <!-- API Keys Modal -->
     <div class="modal-overlay" id="apiKeysModalOverlay">
-        <div class="hud-panel modal">
-            <div class="hud-panel-title">API KEY MANAGER <button class="btn-close">&times;</button></div>
-            <form id="apiKeysForm" style="margin-top:12px;">
-                <div class="form-group"><label>OPENROUTER API KEY</label><input type="password" id="keyOpenRouter" class="hud-input" placeholder="sk-or-v1-..."></div>
-                <div class="form-group"><label>OPENAI / CLAUDE KEY</label><input type="password" id="keyOpenAI" class="hud-input" placeholder="sk-..."></div>
-                <div class="form-group"><label>GEMINI API KEY</label><input type="password" id="keyGemini" class="hud-input" placeholder="AIza..."></div>
-                <div class="form-group"><label>OLLAMA URL</label><input type="text" id="urlOllama" class="hud-input" value="http://localhost:11434"></div>
-                <div style="display:flex; gap:8px; margin-top:12px;">
-                    <button type="button" id="clearApiKeysBtn" class="hud-btn hud-btn-outline style-flex-1">CLEAR</button>
-                    <button type="button" id="saveApiKeysBtn" class="hud-btn hud-btn-primary style-flex-1">SAVE</button>
+        <div class="hud-panel modal-box">
+            <div class="hud-panel-head">SETTINGS & API KEYS <button class="btn-close">&times;</button></div>
+            <form id="apiKeysForm" style="margin-top:10px;">
+                <div class="form-group"><label>OPENROUTER API KEY</label><input type="password" id="keyOpenRouter" class="hud-input-sm" placeholder="sk-or-v1-..."></div>
+                <div class="form-group"><label>OPENAI KEY</label><input type="password" id="keyOpenAI" class="hud-input-sm" placeholder="sk-..."></div>
+                <div class="form-group"><label>GEMINI API KEY</label><input type="password" id="keyGemini" class="hud-input-sm" placeholder="AIza..."></div>
+                <div class="form-group"><label>OLLAMA URL</label><input type="text" id="urlOllama" class="hud-input-sm" value="http://localhost:11434"></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button type="button" id="clearApiKeysBtn" class="hud-action-btn style-flex-1">CLEAR</button>
+                    <button type="button" id="saveApiKeysBtn" class="hud-action-btn primary style-flex-1">SAVE</button>
                 </div>
             </form>
         </div>
@@ -534,41 +508,28 @@
 
     <!-- Pull Modal -->
     <div class="modal-overlay" id="pullModalOverlay">
-        <div class="hud-panel modal">
-            <div class="hud-panel-title"><span id="pullModalTitle">PULLING MODEL</span> <button class="btn-close">&times;</button></div>
-            <p id="pullModalDesc" style="font-size:12px; color:var(--hud-cyan); margin:12px 0;"></p>
-            <div style="width:100%; background:#07111e; height:8px; border-radius:4px; overflow:hidden; margin-bottom:12px;">
-                <div id="pullProgressBar" style="background:var(--hud-cyan); height:100%; width:0%; transition:width 0.2s;"></div>
+        <div class="hud-panel modal-box">
+            <div class="hud-panel-head"><span id="pullModalTitle">PULLING MODEL</span> <button class="btn-close">&times;</button></div>
+            <p id="pullModalDesc" style="font-size:11px; color:#00f0ff; margin:10px 0;"></p>
+            <div style="width:100%; background:#020713; height:6px; border-radius:3px; overflow:hidden; margin-bottom:10px;">
+                <div id="pullProgressBar" style="background:#00f0ff; height:100%; width:0%; transition:width 0.2s;"></div>
             </div>
-            <div id="pullLayers" style="font-family:var(--font-mono); font-size:11px; background:#020610; padding:12px; border-radius:4px; max-height:120px; overflow-y:auto; margin-bottom:12px;"></div>
+            <div id="pullLayers" style="font-family:var(--font-mono); font-size:11px; background:#01040a; padding:10px; border-radius:4px; max-height:100px; overflow-y:auto; margin-bottom:10px;"></div>
             <div style="display:flex; gap:8px;">
-                <button id="pullConfirmBtn" class="hud-btn hud-btn-primary w-full">START PULL</button>
-                <button id="pullPlaygroundBtn" class="hud-btn hud-btn-outline w-full hidden">LAUNCH PLAYGROUND</button>
+                <button id="pullConfirmBtn" class="hud-action-btn primary w-full">START PULL</button>
             </div>
         </div>
     </div>
 
     <!-- Playground Modal -->
     <div class="modal-overlay" id="playgroundModalOverlay">
-        <div class="hud-panel modal" style="max-width:700px; height:80vh; display:flex; flex-direction:column;">
-            <div class="hud-panel-title">AI PLAYGROUND <select id="pgModelSelect" class="hud-select" style="font-size:11px;"></select> <button class="btn-close">&times;</button></div>
-            <div id="pgHistory" style="flex:1; background:#020610; border:1px solid var(--hud-border); border-radius:4px; padding:12px; overflow-y:auto; margin:12px 0;"></div>
+        <div class="hud-panel modal-box" style="max-width:650px; height:75vh; display:flex; flex-direction:column;">
+            <div class="hud-panel-head">AI PLAYGROUND CHAT <select id="pgModelSelect" class="hud-select-sm"></select> <button class="btn-close">&times;</button></div>
+            <div id="pgHistory" style="flex:1; background:#01040a; border:1px solid rgba(0,240,255,0.2); border-radius:4px; padding:10px; overflow-y:auto; margin:10px 0;"></div>
             <form id="pgForm" style="display:flex; gap:8px;">
-                <input type="text" id="pgInput" class="hud-input" placeholder="SEND COMMAND..." style="flex:1;">
-                <button type="submit" class="hud-btn hud-btn-primary">SEND</button>
+                <input type="text" id="pgInput" class="hud-input-sm" placeholder="SEND COMMAND..." style="flex:1;">
+                <button type="submit" class="hud-action-btn primary">SEND</button>
             </form>
-        </div>
-    </div>
-
-    <!-- UPI Support Modal -->
-    <div class="modal-overlay" id="upiModalOverlay">
-        <div class="hud-panel modal text-center">
-            <div class="hud-panel-title">❤️ SUPPORT VICTOR OG <button class="btn-close">&times;</button></div>
-            <p style="color:var(--hud-cyan); margin:12px 0;">UPI ID: <strong>arasu9629hf@okhdfcbank</strong></p>
-            <div style="background:#fff; padding:16px; border-radius:8px; display:inline-block; margin-bottom:12px;">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Support&cu=INR" alt="UPI QR Code" width="160" height="160">
-            </div>
-            <button id="confirmSupportBtn" class="hud-btn hud-btn-primary w-full">I'VE SUPPORTED</button>
         </div>
     </div>
 
