@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Victor — every model, one dock</title>
+<meta name="description" content="Victor indexes models from Ollama, Hugging Face, OpenRouter, and every port worth pulling from. Search, compare, pull, and run in one place.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="noise" aria-hidden="true"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">V</span>
+      <span class="brand-word">Victor</span>
+    </a>
+    <nav class="mainnav" aria-label="Primary">
+      <a href="#explore">Explore</a>
+      <a href="#ports">Ports</a>
+      <a href="#mydock">My Dock <span class="badge" id="dockBadge">0</span></a>
+      <a href="#playground" id="openPlaygroundNavLink">Playground</a>
+      <a href="#advertise">Advertise</a>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-icon-text" id="openApiKeysBtn" type="button" title="Configure API Keys">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        <span>API Keys</span>
+      </button>
+      <button class="btn btn-ghost" id="openConnectedBtn" type="button">
+        <span id="connectedCount">0</span> connected
+      </button>
+
+      <!-- Auth area -->
+      <div class="auth-wrap" id="authWrap">
+        <button class="btn btn-primary" id="openAuthBtn" type="button">Sign In</button>
+        <div class="user-menu" id="userMenu" hidden>
+          <button class="user-btn" id="userBtn" type="button">
+            <span class="user-avatar" id="userAvatar">U</span>
+            <span class="user-name" id="userName">User</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="dropdown-menu" id="userDropdown" hidden>
+            <div class="dropdown-header">
+              <span id="dropdownEmail">user@victor.dock</span>
+              <span class="status-pill online">Active Session</span>
+            </div>
+            <hr>
+            <button class="dropdown-item" id="dropdownDockBtn" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              My Installed Models
+            </button>
+            <button class="dropdown-item" id="dropdownKeysBtn" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              Manage API Keys
+            </button>
+            <hr>
+            <button class="dropdown-item danger" id="logoutBtn" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">Model registry &amp; execution dock</p>
+        <h1>Every model.<br>One dock.</h1>
+        <p class="hero-sub">Victor indexes what's sitting on Ollama, Hugging Face, OpenRouter, and Meta. Pull weights, set API keys, and test live inference straight from your dock.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#explore">Explore Manifest</a>
+          <button class="btn btn-ghost" id="heroPlaygroundBtn" type="button">⚡ Open AI Playground</button>
+        </div>
+        <div class="hero-stats">
+          <div><strong id="statModels">0</strong><span>models indexed</span></div>
+          <div><strong id="statPorts">0</strong><span>ports connected</span></div>
+          <div><strong id="statInstalled">0</strong><span>pulled to dock</span></div>
+        </div>
+      </div>
+
+      <div class="terminal" role="group" aria-label="Example pull command">
+        <div class="terminal-bar">
+          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+          <span class="terminal-title">victor — interactive CLI</span>
+        </div>
+        <div class="terminal-body">
+          <p class="term-line"><span class="prompt">$</span> <span id="typedCmd"></span><span class="cursor" aria-hidden="true"></span></p>
+          <p class="term-out" id="termOut"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPLORE -->
+  <section class="explore" id="explore">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>The Manifest</h2>
+        <p>Every indexed model on the dock. Filter by port, category, or search by name &amp; task.</p>
+      </div>
+
+      <div class="controls">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="text" id="searchInput" placeholder="Search models — “code”, “deepseek”, “vision”, “7b”…" aria-label="Search models">
+        </div>
+        <div class="chip-row" id="portChips" role="group" aria-label="Filter by port"></div>
+        <select id="sortSelect" aria-label="Sort models">
+          <option value="popular">Most hauled</option>
+          <option value="new">Newest on dock</option>
+          <option value="size-asc">Size: small → large</option>
+          <option value="size-desc">Size: large → small</option>
+          <option value="az">Name: A → Z</option>
+        </select>
+      </div>
+
+      <p class="result-count" id="resultCount" aria-live="polite"></p>
+
+      <div class="grid" id="modelGrid"></div>
+      <p class="empty-state" id="emptyState" hidden>Nothing matches that on the manifest yet. Try a different port or search term.</p>
+    </div>
+  </section>
+
+  <!-- MY DOCK (INSTALLED / PULLED MODELS) -->
+  <section class="mydock" id="mydock">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="head-with-badge">
+          <h2>My Dock</h2>
+          <span class="count-pill" id="installedCountPill">0 Models</span>
+        </div>
+        <p>Models you have pulled &amp; docked to your active workstation. Configured and ready for local CLI or API execution.</p>
+      </div>
+      <div class="grid" id="installedGrid"></div>
+      <div class="empty-dock" id="emptyDockState">
+        <div class="empty-dock-icon">⚓</div>
+        <h3>Your dock is empty</h3>
+        <p>Explore the manifest above and click <strong>"Pull to dock"</strong> to add models to your workstation.</p>
+        <a class="btn btn-primary" href="#explore">Browse Manifest</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTS -->
+  <section class="ports" id="ports">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Connected Ports</h2>
+        <p>Connect the registries and inference backends you pull from. Victor indexes them together in one unified manifest.</p>
+      </div>
+      <div class="port-grid" id="portGrid"></div>
+    </div>
+  </section>
+
+  <!-- ADVERTISE -->
+  <section class="advertise" id="advertise">
+    <div class="wrap advertise-inner">
+      <div>
+        <p class="eyebrow">For model builders &amp; platforms</p>
+        <h2>Put your model in front of developers pulling right now.</h2>
+        <p class="hero-sub">Sponsored slots sit in the manifest, clearly labeled, never mixed with natural ranking. Reach developers at the moment of choosing what to run.</p>
+        <ul class="advertise-list">
+          <li>Marked “Sponsored” on every placement — 100% transparent</li>
+          <li>Target by task, model size, or port origin</li>
+          <li>Simple monthly slot pricing, cancel anytime</li>
+        </ul>
+        <button class="btn btn-primary" id="requestSlotBtn" type="button">Request a slot</button>
+      </div>
+      <div class="ad-preview">
+        <p class="ad-preview-label">How it looks on the dock</p>
+        <div class="card sponsored-card" aria-hidden="true">
+          <div class="card-top">
+            <span class="sponsor-tag">Sponsored · via Victor</span>
+          </div>
+          <h3 class="card-name">Your Model Here</h3>
+          <p class="card-desc">One line about what makes it worth pulling.</p>
+          <div class="card-foot">
+            <span class="card-size">7B</span>
+            <span class="btn btn-pull">Learn more</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="brand brand-footer">
+      <span class="brand-mark">V</span>
+      <span class="brand-word">Victor</span>
+    </div>
+    <p>An index and execution dock. Models stay where their port keeps them — Victor makes them easy to search, pull, and run.</p>
+    <div class="footer-links">
+      <a href="#explore">Explore</a>
+      <a href="#mydock">My Dock</a>
+      <a href="#ports">Ports</a>
+      <a href="#advertise">Advertise</a>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- AUTH MODAL (LOGIN / SIGN UP) -->
+<div class="modal-overlay" id="authModalOverlay" hidden>
+  <div class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+    <button class="modal-close" id="authModalClose" aria-label="Close">&times;</button>
+    <div class="auth-header">
+      <span class="brand-mark">V</span>
+      <h3 id="authModalTitle">Welcome to Victor</h3>
+      <p class="modal-desc">Sign in or create a account to save your pulled models and API key preferences.</p>
+    </div>
+    <form id="authForm">
+      <div class="form-group">
+        <label for="authUsername">Username</label>
+        <input type="text" id="authUsername" placeholder="e.g. alex_developer" required>
+      </div>
+      <div class="form-group">
+        <label for="authEmail">Email Address</label>
+        <input type="email" id="authEmail" placeholder="alex@company.io" required>
+      </div>
+      <div class="form-group">
+        <label for="authApiKey">Default OpenRouter / OpenAI Key (Optional)</label>
+        <input type="password" id="authApiKey" placeholder="sk-or-v1-..." autocomplete="off">
+      </div>
+      <button class="btn btn-primary btn-full" type="submit" id="authSubmitBtn">Sign In / Create Account</button>
+    </form>
+    <div class="auth-footer-hint">
+      <button class="btn-link" id="quickGuestLoginBtn" type="button">Or continue as Guest (Instant)</button>
+    </div>
+  </div>
+</div>
+
+<!-- API KEYS MODAL -->
+<div class="modal-overlay" id="apiKeysModalOverlay" hidden>
+  <div class="modal keys-modal" role="dialog" aria-modal="true" aria-labelledby="keysModalTitle">
+    <button class="modal-close" id="apiKeysModalClose" aria-label="Close">&times;</button>
+    <p class="eyebrow">Dock Integration</p>
+    <h3 id="keysModalTitle">API Keys &amp; Backend Endpoints</h3>
+    <p class="modal-desc">Keys are stored strictly inside your local browser storage (`localStorage`). They are never transmitted to external telemetry servers.</p>
+    
+    <form id="apiKeysForm">
+      <div class="form-group">
+        <div class="label-row">
+          <label for="keyOpenRouter">OpenRouter API Key <span class="badge-rec">Recommended</span></label>
+          <span class="key-status" id="statusOpenRouter">Not set</span>
+        </div>
+        <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-..." autocomplete="off">
+        <span class="field-hint">Access DeepSeek, Llama 3.3, Claude, GPT-4o, Mistral in one key.</span>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="keyOpenAI">OpenAI API Key</label>
+          <span class="key-status" id="statusOpenAI">Not set</span>
+        </div>
+        <input type="password" id="keyOpenAI" placeholder="sk-..." autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="keyGemini">Google Gemini API Key</label>
+          <span class="key-status" id="statusGemini">Not set</span>
+        </div>
+        <input type="password" id="keyGemini" placeholder="AIzaSy..." autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="urlOllama">Ollama Local URL</label>
+          <span class="key-status" id="statusOllama">Active</span>
+        </div>
+        <input type="text" id="urlOllama" placeholder="http://localhost:11434" value="http://localhost:11434">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="clearKeysBtn" type="button">Clear All</button>
+        <button class="btn btn-primary" type="submit">Save API Settings</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- PULL / INSTALL MODAL -->
+<div class="modal-overlay" id="pullModalOverlay" hidden>
+  <div class="modal pull-modal" role="dialog" aria-modal="true" aria-labelledby="pullModalTitle">
+    <button class="modal-close" id="pullModalClose" aria-label="Close">&times;</button>
+    <div class="pull-modal-head">
+      <span class="port-tag" id="pullModalPort"></span>
+      <h3 id="pullModalTitle"></h3>
+      <p class="modal-desc" id="pullModalDesc"></p>
+    </div>
+
+    <!-- Pull Action Box -->
+    <div class="pull-action-card">
+      <div class="pull-status-row">
+        <div>
+          <strong id="pullStatusText">Ready to pull</strong>
+          <span class="pull-size-tag" id="pullModalSize"></span>
+        </div>
+        <button class="btn btn-primary" id="startPullBtn" type="button">
+          ⚡ Pull to My Dock
+        </button>
+      </div>
+      <div class="progress-bar-wrap" id="pullProgressWrap" hidden>
+        <div class="progress-bar" id="pullProgressBar"></div>
+        <span class="progress-label" id="pullProgressLabel">0% - Fetching manifests...</span>
+      </div>
+    </div>
+
+    <!-- Code Switcher Tabs -->
+    <div class="code-tabs-wrap">
+      <div class="code-tabs">
+        <button class="code-tab active" data-tab="cli" type="button">CLI</button>
+        <button class="code-tab" data-tab="python" type="button">Python</button>
+        <button class="code-tab" data-tab="js" type="button">JavaScript</button>
+        <button class="code-tab" data-tab="curl" type="button">cURL</button>
+      </div>
+      <div class="code-box">
+        <pre><code id="pullModalCodeSnippet"></code></pre>
+        <button class="btn btn-ghost btn-small copy-btn" id="copyCodeBtn" type="button">Copy Code</button>
+      </div>
+    </div>
+
+    <div class="pull-modal-footer">
+      <button class="btn btn-ghost btn-full" id="launchPlaygroundFromModalBtn" type="button">
+        💬 Open in AI Playground
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- AI PLAYGROUND MODAL / WORKSPACE -->
+<div class="modal-overlay" id="playgroundModalOverlay" hidden>
+  <div class="modal playground-modal" role="dialog" aria-modal="true" aria-labelledby="playgroundTitle">
+    <button class="modal-close" id="playgroundClose" aria-label="Close">&times;</button>
+
+    <div class="pg-header">
+      <div class="pg-title-wrap">
+        <span class="badge-live">LIVE DOCK</span>
+        <h3 id="playgroundTitle">AI Model Playground</h3>
+      </div>
+
+      <div class="pg-controls">
+        <select id="pgModelSelect" aria-label="Select model for playground">
+          <!-- Populated dynamically -->
+        </select>
+        <button class="btn btn-ghost btn-small" id="pgKeysBtn" type="button">⚙️ API Keys</button>
+      </div>
+    </div>
+
+    <div class="pg-body">
+      <!-- Chat history -->
+      <div class="pg-messages" id="pgMessages">
+        <div class="chat-msg system">
+          <div class="msg-author">Victor Dock Engine</div>
+          <div class="msg-content">Welcome to the Victor AI Dock Playground! Select an installed or indexed model above and send a message. If an API key (OpenRouter/OpenAI/Gemini) or local Ollama server is configured, real model responses will stream directly into this window.</div>
+        </div>
+      </div>
+
+      <!-- Input box -->
+      <form class="pg-input-row" id="pgForm">
+        <textarea id="pgInput" placeholder="Ask model anything... (e.g. Write a Python function to quicksort an array)" rows="2" required></textarea>
+        <button class="btn btn-primary" type="submit" id="pgSendBtn">
+          <span>Send</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
