@@ -678,6 +678,22 @@ document.addEventListener("DOMContentLoaded", () => {
     toast("Cleared API keys.");
   });
 
+  // Password visibility toggles
+  document.querySelectorAll(".btn-toggle-pw").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetInput = document.getElementById(btn.dataset.target);
+      if (targetInput) {
+        if (targetInput.type === "password") {
+          targetInput.type = "text";
+          btn.textContent = "🙈";
+        } else {
+          targetInput.type = "password";
+          btn.textContent = "👁️";
+        }
+      }
+    });
+  });
+
   // Code Tabs & Pull Modal Actions
   document.querySelectorAll(".code-tab").forEach(tab => {
     tab.addEventListener("click", () => {

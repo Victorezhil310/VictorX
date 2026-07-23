@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com http://localhost:11434 http://127.0.0.1:11434;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Victor — every model, one dock</title>
 <meta name="description" content="Victor indexes models from Ollama, Hugging Face, OpenRouter, and every port worth pulling from. Search, compare, pull, and run in one place.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -261,7 +264,10 @@
           <label for="keyOpenRouter">OpenRouter API Key <span class="badge-rec">Recommended</span></label>
           <span class="key-status" id="statusOpenRouter">Not set</span>
         </div>
-        <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-..." autocomplete="off">
+        <div class="password-input-wrap">
+          <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-..." autocomplete="off">
+          <button type="button" class="btn-toggle-pw" data-target="keyOpenRouter" aria-label="Toggle password visibility">👁️</button>
+        </div>
         <span class="field-hint">Access DeepSeek, Llama 3.3, Claude, GPT-4o, Mistral in one key.</span>
       </div>
 
@@ -270,7 +276,10 @@
           <label for="keyOpenAI">OpenAI API Key</label>
           <span class="key-status" id="statusOpenAI">Not set</span>
         </div>
-        <input type="password" id="keyOpenAI" placeholder="sk-..." autocomplete="off">
+        <div class="password-input-wrap">
+          <input type="password" id="keyOpenAI" placeholder="sk-..." autocomplete="off">
+          <button type="button" class="btn-toggle-pw" data-target="keyOpenAI" aria-label="Toggle password visibility">👁️</button>
+        </div>
       </div>
 
       <div class="form-group">
@@ -278,7 +287,10 @@
           <label for="keyGemini">Google Gemini API Key</label>
           <span class="key-status" id="statusGemini">Not set</span>
         </div>
-        <input type="password" id="keyGemini" placeholder="AIzaSy..." autocomplete="off">
+        <div class="password-input-wrap">
+          <input type="password" id="keyGemini" placeholder="AIzaSy..." autocomplete="off">
+          <button type="button" class="btn-toggle-pw" data-target="keyGemini" aria-label="Toggle password visibility">👁️</button>
+        </div>
       </div>
 
       <div class="form-group">

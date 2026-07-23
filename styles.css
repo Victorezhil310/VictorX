@@ -780,6 +780,28 @@ section { position: relative; z-index: 1; padding: 64px 0; }
 }
 .key-status.set { color: var(--success); }
 
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 40px;
+}
+.btn-toggle-pw {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+  padding: 4px;
+}
+.btn-toggle-pw:hover { opacity: 1; }
+
 .form-group input {
   background: var(--surface-2);
   border: 1px solid var(--border);
