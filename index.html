@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9747982919206794"
+     crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-9747982919206794">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="google9b3c772b30ea79bb.html">
     <title>VictorX — Open-Source AI Model Hub, Spaces & Playground</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,13 +36,18 @@
 
             <nav class="nav-links">
                 <a href="#models" class="nav-link active">📦 Models</a>
+                <a href="#integrations" class="nav-link">🔌 Integrations</a>
+                <a href="#ollama-docs" class="nav-link">🦙 Ollama API</a>
                 <a href="#spaces" class="nav-link">🚀 Spaces</a>
-                <a href="#datasets" class="nav-link">📊 Datasets</a>
                 <a href="#workbench" class="nav-link">⚡ API Workbench</a>
                 <a href="#dock" class="nav-link">⚓ My Dock</a>
             </nav>
 
             <div class="nav-right">
+                <div id="ollamaStatusBadge" class="ollama-status-pill offline" title="Ollama Server Status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Ollama Checking...</span>
+                </div>
                 <button id="openApiKeysBtn" class="btn btn-ghost" title="API Key Manager">🔑 Keys</button>
                 <button id="openUpiModalBtn" class="btn btn-ghost">❤️ Support</button>
                 <button id="authBtn" class="btn btn-primary">Sign In</button>
@@ -52,13 +61,20 @@
     <section class="hero-banner">
         <div class="wrap">
             <div class="hero-text-box">
-                <span class="badge yellow-badge">🔥 THE AI COMMUNITY PLATFORM</span>
-                <h1>Build, Test & Host Open-Source LLMs</h1>
-                <p>Discover 150+ open-weights foundation models, run zero-setup API inferences, and pull model layers directly to your dock.</p>
+                <span class="badge yellow-badge">🔥 THE AI COMMUNITY PLATFORM & OLLAMA HUB</span>
+                <h1>Build, Pull & Run Open-Source LLMs Locally</h1>
+                <p>Discover 150+ open-weights foundation models, connect directly with your local <code>http://localhost:11434</code> Ollama server, pull real weight layers, and integrate with coding agents & editors.</p>
                 
+                <!-- Quick Pull Input Bar -->
+                <div class="quick-pull-box">
+                    <input type="text" id="quickPullInput" placeholder="Enter Ollama model tag (e.g. gemma4, llama3.3, deepseek-r1, phi4, qwen2.5-coder)...">
+                    <button id="quickPullBtn" class="btn btn-primary">📥 Pull Model via Ollama</button>
+                    <button id="syncOllamaBtn" class="btn btn-secondary" title="Sync models from http://localhost:11434">🔄 Sync Local Ollama</button>
+                </div>
+
                 <div class="hero-stats-row">
                     <div class="h-stat"><strong>150+</strong> <span>Models Indexed</span></div>
-                    <div class="h-stat"><strong>100%</strong> <span>OpenAPI Compliant</span></div>
+                    <div class="h-stat"><strong id="ollamaModelCount">--</strong> <span>Ollama Local Models</span></div>
                     <div class="h-stat"><strong id="statInstalled">6</strong> <span>Weights Docked</span></div>
                 </div>
             </div>
@@ -91,12 +107,138 @@
         <!-- 1. MODEL HUB GRID -->
         <section class="section-block" id="models">
             <div class="block-title">
-                <h2>📦 Open Foundation Models</h2>
+                <h2>📦 Open Foundation Models & Local Ollama Registry</h2>
                 <span class="count-tag" id="resultCount">12 Models</span>
             </div>
 
             <div class="model-grid" id="modelGrid"></div>
             <div id="emptyState" class="empty-state hidden"><p>No models matching search filter.</p></div>
+        </section>
+
+        <!-- 2. OLLAMA INTEGRATIONS -->
+        <section class="section-block" id="integrations">
+            <div class="block-title">
+                <h2>🔌 Ecosystem Integrations & Coding Agents</h2>
+                <span class="count-tag">Use Ollama from CLI, Agents & Editors</span>
+            </div>
+
+            <p class="section-subtitle" style="margin-bottom:16px; color:var(--text-secondary); font-size:13px;">
+                Run <code>ollama launch &lt;agent&gt;</code> or connect your local Ollama instance directly to coding agents, assistants, and IDE extensions.
+            </p>
+
+            <div class="integrations-grid">
+                <!-- Claude Code Card -->
+                <div class="integration-card">
+                    <div class="card-badge">Code in Terminal</div>
+                    <div class="card-icon-wrap">
+                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/claude-code.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=edd8f01fa1844a0eca0a9e00be74a8a3" alt="Claude Code" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/terminal/terminal.png'">
+                    </div>
+                    <h3>Claude Code</h3>
+                    <p class="int-desc">Terminal coding agent with tools, vision, web search, and long context.</p>
+                    <div class="int-footer">
+                        <code>ollama launch claude-code</code>
+                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="claude-code" data-title="Claude Code Integration">Setup Guide</button>
+                    </div>
+                </div>
+
+                <!-- OpenCode Card -->
+                <div class="integration-card">
+                    <div class="card-badge">Code in Terminal</div>
+                    <div class="card-icon-wrap">
+                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/opencode.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=ffa7d783e8ddf476a376ebbedaa064ae" alt="OpenCode" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/code/code.png'">
+                    </div>
+                    <h3>OpenCode</h3>
+                    <p class="int-desc">Open-source coding agent that edits, runs, and iterates on code.</p>
+                    <div class="int-footer">
+                        <code>ollama launch opencode</code>
+                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="opencode" data-title="OpenCode Integration">Setup Guide</button>
+                    </div>
+                </div>
+
+                <!-- OpenClaw Card -->
+                <div class="integration-card">
+                    <div class="card-badge">Connect Assistant</div>
+                    <div class="card-icon-wrap">
+                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/openclaw.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=41b25b9a809d087e9e55b1b7bdb76cae" alt="OpenClaw" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/bot/bot.png'">
+                    </div>
+                    <h3>OpenClaw</h3>
+                    <p class="int-desc">Personal assistant for messaging apps and everyday tasks.</p>
+                    <div class="int-footer">
+                        <code>ollama launch openclaw</code>
+                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="openclaw" data-title="OpenClaw Integration">Setup Guide</button>
+                    </div>
+                </div>
+
+                <!-- Hermes Agent Card -->
+                <div class="integration-card">
+                    <div class="card-badge">Connect Assistant</div>
+                    <div class="card-icon-wrap">
+                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/hermes-agent.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=23dcf989a34d894a97bdb847c3831057" alt="Hermes Agent" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/ai/ai.png'">
+                    </div>
+                    <h3>Hermes Agent</h3>
+                    <p class="int-desc">Open-source agent with self-improving skills, memory, and messaging.</p>
+                    <div class="int-footer">
+                        <code>ollama launch hermes</code>
+                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="hermes" data-title="Hermes Agent Integration">Setup Guide</button>
+                    </div>
+                </div>
+
+                <!-- VS Code Card -->
+                <div class="integration-card">
+                    <div class="card-badge">Work in Editor</div>
+                    <div class="card-icon-wrap">
+                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/vscode.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=a2ba239e0b0f44900813a438537a1c98" alt="VS Code" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/visual-studio-code/visual-studio-code.png'">
+                    </div>
+                    <h3>VS Code</h3>
+                    <p class="int-desc">Use Ollama models directly inside VS Code Chat & GitHub Copilot.</p>
+                    <div class="int-footer">
+                        <code>ollama launch vscode</code>
+                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="vscode" data-title="VS Code Integration">Setup Guide</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. OLLAMA DOCUMENTATION & CHEATSHEET -->
+        <section class="section-block" id="ollama-docs">
+            <div class="block-title">
+                <h2>🦙 Ollama API Documentation & Quickstart Index</h2>
+                <span class="count-tag">Local Base URL: http://localhost:11434/api</span>
+            </div>
+
+            <div class="docs-container-box">
+                <div class="docs-grid">
+                    <div class="docs-card">
+                        <h4>⚡ API Base URLs</h4>
+                        <div class="code-snippet-box">
+                            <span class="code-label">Local Server (Default):</span>
+                            <code>http://localhost:11434/api</code>
+                            <span class="code-label" style="margin-top:8px;">Cloud Models (ollama.com):</span>
+                            <code>https://ollama.com/api</code>
+                        </div>
+                    </div>
+
+                    <div class="docs-card">
+                        <h4>📦 Official Libraries</h4>
+                        <ul class="docs-list">
+                            <li><a href="https://github.com/ollama/ollama-python" target="_blank" rel="noopener">🐍 Python SDK (ollama-python)</a></li>
+                            <li><a href="https://github.com/ollama/ollama-js" target="_blank" rel="noopener">🟨 JavaScript SDK (ollama-js)</a></li>
+                            <li><a href="https://docs.ollama.com/llms.txt" target="_blank" rel="noopener">📄 Full Ollama Docs Index (llms.txt)</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="docs-example-box" style="margin-top:16px;">
+                    <div class="docs-example-header">
+                        <span>Terminal Example Request (Generate Completion)</span>
+                        <button class="btn btn-ghost copy-btn" onclick="navigator.clipboard.writeText('curl http://localhost:11434/api/generate -d \'{\n  \"model\": \"gemma4\",\n  \"prompt\": \"Why is the sky blue?\"\n}\''); toast('Copied cURL command!', 'success');">📋 Copy</button>
+                    </div>
+                    <pre><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "gemma4",
+  "prompt": "Why is the sky blue?"
+}'</code></pre>
+                </div>
+            </div>
         </section>
 
         <!-- 2. SPACES & APPS -->
@@ -357,6 +499,27 @@
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Support&cu=INR" alt="UPI QR Code" width="160" height="160">
                 </div>
                 <button id="confirmSupportBtn" class="btn btn-primary w-full">I've Supported</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integration Setup Modal -->
+    <div class="modal-overlay" id="integrationModalOverlay">
+        <div class="modal-card" style="max-width:550px;">
+            <div class="modal-header">
+                <h3 id="intModalTitle">Agent Integration</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" id="intModalBody">
+                <p style="color:var(--text-secondary); font-size:13px; margin-bottom:12px;" id="intModalDesc"></p>
+                <div class="code-snippet-box" style="margin-bottom:14px;">
+                    <span class="code-label">Terminal Quick Launch:</span>
+                    <code id="intModalCmd">ollama launch agent</code>
+                </div>
+                <div id="intModalDetails" style="font-size:12px; color:var(--text-secondary); line-height:1.6;"></div>
+                <div style="margin-top:16px; display:flex; justify-end:flex-end;">
+                    <button class="btn btn-primary w-full" onclick="closeModal('integrationModalOverlay')">Got it</button>
+                </div>
             </div>
         </div>
     </div>

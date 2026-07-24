@@ -1,24 +1,60 @@
 /* ==========================================================================
-   VictorX Engine — Model Registry, API Workbench & Playground
+   VictorX Engine — Model Registry, Ollama Hub & API Workbench
    ========================================================================== */
 
 const PORTS = [
+  { id: "ollama",     name: "Local Ollama", color: "#10B981", desc: "Local Ollama server (http://localhost:11434)" },
   { id: "meta",       name: "Meta",         color: "#7C9CFF", desc: "Llama open weights family." },
   { id: "deepseek",   name: "DeepSeek",     color: "#38BDF8", desc: "DeepSeek R1 reasoning models." },
+  { id: "google",     name: "Google",       color: "#8FD14F", desc: "Gemma 3 & 4 open models." },
   { id: "mistral",    name: "Mistral AI",   color: "#E5675F", desc: "Fast open weight models." },
-  { id: "google",     name: "Google",       color: "#8FD14F", desc: "Gemma 3 open models." },
   { id: "qwen",       name: "Alibaba Qwen", color: "#C792EA", desc: "Qwen 2.5 series." }
 ];
 
 const MODELS = [
-  { id: "llama-3.3-70b",  name: "Llama 3.3 70B", size: "70B",  port: "meta",     tags: ["text-generation","reasoning"], haul: 5400000, added: 1, desc: "State of the art open reasoning model fine tuned for chat & coding.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
-  { id: "deepseek-r1",   name: "DeepSeek R1",   size: "671B", port: "deepseek", tags: ["reasoning","math","code"],    haul: 90300000, added: 2, desc: "Frontier reasoning model with deep chain of thought capabilities.", apiModel: "deepseek/deepseek-r1" },
-  { id: "gemma-3-12b",   name: "Gemma 3 12B",   size: "12B",  port: "google",   tags: ["multimodal","chat"],         haul: 38800000, added: 3, desc: "Google DeepMind lightweight model for single GPU deployment.", apiModel: "google/gemma-2-27b-it" },
-  { id: "qwen-2.5-14b",  name: "Qwen 2.5 14B",  size: "14B",  port: "qwen",     tags: ["multilingual","tools"],      haul: 35200000, added: 4, desc: "High performance multilingual model with 128K context.", apiModel: "qwen/qwen-2.5-72b-instruct" },
-  { id: "mistral-7b",    name: "Mistral 7B",    size: "7B",   port: "mistral",  tags: ["text-generation","fast"],    haul: 31300000, added: 5, desc: "Fast instruction-tuned model v0.3 for low latency serving.", apiModel: "mistralai/mistral-7b-instruct" },
-  { id: "llama-3.1-8b",   name: "Llama 3.1 8B",  size: "8B",   port: "meta",     tags: ["general","lightweight"],     haul: 81200000, added: 6, desc: "Meta general purpose fast open weight model.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
-  { id: "codellama-13b", name: "CodeLlama 13B", size: "13B",  port: "meta",     tags: ["code","infilling"],          haul: 5800000,  added: 7, desc: "Specialized model for software synthesis and code completion.", apiModel: "meta-llama/codellama-13b-instruct" }
+  { id: "gemma4",          name: "Gemma 4",          size: "9B/27B", port: "google",   tags: ["multimodal","chat","edge"], haul: 125000000, added: 1, desc: "Google DeepMind's newest flagship open model for lightweight high-performance reasoning.", apiModel: "gemma4" },
+  { id: "llama-3.3-70b",   name: "Llama 3.3 70B",    size: "70B",    port: "meta",     tags: ["text-generation","reasoning"], haul: 54000000, added: 2, desc: "State of the art open reasoning model fine tuned for chat & coding.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
+  { id: "deepseek-r1",    name: "DeepSeek R1",     size: "671B",   port: "deepseek", tags: ["reasoning","math","code"],    haul: 90300000, added: 3, desc: "Frontier reasoning model with deep chain of thought capabilities.", apiModel: "deepseek/deepseek-r1" },
+  { id: "qwen2.5-coder",   name: "Qwen 2.5 Coder",   size: "32B",    port: "qwen",     tags: ["code","infilling"],          haul: 42100000, added: 4, desc: "State of the art open coding model with 128K context window.", apiModel: "qwen/qwen-2.5-coder-32b" },
+  { id: "phi4",            name: "Phi 4",            size: "14B",    port: "ollama",   tags: ["reasoning","math"],          haul: 21900000, added: 5, desc: "Microsoft Phi-4 dense model with top-tier math and logical reasoning.", apiModel: "phi4" },
+  { id: "gemma-3-12b",    name: "Gemma 3 12B",     size: "12B",    port: "google",   tags: ["multimodal","chat"],         haul: 38800000, added: 6, desc: "Google DeepMind lightweight model for single GPU deployment.", apiModel: "google/gemma-2-27b-it" },
+  { id: "mistral-nemo",    name: "Mistral Nemo",     size: "12B",    port: "mistral",  tags: ["multilingual","chat"],       haul: 18400000, added: 7, desc: "12B model built in collaboration with NVIDIA with 128K context.", apiModel: "mistralai/mistral-nemo" },
+  { id: "llama-3.1-8b",    name: "Llama 3.1 8B",    size: "8B",     port: "meta",     tags: ["general","lightweight"],     haul: 81200000, added: 8, desc: "Meta general purpose fast open weight model.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
+  { id: "codellama-13b",   name: "CodeLlama 13B",   size: "13B",    port: "meta",     tags: ["code","infilling"],          haul: 5800000,  added: 9, desc: "Specialized model for software synthesis and code completion.", apiModel: "meta-llama/codellama-13b-instruct" }
 ];
+
+const INTEGRATIONS_DATA = {
+  "claude-code": {
+    title: "Claude Code Integration",
+    command: "ollama launch claude-code",
+    desc: "Claude Code is a terminal coding agent with tools, vision, web search, and long context support.",
+    details: "<strong>Quickstart:</strong><br>1. Install Ollama & run <code>ollama serve</code><br>2. Run <code>ollama launch claude-code</code><br>3. Select model (e.g. <code>gemma4</code>, <code>llama3.3</code>, or <code>deepseek-r1</code>)"
+  },
+  "opencode": {
+    title: "OpenCode Integration",
+    command: "ollama launch opencode",
+    desc: "OpenCode is an open-source terminal coding agent that edits, runs, and iterates on code automatically.",
+    details: "<strong>Quickstart:</strong><br>1. Run <code>ollama launch opencode</code> in your workspace terminal.<br>2. Point to local host <code>http://localhost:11434</code>.<br>3. OpenCode will use active Ollama models to auto-fix code."
+  },
+  "openclaw": {
+    title: "OpenClaw Integration",
+    command: "ollama launch openclaw",
+    desc: "Personal assistant for messaging apps and everyday tasks with long-term memory.",
+    details: "<strong>Quickstart:</strong><br>1. Run <code>ollama launch openclaw</code>.<br>2. Connect Telegram/Discord bot token.<br>3. Interact with local Ollama LLMs through your favorite chat app!"
+  },
+  "hermes": {
+    title: "Hermes Agent Integration",
+    command: "ollama launch hermes",
+    desc: "Open-source agent with self-improving skills, memory, and messaging integration.",
+    details: "<strong>Quickstart:</strong><br>1. Run <code>ollama launch hermes</code>.<br>2. Hermes will load custom skills and system prompts.<br>3. Works seamlessly with local Ollama models."
+  },
+  "vscode": {
+    title: "VS Code & Ollama Integration",
+    command: "ollama launch vscode",
+    desc: "Use local Ollama models inside VS Code Chat, Continue.dev, or GitHub Copilot.",
+    details: "<strong>Quickstart:</strong><br>1. Install <code>Continue</code> or <code>Ollama VS Code Extension</code>.<br>2. Set Provider URL to <code>http://localhost:11434</code>.<br>3. Start chatting and auto-completing code inside your editor!"
+  }
+};
 
 const ADMIN_VERIFICATION_PIN = '20032004';
 
@@ -28,7 +64,9 @@ let state = {
   sort: "most_hauled",
   user: JSON.parse(localStorage.getItem("victor_user") || 'null'),
   keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","ollama":"http://localhost:11434"}'),
-  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["gemma-3-12b","qwen-2.5-14b","llama-3.3-70b","deepseek-r1","mistral-7b","llama-3.1-8b"]')),
+  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["gemma4","llama-3.3-70b","deepseek-r1","qwen2.5-coder","gemma-3-12b","llama-3.1-8b"]')),
+  ollamaModels: [],
+  ollamaOnline: false,
   adminAuthenticated: false
 };
 
@@ -68,7 +106,7 @@ function toast(msg, type = "info") {
   
   t.innerText = msg;
   container.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  setTimeout(() => t.remove(), 3500);
 }
 
 function openModal(id) {
@@ -79,6 +117,63 @@ function openModal(id) {
 function closeModal(id) {
   const m = document.getElementById(id);
   if(m) m.style.display = "none";
+}
+
+// Ollama Server Live Detection & Sync
+async function checkOllamaServer() {
+  const badge = document.getElementById("ollamaStatusBadge");
+  const countEl = document.getElementById("ollamaModelCount");
+  const ollamaUrl = state.keys.ollama || "http://localhost:11434";
+
+  try {
+    const res = await fetch(`${ollamaUrl}/api/tags`, { method: 'GET' });
+    if(res.ok) {
+      const data = await res.json();
+      state.ollamaOnline = true;
+      state.ollamaModels = data.models || [];
+
+      if(badge) {
+        badge.className = "ollama-status-pill online";
+        badge.innerHTML = `<span class="status-dot"></span><span class="status-text">Ollama Online (${state.ollamaModels.length} models)</span>`;
+      }
+      if(countEl) countEl.innerText = state.ollamaModels.length;
+
+      // Auto-add fetched Ollama models into registry and dock
+      state.ollamaModels.forEach(m => {
+        const cleanName = m.name.split(':')[0];
+        if(!MODELS.some(x => x.id === cleanName || x.id === m.name)) {
+          MODELS.unshift({
+            id: m.name,
+            name: m.name,
+            size: m.details ? `${(m.size / (1024*1024*1024)).toFixed(1)}GB` : "Ollama",
+            port: "ollama",
+            tags: ["ollama","local"],
+            haul: 1000000,
+            added: Date.now(),
+            desc: `Local Ollama model loaded on ${ollamaUrl}`,
+            apiModel: m.name
+          });
+        }
+        state.installed.add(m.name);
+      });
+
+      saveState();
+      updateStats();
+      renderInstalledGrid();
+      renderGrid();
+      return true;
+    }
+  } catch(e) {
+    // Offline or CORS blocked
+  }
+
+  state.ollamaOnline = false;
+  if(badge) {
+    badge.className = "ollama-status-pill offline";
+    badge.innerHTML = `<span class="status-dot"></span><span class="status-text">Ollama Server Offline</span>`;
+  }
+  if(countEl) countEl.innerText = "0";
+  return false;
 }
 
 // Render Functions
@@ -134,7 +229,7 @@ function renderGrid() {
   g.innerHTML = "";
   filtered.forEach(m => {
     const p = portInfo(m.port);
-    const isInstalled = state.installed.has(m.id);
+    const isInstalled = state.installed.has(m.id) || state.installed.has(m.name);
 
     g.innerHTML += `
       <div class="model-card">
@@ -175,7 +270,7 @@ function renderInstalledGrid() {
 
   g.innerHTML = "";
   Array.from(state.installed).forEach(id => {
-    const m = MODELS.find(x => x.id === id) || { id, name: id, size: "Weights" };
+    const m = MODELS.find(x => x.id === id || x.name === id) || { id, name: id, size: "Weights" };
     g.innerHTML += `
       <div class="model-card">
         <div class="card-top">
@@ -224,27 +319,32 @@ async function handleSendApiRequest() {
   let status = 200;
 
   try {
-    if(endpoint.includes("openrouter.ai") && state.keys.openrouter) {
+    if(endpoint.includes("localhost:11434") || endpoint.includes("/api/generate") || endpoint.includes("/api/chat")) {
+      // Send directly to local Ollama API
+      const res = await fetch(endpoint, { method, headers: { "Content-Type": "application/json" }, body: bodyText });
+      status = res.status;
+      responseData = await res.json();
+    } else if(endpoint.includes("openrouter.ai") && state.keys.openrouter) {
       const res = await fetch(endpoint, { method, headers: { "Content-Type": "application/json", "Authorization": `Bearer ${state.keys.openrouter}` }, body: bodyText });
       status = res.status;
       responseData = await res.json();
     } else {
       await new Promise(r => setTimeout(r, 200));
-      responseData = { id: "gen-" + Date.now(), object: "chat.completion", model: "meta-llama/llama-3.3-70b-instruct", choices: [{ message: { role: "assistant", content: "Quantum computing operates on superposition and entanglement to solve complex math." } }] };
+      responseData = { id: "gen-" + Date.now(), object: "chat.completion", model: "gemma4", choices: [{ message: { role: "assistant", content: "Superposition and quantum mechanics power parallel LLM token generation." } }] };
     }
   } catch(e) {
     status = 500;
-    responseData = { error: e.message };
+    responseData = { error: e.message, hint: "Make sure Ollama is running (ollama serve) at http://localhost:11434" };
   }
 
   const latency = Math.round(performance.now() - startTime);
   const jsonStr = JSON.stringify(responseData, null, 2);
 
   document.getElementById("apiResponseViewer").innerText = jsonStr;
-  document.getElementById("apiResponseStatus").innerText = `${status} OK`;
+  document.getElementById("apiResponseStatus").innerText = `${status} ${status === 200 ? 'OK' : 'Error'}`;
   document.getElementById("apiResponseTime").innerText = `${latency} ms`;
   document.getElementById("apiResponseSize").innerText = `${jsonStr.length} B`;
-  toast("Request Executed Successfully", "success");
+  toast("Request Executed", status === 200 ? "success" : "error");
 }
 
 function generateCodeSnippets() {
@@ -257,9 +357,9 @@ function generateCodeSnippets() {
   el.innerText = `curl -X ${method} "${endpoint}" -H "Content-Type: application/json" -d '${body.replace(/\n/g, '')}'`;
 }
 
-// Pull Simulator
+// Pull Engine (Supports Real Ollama Server & Client Simulation)
 function openPullModal(modelId) {
-  const m = MODELS.find(x => x.id === modelId) || { id: modelId, name: modelId, size: "Weights", desc: "Model weight download" };
+  const m = MODELS.find(x => x.id === modelId || x.name === modelId) || { id: modelId, name: modelId, size: "Weights", desc: `Pulling weights for ${modelId}` };
   document.getElementById("pullModalTitle").innerText = `Pulling ${m.name}`;
   document.getElementById("pullModalDesc").innerText = m.desc;
   openModal("pullModalOverlay");
@@ -272,55 +372,122 @@ function openPullModal(modelId) {
   }
 }
 
-function startPullSimulation(m) {
+async function startPullSimulation(m) {
   const progressBar = document.getElementById("pullProgressBar");
   const layersEl = document.getElementById("pullLayers");
   const btn = document.getElementById("pullConfirmBtn");
+  const modelName = m.id || m.name;
+  const ollamaUrl = state.keys.ollama || "http://localhost:11434";
 
   if(btn) { btn.disabled = true; btn.innerText = "Downloading..."; }
-  if(layersEl) layersEl.innerHTML = "";
-  let pct = 0;
+  if(layersEl) layersEl.innerHTML = `<div style="color:var(--yellow);">Connecting to Ollama server (${ollamaUrl})...</div>`;
 
+  // Attempt real Ollama Pull via streaming API endpoint
+  let isRealOllamaSuccess = false;
+  try {
+    const res = await fetch(`${ollamaUrl}/api/pull`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: modelName, stream: true })
+    });
+
+    if(res.ok && res.body) {
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let partial = "";
+
+      while(true) {
+        const { done, value } = await reader.read();
+        if(done) break;
+        partial += decoder.decode(value, { stream: true });
+        const lines = partial.split('\n');
+        partial = lines.pop(); // keep partial chunk
+
+        for(const line of lines) {
+          if(!line.trim()) continue;
+          try {
+            const data = JSON.parse(line);
+            if(data.status) {
+              let msg = `[Ollama] ${data.status}`;
+              if(data.total && data.completed) {
+                const pct = Math.round((data.completed / data.total) * 100);
+                if(progressBar) progressBar.style.width = `${pct}%`;
+                msg += ` (${pct}%) - ${(data.completed / (1024*1024)).toFixed(1)}MB / ${(data.total / (1024*1024)).toFixed(1)}MB`;
+              }
+              if(layersEl) {
+                layersEl.innerHTML += `<div style="color:var(--green);">${escapeHtml(msg)}</div>`;
+                layersEl.scrollTop = layersEl.scrollHeight;
+              }
+            }
+            if(data.status === 'success') {
+              isRealOllamaSuccess = true;
+            }
+          } catch(err) {}
+        }
+      }
+      isRealOllamaSuccess = true;
+    }
+  } catch(e) {
+    // Local server blocked by CORS or not running
+  }
+
+  if(isRealOllamaSuccess) {
+    if(progressBar) progressBar.style.width = `100%`;
+    state.installed.add(modelName);
+    saveState();
+    updateStats();
+    renderInstalledGrid();
+    renderGrid();
+    toast(`Successfully pulled & docked ${modelName} via Ollama!`, "success");
+    closeModal("pullModalOverlay");
+    return;
+  }
+
+  // Fallback: Simulated progress download for browser dock integration
+  if(layersEl) layersEl.innerHTML += `<div style="color:var(--text-secondary);">Direct browser socket unavailable. Running Victor Dock layer pull simulator...</div>`;
+  let pct = 0;
   const timer = setInterval(() => {
     pct += 25;
     if(progressBar) progressBar.style.width = `${pct}%`;
-    if(layersEl) layersEl.innerHTML += `<div style="color:var(--green);">✔ Pulled shard: layer-${pct/25}.safetensors</div>`;
+    if(layersEl) {
+      layersEl.innerHTML += `<div style="color:var(--green);">✔ Pulled shard layer ${pct/25}/4: ${modelName}-q4_k_m.safetensors</div>`;
+      layersEl.scrollTop = layersEl.scrollHeight;
+    }
 
     if(pct >= 100) {
       clearInterval(timer);
-      fetch('/api/pull', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ modelId: m.id })
-      }).then(res => {
-        if(res.ok) {
-          state.installed.add(m.id);
-          saveState();
-          updateStats();
-          renderInstalledGrid();
-          renderGrid();
-          toast(`Successfully docked ${m.name}`, "success");
-          closeModal("pullModalOverlay");
-        } else {
-          toast("Failed to pull weights.", "error");
-          if(btn) { btn.disabled = false; btn.innerText = "Retry Pull"; }
-        }
-      }).catch(e => {
-        toast("Error pulling weights.", "error");
-        if(btn) { btn.disabled = false; btn.innerText = "Retry Pull"; }
-      });
+      state.installed.add(modelName);
+      saveState();
+      updateStats();
+      renderInstalledGrid();
+      renderGrid();
+      toast(`Docked ${modelName}. Run 'ollama pull ${modelName}' in terminal for native binary weights.`, "success");
+      closeModal("pullModalOverlay");
     }
-  }, 250);
+  }, 300);
+}
+
+// Open Integration Modal Setup Guide
+function openIntegrationModal(agentKey) {
+  const data = INTEGRATIONS_DATA[agentKey];
+  if(!data) return;
+
+  document.getElementById("intModalTitle").innerText = data.title;
+  document.getElementById("intModalDesc").innerText = data.desc;
+  document.getElementById("intModalCmd").innerText = data.command;
+  document.getElementById("intModalDetails").innerHTML = data.details;
+
+  openModal("integrationModalOverlay");
 }
 
 // AI Playground Chat
-function openPlayground(modelId = "llama-3.3-70b") {
+function openPlayground(modelId = "gemma4") {
   openModal("playgroundModalOverlay");
   const select = document.getElementById("pgModelSelect");
   if(select) {
     select.innerHTML = "";
     Array.from(state.installed).forEach(id => {
-      const m = MODELS.find(x => x.id === id) || { id, name: id };
+      const m = MODELS.find(x => x.id === id || x.name === id) || { id, name: id };
       select.innerHTML += `<option value="${m.id}" ${m.id === modelId ? 'selected' : ''}>${m.name}</option>`;
     });
   }
@@ -360,10 +527,37 @@ function initApp() {
   renderInstalledGrid();
   initApidogWorkbench();
   setupAdminPIN();
+  checkOllamaServer();
 
+  // Search Listener
   document.getElementById("searchInput")?.addEventListener("input", (e) => {
     state.search = e.target.value;
     renderGrid();
+  });
+
+  // Quick Pull Listener
+  document.getElementById("quickPullBtn")?.addEventListener("click", () => {
+    const input = document.getElementById("quickPullInput");
+    const val = input ? input.value.trim() : "";
+    if(!val) {
+      toast("Please enter an Ollama model tag (e.g. gemma4)", "error");
+      return;
+    }
+    openPullModal(val);
+  });
+
+  document.getElementById("quickPullInput")?.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") {
+      document.getElementById("quickPullBtn")?.click();
+    }
+  });
+
+  // Sync Ollama Listener
+  document.getElementById("syncOllamaBtn")?.addEventListener("click", async () => {
+    toast("Syncing with local Ollama server...", "info");
+    const online = await checkOllamaServer();
+    if(online) toast(`Synced ${state.ollamaModels.length} local Ollama models!`, "success");
+    else toast("Could not connect to Ollama at http://localhost:11434. Make sure 'ollama serve' is running.", "error");
   });
 
   document.getElementById("adminPinBtn")?.addEventListener("click", () => openModal("adminPinOverlay"));
@@ -371,6 +565,24 @@ function initApp() {
   document.getElementById("openApiKeysBtn")?.addEventListener("click", () => openModal("apiKeysModalOverlay"));
   document.getElementById("pinVerifyBtn")?.addEventListener("click", checkPIN);
   document.getElementById("pinCancelBtn")?.addEventListener("click", () => closeModal("adminPinOverlay"));
+
+  // API Keys Save Listener
+  document.getElementById("saveApiKeysBtn")?.addEventListener("click", () => {
+    const openrouter = document.getElementById("keyOpenRouter")?.value;
+    const openai = document.getElementById("keyOpenAI")?.value;
+    const gemini = document.getElementById("keyGemini")?.value;
+    const ollama = document.getElementById("urlOllama")?.value || "http://localhost:11434";
+
+    if(openrouter !== undefined && openrouter !== "") state.keys.openrouter = openrouter;
+    if(openai !== undefined && openai !== "") state.keys.openai = openai;
+    if(gemini !== undefined && gemini !== "") state.keys.gemini = gemini;
+    state.keys.ollama = ollama;
+
+    saveState();
+    toast("API Keys & Ollama URL saved!", "success");
+    closeModal("apiKeysModalOverlay");
+    checkOllamaServer();
+  });
 
   // API Playground Form Submit
   document.getElementById("pgForm")?.addEventListener("submit", async (e) => {
@@ -388,22 +600,44 @@ function initApp() {
     historyEl.innerHTML += `<div id="${loadingId}" style="margin-bottom:8px; color:var(--text-secondary);"><strong>VictorX:</strong> Thinking...</div>`;
     historyEl.scrollTop = historyEl.scrollHeight;
     
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: modelSelect.value,
-          messages: [{ role: 'user', content: prompt }],
-          apiKey: state.keys.openrouter || ""
-        })
-      });
-      const data = await res.json();
-      const aiReply = data.choices ? data.choices[0].message.content : (data.error || "Error");
-      document.getElementById(loadingId).innerHTML = `<strong>VictorX:</strong> ${escapeHtml(aiReply).replace(/\\n/g, '<br>')}`;
-    } catch(e) {
-      document.getElementById(loadingId).innerHTML = `<strong>VictorX:</strong> Error connecting to API`;
+    const selectedModel = modelSelect.value;
+    let aiReply = "";
+
+    // Try direct local Ollama inference if Ollama is online
+    if(state.ollamaOnline) {
+      try {
+        const ollamaUrl = state.keys.ollama || "http://localhost:11434";
+        const res = await fetch(`${ollamaUrl}/api/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: selectedModel, prompt: prompt, stream: false })
+        });
+        if(res.ok) {
+          const data = await res.json();
+          aiReply = data.response || "No response received from local Ollama model.";
+        }
+      } catch(err) {}
     }
+
+    if(!aiReply) {
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: selectedModel,
+            messages: [{ role: 'user', content: prompt }],
+            apiKey: state.keys.openrouter || ""
+          })
+        });
+        const data = await res.json();
+        aiReply = data.choices ? data.choices[0].message.content : (data.error || "Simulated response: Models work best with local Ollama server running.");
+      } catch(e) {
+        aiReply = `[Local Inference] Prompt received for ${selectedModel}. Connect to http://localhost:11434 for real live GPU output.`;
+      }
+    }
+
+    document.getElementById(loadingId).innerHTML = `<strong>VictorX (${escapeHtml(selectedModel)}):</strong> ${escapeHtml(aiReply).replace(/\n/g, '<br>')}`;
     historyEl.scrollTop = historyEl.scrollHeight;
   });
 
@@ -413,6 +647,10 @@ function initApp() {
       const overlay = e.target.closest(".modal-overlay") || e.target.closest(".pin-overlay");
       if(overlay) overlay.style.display = "none";
     }
+
+    const intBtn = e.target.closest(".open-int-modal");
+    if(intBtn) openIntegrationModal(intBtn.dataset.agent);
+
     const pullBtn = e.target.closest(".open-pull-modal");
     if(pullBtn) openPullModal(pullBtn.dataset.model);
 
@@ -421,8 +659,15 @@ function initApp() {
 
     const testBtn = e.target.closest(".test-api-btn");
     if(testBtn) {
+      const model = testBtn.dataset.model;
+      const endpointInput = document.getElementById("apiEndpointInput");
+      const bodyInput = document.getElementById("apiRequestBody");
+      
+      if(endpointInput) endpointInput.value = state.ollamaOnline ? `${state.keys.ollama || 'http://localhost:11434'}/api/generate` : "https://openrouter.ai/api/v1/chat/completions";
+      if(bodyInput) bodyInput.value = JSON.stringify({ model: model, prompt: "Why is the sky blue?" }, null, 2);
+      
       document.getElementById("workbench")?.scrollIntoView({ behavior: "smooth" });
-      toast("Loaded endpoint into API Workbench", "info");
+      toast(`Loaded endpoint for ${model} into API Workbench`, "info");
     }
 
     const removeBtn = e.target.closest(".remove-dock-btn");
