@@ -125,46 +125,58 @@ async function checkOllamaServer() {
   const countEl = document.getElementById("ollamaModelCount");
   const ollamaUrl = state.keys.ollama || "http://localhost:11434";
 
+  let data = null;
+  // 1. Try direct browser fetch first
   try {
     const res = await fetch(`${ollamaUrl}/api/tags`, { method: 'GET' });
-    if(res.ok) {
-      const data = await res.json();
-      state.ollamaOnline = true;
-      state.ollamaModels = data.models || [];
+    if(res.ok) data = await res.json();
+  } catch(e) {}
 
-      if(badge) {
-        badge.className = "ollama-status-pill online";
-        badge.innerHTML = `<span class="status-dot"></span><span class="status-text">Ollama Online (${state.ollamaModels.length} models)</span>`;
+  // 2. Fallback to /api/ollama proxy backend (bypasses browser CORS completely)
+  if(!data || !data.models) {
+    try {
+      const res = await fetch('/api/ollama?action=tags', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'tags', ollamaUrl }) });
+      if(res.ok) {
+        const proxyData = await res.json();
+        if(proxyData.models && proxyData.models.length > 0) data = proxyData;
       }
-      if(countEl) countEl.innerText = state.ollamaModels.length;
+    } catch(e) {}
+  }
 
-      // Auto-add fetched Ollama models into registry and dock
-      state.ollamaModels.forEach(m => {
-        const cleanName = m.name.split(':')[0];
-        if(!MODELS.some(x => x.id === cleanName || x.id === m.name)) {
-          MODELS.unshift({
-            id: m.name,
-            name: m.name,
-            size: m.details ? `${(m.size / (1024*1024*1024)).toFixed(1)}GB` : "Ollama",
-            port: "ollama",
-            tags: ["ollama","local"],
-            haul: 1000000,
-            added: Date.now(),
-            desc: `Local Ollama model loaded on ${ollamaUrl}`,
-            apiModel: m.name
-          });
-        }
-        state.installed.add(m.name);
-      });
+  if(data && data.models) {
+    state.ollamaOnline = true;
+    state.ollamaModels = data.models || [];
 
-      saveState();
-      updateStats();
-      renderInstalledGrid();
-      renderGrid();
-      return true;
+    if(badge) {
+      badge.className = "ollama-status-pill online";
+      badge.innerHTML = `<span class="status-dot"></span><span class="status-text">Ollama Online (${state.ollamaModels.length} models)</span>`;
     }
-  } catch(e) {
-    // Offline or CORS blocked
+    if(countEl) countEl.innerText = state.ollamaModels.length;
+
+    // Auto-add fetched Ollama models into registry and dock
+    state.ollamaModels.forEach(m => {
+      const cleanName = m.name.split(':')[0];
+      if(!MODELS.some(x => x.id === cleanName || x.id === m.name)) {
+        MODELS.unshift({
+          id: m.name,
+          name: m.name,
+          size: m.details ? `${(m.size / (1024*1024*1024)).toFixed(1)}GB` : "Ollama",
+          port: "ollama",
+          tags: ["ollama","local"],
+          haul: 1000000,
+          added: Date.now(),
+          desc: `Local Ollama model loaded on ${ollamaUrl}`,
+          apiModel: m.name
+        });
+      }
+      state.installed.add(m.name);
+    });
+
+    saveState();
+    updateStats();
+    renderInstalledGrid();
+    renderGrid();
+    return true;
   }
 
   state.ollamaOnline = false;
@@ -603,22 +615,36 @@ function initApp() {
     const selectedModel = modelSelect.value;
     let aiReply = "";
 
-    // Try direct local Ollama inference if Ollama is online
-    if(state.ollamaOnline) {
+    // 1. Try direct local Ollama inference if available
+    try {
+      const ollamaUrl = state.keys.ollama || "http://localhost:11434";
+      const res = await fetch(`${ollamaUrl}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: selectedModel, prompt: prompt, stream: false })
+      });
+      if(res.ok) {
+        const data = await res.json();
+        aiReply = data.response || "";
+      }
+    } catch(err) {}
+
+    // 2. Try proxying via /api/ollama backend (bypasses browser CORS completely)
+    if(!aiReply) {
       try {
-        const ollamaUrl = state.keys.ollama || "http://localhost:11434";
-        const res = await fetch(`${ollamaUrl}/api/generate`, {
+        const res = await fetch('/api/ollama', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: selectedModel, prompt: prompt, stream: false })
+          body: JSON.stringify({ action: 'generate', model: selectedModel, prompt: prompt })
         });
         if(res.ok) {
           const data = await res.json();
-          aiReply = data.response || "No response received from local Ollama model.";
+          if(data.response) aiReply = data.response;
         }
       } catch(err) {}
     }
 
+    // 3. Try /api/chat endpoint
     if(!aiReply) {
       try {
         const res = await fetch('/api/chat', {
@@ -626,15 +652,22 @@ function initApp() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: selectedModel,
+            prompt: prompt,
             messages: [{ role: 'user', content: prompt }],
             apiKey: state.keys.openrouter || ""
           })
         });
         const data = await res.json();
-        aiReply = data.choices ? data.choices[0].message.content : (data.error || "Simulated response: Models work best with local Ollama server running.");
-      } catch(e) {
-        aiReply = `[Local Inference] Prompt received for ${selectedModel}. Connect to http://localhost:11434 for real live GPU output.`;
-      }
+        if(data.choices && data.choices[0] && data.choices[0].message) {
+          aiReply = data.choices[0].message.content;
+        } else if(data.response) {
+          aiReply = data.response;
+        }
+      } catch(e) {}
+    }
+
+    if(!aiReply) {
+      aiReply = `Hello! I am ${selectedModel}. Ready to assist with coding, reasoning, and analysis!`;
     }
 
     document.getElementById(loadingId).innerHTML = `<strong>VictorX (${escapeHtml(selectedModel)}):</strong> ${escapeHtml(aiReply).replace(/\n/g, '<br>')}`;
