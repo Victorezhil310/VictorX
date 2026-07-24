@@ -51,8 +51,7 @@
                 <button id="openApiKeysBtn" class="btn btn-ghost" title="API Key Manager">🔑 Keys</button>
                 <button id="openUpiModalBtn" class="btn btn-ghost">❤️ Support</button>
                 <button id="authBtn" class="btn btn-primary">Sign In</button>
-                <!-- Hidden Admin Security PIN (20032004) -->
-                <button id="adminPinBtn" class="hidden-pin-trigger" title="Admin Security (PIN: 20032004)">🛡️</button>
+                <button id="adminPinBtn" class="hidden-pin-trigger" title="Admin Control Panel">🛡️</button>
             </div>
         </div>
     </header>
@@ -375,7 +374,7 @@
 
     <!-- MODALS -->
 
-    <!-- Admin PIN Modal (20032004) -->
+    <!-- Admin PIN Modal -->
     <div class="pin-overlay" id="adminPinOverlay">
         <div class="modal-card">
             <div class="modal-header">
@@ -383,7 +382,7 @@
                 <button class="btn-close">&times;</button>
             </div>
             <div class="modal-body">
-                <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">Enter 8-digit Administrator PIN (20032004)</p>
+                <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">Enter 8-digit Security PIN</p>
                 <div class="pin-input-group" id="pinInputGroup">
                     <input type="password" class="pin-digit" maxlength="1">
                     <input type="password" class="pin-digit" maxlength="1">
@@ -421,7 +420,7 @@
                     <thead><tr><th>Parameter</th><th>Status</th></tr></thead>
                     <tbody>
                         <tr><td>Local Database</td><td>SAVED (db/data.json)</td></tr>
-                        <tr><td>Verified PIN</td><td>20032004 ACTIVE</td></tr>
+                        <tr><td>Security Status</td><td>ADMIN VERIFIED ACTIVE</td></tr>
                     </tbody>
                 </table>
             </div>
