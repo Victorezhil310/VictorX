@@ -12,14 +12,46 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { model, messages, apiKey, prompt } = req.body || {};
+  const { model, messages, apiKey, prompt, hfToken } = req.body || {};
   const userContent = prompt || (messages && messages.length > 0 ? messages[messages.length - 1].content : 'Hello');
 
   if (!userContent || !model) {
     return res.status(400).json({ error: 'Missing required fields: model, messages or prompt' });
   }
 
-  // 1. Try local Ollama server proxy first
+  // 1. Try Hugging Face Serverless Inference if model contains a slash (Hugging Face format)
+  if (model.includes('/')) {
+    try {
+      const activeToken = hfToken || apiKey;
+      const hfHeaders = { 'Content-Type': 'application/json' };
+      if (activeToken) hfHeaders['Authorization'] = `Bearer ${activeToken}`;
+
+      const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+        method: 'POST',
+        headers: hfHeaders,
+        body: JSON.stringify({ inputs: userContent })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        let generatedText = '';
+        if (Array.isArray(data) && data[0]) {
+          generatedText = data[0].generated_text || data[0].summary_text || data[0].translation_text;
+        } else if (data.generated_text) {
+          generatedText = data.generated_text;
+        }
+
+        if (generatedText) {
+          return res.status(200).json({
+            id: 'chatcmpl-' + Date.now(),
+            choices: [{ message: { role: 'assistant', content: generatedText } }]
+          });
+        }
+      }
+    } catch (err) {}
+  }
+
+  // 2. Try local Ollama server proxy
   try {
     const localRes = await fetch('http://localhost:11434/api/generate', {
       method: 'POST',
@@ -35,8 +67,8 @@ export default async function handler(req, res) {
     }
   } catch (err) {}
 
-  // 2. Try OpenRouter if API Key is configured
-  if (apiKey) {
+  // 3. Try OpenRouter if API Key is configured
+  if (apiKey && !model.includes('/')) {
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -56,7 +88,7 @@ export default async function handler(req, res) {
     } catch (e) {}
   }
 
-  // 3. Smart local assistant response fallback
+  // 4. Smart local assistant response fallback
   const smartResponses = {
     gemma4: `Hello! I'm Gemma 4. I received your message: "${userContent}". I'm ready to assist you with coding, reasoning, and analysis!`,
     'llama-3.3-70b': `Llama 3.3 70B here! Responding to: "${userContent}". Let me know if you need code generation, refactoring, or mathematical reasoning.`,

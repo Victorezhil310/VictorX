@@ -1,26 +1,29 @@
 /* ==========================================================================
-   VictorX Engine — Model Registry, Ollama Hub & API Workbench
+   VictorX Engine — Model Registry, Ollama & Hugging Face Hub
    ========================================================================== */
 
 const PORTS = [
-  { id: "ollama",     name: "Local Ollama", color: "#10B981", desc: "Local Ollama server (http://localhost:11434)" },
-  { id: "meta",       name: "Meta",         color: "#7C9CFF", desc: "Llama open weights family." },
-  { id: "deepseek",   name: "DeepSeek",     color: "#38BDF8", desc: "DeepSeek R1 reasoning models." },
-  { id: "google",     name: "Google",       color: "#8FD14F", desc: "Gemma 3 & 4 open models." },
-  { id: "mistral",    name: "Mistral AI",   color: "#E5675F", desc: "Fast open weight models." },
-  { id: "qwen",       name: "Alibaba Qwen", color: "#C792EA", desc: "Qwen 2.5 series." }
+  { id: "ollama",       name: "Local Ollama",  color: "#10B981", desc: "Local Ollama server (http://localhost:11434)" },
+  { id: "huggingface",  name: "Hugging Face",  color: "#FFD21E", desc: "Hugging Face Serverless Inference API models." },
+  { id: "meta",         name: "Meta",          color: "#7C9CFF", desc: "Llama open weights family." },
+  { id: "deepseek",     name: "DeepSeek",      color: "#38BDF8", desc: "DeepSeek R1 reasoning models." },
+  { id: "google",       name: "Google",        color: "#8FD14F", desc: "Gemma 3 & 4 open models." },
+  { id: "mistral",      name: "Mistral AI",    color: "#E5675F", desc: "Fast open weight models." },
+  { id: "qwen",         name: "Alibaba Qwen",  color: "#C792EA", desc: "Qwen 2.5 series." }
 ];
 
 const MODELS = [
-  { id: "gemma4",          name: "Gemma 4",          size: "9B/27B", port: "google",   tags: ["multimodal","chat","edge"], haul: 125000000, added: 1, desc: "Google DeepMind's newest flagship open model for lightweight high-performance reasoning.", apiModel: "gemma4" },
-  { id: "llama-3.3-70b",   name: "Llama 3.3 70B",    size: "70B",    port: "meta",     tags: ["text-generation","reasoning"], haul: 54000000, added: 2, desc: "State of the art open reasoning model fine tuned for chat & coding.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
-  { id: "deepseek-r1",    name: "DeepSeek R1",     size: "671B",   port: "deepseek", tags: ["reasoning","math","code"],    haul: 90300000, added: 3, desc: "Frontier reasoning model with deep chain of thought capabilities.", apiModel: "deepseek/deepseek-r1" },
-  { id: "qwen2.5-coder",   name: "Qwen 2.5 Coder",   size: "32B",    port: "qwen",     tags: ["code","infilling"],          haul: 42100000, added: 4, desc: "State of the art open coding model with 128K context window.", apiModel: "qwen/qwen-2.5-coder-32b" },
-  { id: "phi4",            name: "Phi 4",            size: "14B",    port: "ollama",   tags: ["reasoning","math"],          haul: 21900000, added: 5, desc: "Microsoft Phi-4 dense model with top-tier math and logical reasoning.", apiModel: "phi4" },
-  { id: "gemma-3-12b",    name: "Gemma 3 12B",     size: "12B",    port: "google",   tags: ["multimodal","chat"],         haul: 38800000, added: 6, desc: "Google DeepMind lightweight model for single GPU deployment.", apiModel: "google/gemma-2-27b-it" },
-  { id: "mistral-nemo",    name: "Mistral Nemo",     size: "12B",    port: "mistral",  tags: ["multilingual","chat"],       haul: 18400000, added: 7, desc: "12B model built in collaboration with NVIDIA with 128K context.", apiModel: "mistralai/mistral-nemo" },
-  { id: "llama-3.1-8b",    name: "Llama 3.1 8B",    size: "8B",     port: "meta",     tags: ["general","lightweight"],     haul: 81200000, added: 8, desc: "Meta general purpose fast open weight model.", apiModel: "meta-llama/llama-3.1-8b-instruct" },
-  { id: "codellama-13b",   name: "CodeLlama 13B",   size: "13B",    port: "meta",     tags: ["code","infilling"],          haul: 5800000,  added: 9, desc: "Specialized model for software synthesis and code completion.", apiModel: "meta-llama/codellama-13b-instruct" }
+  { id: "gemma4",          name: "Gemma 4",          size: "9B/27B", port: "google",       tags: ["multimodal","chat","edge"], haul: 125000000, added: 1, desc: "Google DeepMind's newest flagship open model for lightweight high-performance reasoning.", apiModel: "gemma4" },
+  { id: "llama-3.3-70b",   name: "Llama 3.3 70B",    size: "70B",    port: "meta",         tags: ["text-generation","reasoning"], haul: 54000000, added: 2, desc: "State of the art open reasoning model fine tuned for chat & coding.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
+  { id: "deepseek-r1",    name: "DeepSeek R1",     size: "671B",   port: "deepseek",     tags: ["reasoning","math","code"],    haul: 90300000, added: 3, desc: "Frontier reasoning model with deep chain of thought capabilities.", apiModel: "deepseek/deepseek-r1" },
+  { id: "qwen2.5-coder",   name: "Qwen 2.5 Coder",   size: "32B",    port: "qwen",         tags: ["code","infilling"],          haul: 42100000, added: 4, desc: "State of the art open coding model with 128K context window.", apiModel: "qwen/qwen-2.5-coder-32b" },
+  { id: "phi4",            name: "Phi 4",            size: "14B",    port: "ollama",       tags: ["reasoning","math"],          haul: 21900000, added: 5, desc: "Microsoft Phi-4 dense model with top-tier math and logical reasoning.", apiModel: "phi4" },
+  { id: "llama3.2-3b-hf",  name: "Llama 3.2 3B",     size: "3B",     port: "huggingface",  tags: ["text-generation","edge"],    haul: 65400000, added: 6, desc: "Meta's lightweight model optimized for edge devices and mobile tasks on Hugging Face.", apiModel: "meta-llama/Llama-3.2-3B-Instruct" },
+  { id: "phi3-mini",       name: "Phi 3 Mini",       size: "3.8B",    port: "huggingface",  tags: ["reasoning","fast"],          haul: 28900000, added: 7, desc: "Microsoft's highly capable lightweight 3.8B parameter instruction-tuned model.", apiModel: "microsoft/Phi-3-mini-4k-instruct" },
+  { id: "mistral-7b-v0.3", name: "Mistral 7B v0.3",  size: "7B",     port: "huggingface",  tags: ["chat","general"],            haul: 39500000, added: 8, desc: "Mistral instruction-tuned model v0.3 loaded via Hugging Face Hub.", apiModel: "mistralai/Mistral-7B-Instruct-v0.3" },
+  { id: "gemma-3-12b",    name: "Gemma 3 12B",     size: "12B",    port: "google",       tags: ["multimodal","chat"],         haul: 38800000, added: 9, desc: "Google DeepMind lightweight model for single GPU deployment.", apiModel: "google/gemma-2-27b-it" },
+  { id: "mistral-nemo",    name: "Mistral Nemo",     size: "12B",    port: "mistral",      tags: ["multilingual","chat"],       haul: 18400000, added: 10, desc: "12B model built in collaboration with NVIDIA with 128K context.", apiModel: "mistralai/mistral-nemo" },
+  { id: "llama-3.1-8b",    name: "Llama 3.1 8B",    size: "8B",     port: "meta",         tags: ["general","lightweight"],     haul: 81200000, added: 11, desc: "Meta general purpose fast open weight model.", apiModel: "meta-llama/llama-3.1-8b-instruct" }
 ];
 
 const INTEGRATIONS_DATA = {
@@ -56,15 +59,16 @@ const INTEGRATIONS_DATA = {
   }
 };
 
-const ADMIN_VERIFICATION_PIN = '20032004';
+// Obfuscated administrative PIN (20032004)
+const ADMIN_VERIFICATION_HASH = "MjAwMzIwMDQ=";
 
 let state = {
   search: "",
   port: "all",
   sort: "most_hauled",
   user: JSON.parse(localStorage.getItem("victor_user") || 'null'),
-  keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","ollama":"http://localhost:11434"}'),
-  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["gemma4","llama-3.3-70b","deepseek-r1","qwen2.5-coder","gemma-3-12b","llama-3.1-8b"]')),
+  keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","huggingface":"","ollama":"http://localhost:11434"}'),
+  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["gemma4","llama-3.3-70b","deepseek-r1","qwen2.5-coder","llama3.2-3b-hf","mistral-7b-v0.3"]')),
   ollamaModels: [],
   ollamaOnline: false,
   adminAuthenticated: false
@@ -126,13 +130,11 @@ async function checkOllamaServer() {
   const ollamaUrl = state.keys.ollama || "http://localhost:11434";
 
   let data = null;
-  // 1. Try direct browser fetch first
   try {
     const res = await fetch(`${ollamaUrl}/api/tags`, { method: 'GET' });
     if(res.ok) data = await res.json();
   } catch(e) {}
 
-  // 2. Fallback to /api/ollama proxy backend (bypasses browser CORS completely)
   if(!data || !data.models) {
     try {
       const res = await fetch('/api/ollama?action=tags', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'tags', ollamaUrl }) });
@@ -153,7 +155,6 @@ async function checkOllamaServer() {
     }
     if(countEl) countEl.innerText = state.ollamaModels.length;
 
-    // Auto-add fetched Ollama models into registry and dock
     state.ollamaModels.forEach(m => {
       const cleanName = m.name.split(':')[0];
       if(!MODELS.some(x => x.id === cleanName || x.id === m.name)) {
@@ -332,7 +333,6 @@ async function handleSendApiRequest() {
 
   try {
     if(endpoint.includes("localhost:11434") || endpoint.includes("/api/generate") || endpoint.includes("/api/chat")) {
-      // Send directly to local Ollama API
       const res = await fetch(endpoint, { method, headers: { "Content-Type": "application/json" }, body: bodyText });
       status = res.status;
       responseData = await res.json();
@@ -394,7 +394,6 @@ async function startPullSimulation(m) {
   if(btn) { btn.disabled = true; btn.innerText = "Downloading..."; }
   if(layersEl) layersEl.innerHTML = `<div style="color:var(--yellow);">Connecting to Ollama server (${ollamaUrl})...</div>`;
 
-  // Attempt real Ollama Pull via streaming API endpoint
   let isRealOllamaSuccess = false;
   try {
     const res = await fetch(`${ollamaUrl}/api/pull`, {
@@ -413,7 +412,7 @@ async function startPullSimulation(m) {
         if(done) break;
         partial += decoder.decode(value, { stream: true });
         const lines = partial.split('\n');
-        partial = lines.pop(); // keep partial chunk
+        partial = lines.pop();
 
         for(const line of lines) {
           if(!line.trim()) continue;
@@ -439,9 +438,7 @@ async function startPullSimulation(m) {
       }
       isRealOllamaSuccess = true;
     }
-  } catch(e) {
-    // Local server blocked by CORS or not running
-  }
+  } catch(e) {}
 
   if(isRealOllamaSuccess) {
     if(progressBar) progressBar.style.width = `100%`;
@@ -455,7 +452,6 @@ async function startPullSimulation(m) {
     return;
   }
 
-  // Fallback: Simulated progress download for browser dock integration
   if(layersEl) layersEl.innerHTML += `<div style="color:var(--text-secondary);">Direct browser socket unavailable. Running Victor Dock layer pull simulator...</div>`;
   let pct = 0;
   const timer = setInterval(() => {
@@ -505,7 +501,7 @@ function openPlayground(modelId = "gemma4") {
   }
 }
 
-// Admin Security PIN (20032004)
+// Admin Security PIN check
 function setupAdminPIN() {
   const inputs = document.querySelectorAll(".pin-digit");
   inputs.forEach((input, index) => {
@@ -520,7 +516,7 @@ function checkPIN() {
   const inputs = document.querySelectorAll(".pin-digit");
   const pin = Array.from(inputs).map(i => i.value).join("");
   if(pin.length === 8) {
-    if(pin === ADMIN_VERIFICATION_PIN) {
+    if(btoa(pin) === ADMIN_VERIFICATION_HASH) {
       state.adminAuthenticated = true;
       closeModal("adminPinOverlay");
       openModal("adminDashboardOverlay");
@@ -574,20 +570,32 @@ function initApp() {
 
   document.getElementById("adminPinBtn")?.addEventListener("click", () => openModal("adminPinOverlay"));
   document.getElementById("openUpiModalBtn")?.addEventListener("click", () => openModal("upiModalOverlay"));
-  document.getElementById("openApiKeysBtn")?.addEventListener("click", () => openModal("apiKeysModalOverlay"));
+  
+  // API Keys Open Modal Listener
+  document.getElementById("openApiKeysBtn")?.addEventListener("click", () => {
+    document.getElementById("keyOpenRouter").value = state.keys.openrouter || "";
+    document.getElementById("keyOpenAI").value = state.keys.openai || "";
+    document.getElementById("keyGemini").value = state.keys.gemini || "";
+    document.getElementById("keyHuggingFace").value = state.keys.huggingface || "";
+    document.getElementById("urlOllama").value = state.keys.ollama || "http://localhost:11434";
+    openModal("apiKeysModalOverlay");
+  });
+
   document.getElementById("pinVerifyBtn")?.addEventListener("click", checkPIN);
   document.getElementById("pinCancelBtn")?.addEventListener("click", () => closeModal("adminPinOverlay"));
 
   // API Keys Save Listener
   document.getElementById("saveApiKeysBtn")?.addEventListener("click", () => {
-    const openrouter = document.getElementById("keyOpenRouter")?.value;
-    const openai = document.getElementById("keyOpenAI")?.value;
-    const gemini = document.getElementById("keyGemini")?.value;
+    const openrouter = document.getElementById("keyOpenRouter")?.value || "";
+    const openai = document.getElementById("keyOpenAI")?.value || "";
+    const gemini = document.getElementById("keyGemini")?.value || "";
+    const huggingface = document.getElementById("keyHuggingFace")?.value || "";
     const ollama = document.getElementById("urlOllama")?.value || "http://localhost:11434";
 
-    if(openrouter !== undefined && openrouter !== "") state.keys.openrouter = openrouter;
-    if(openai !== undefined && openai !== "") state.keys.openai = openai;
-    if(gemini !== undefined && gemini !== "") state.keys.gemini = gemini;
+    state.keys.openrouter = openrouter;
+    state.keys.openai = openai;
+    state.keys.gemini = gemini;
+    state.keys.huggingface = huggingface;
     state.keys.ollama = ollama;
 
     saveState();
@@ -615,21 +623,47 @@ function initApp() {
     const selectedModel = modelSelect.value;
     let aiReply = "";
 
-    // 1. Try direct local Ollama inference if available
-    try {
-      const ollamaUrl = state.keys.ollama || "http://localhost:11434";
-      const res = await fetch(`${ollamaUrl}/api/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: selectedModel, prompt: prompt, stream: false })
-      });
-      if(res.ok) {
-        const data = await res.json();
-        aiReply = data.response || "";
-      }
-    } catch(err) {}
+    // 1. Try direct browser call to Hugging Face if model is Hugging Face
+    const targetModelObj = MODELS.find(x => x.id === selectedModel);
+    if(targetModelObj && targetModelObj.port === 'huggingface') {
+      try {
+        const hfToken = state.keys.huggingface;
+        const headers = { 'Content-Type': 'application/json' };
+        if(hfToken) headers['Authorization'] = `Bearer ${hfToken}`;
 
-    // 2. Try proxying via /api/ollama backend (bypasses browser CORS completely)
+        const res = await fetch(`https://api-inference.huggingface.co/models/${targetModelObj.apiModel}`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({ inputs: prompt })
+        });
+        if(res.ok) {
+          const data = await res.json();
+          if(Array.isArray(data) && data[0]) {
+            aiReply = data[0].generated_text || data[0].summary_text || data[0].translation_text;
+          } else if(data.generated_text) {
+            aiReply = data.generated_text;
+          }
+        }
+      } catch(err) {}
+    }
+
+    // 2. Try direct local Ollama inference if available
+    if(!aiReply && (!targetModelObj || targetModelObj.port !== 'huggingface')) {
+      try {
+        const ollamaUrl = state.keys.ollama || "http://localhost:11434";
+        const res = await fetch(`${ollamaUrl}/api/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: selectedModel, prompt: prompt, stream: false })
+        });
+        if(res.ok) {
+          const data = await res.json();
+          aiReply = data.response || "";
+        }
+      } catch(err) {}
+    }
+
+    // 3. Try proxying via /api/ollama backend proxy
     if(!aiReply) {
       try {
         const res = await fetch('/api/ollama', {
@@ -644,7 +678,7 @@ function initApp() {
       } catch(err) {}
     }
 
-    // 3. Try /api/chat endpoint
+    // 4. Try /api/chat endpoint
     if(!aiReply) {
       try {
         const res = await fetch('/api/chat', {
@@ -654,7 +688,8 @@ function initApp() {
             model: selectedModel,
             prompt: prompt,
             messages: [{ role: 'user', content: prompt }],
-            apiKey: state.keys.openrouter || ""
+            apiKey: state.keys.openrouter || "",
+            hfToken: state.keys.huggingface || ""
           })
         });
         const data = await res.json();
@@ -696,7 +731,10 @@ function initApp() {
       const endpointInput = document.getElementById("apiEndpointInput");
       const bodyInput = document.getElementById("apiRequestBody");
       
-      if(endpointInput) endpointInput.value = state.ollamaOnline ? `${state.keys.ollama || 'http://localhost:11434'}/api/generate` : "https://openrouter.ai/api/v1/chat/completions";
+      if(endpointInput) {
+        if(model.includes('/')) endpointInput.value = `https://api-inference.huggingface.co/models/${model}`;
+        else endpointInput.value = state.ollamaOnline ? `${state.keys.ollama || 'http://localhost:11434'}/api/generate` : "https://openrouter.ai/api/v1/chat/completions";
+      }
       if(bodyInput) bodyInput.value = JSON.stringify({ model: model, prompt: "Why is the sky blue?" }, null, 2);
       
       document.getElementById("workbench")?.scrollIntoView({ behavior: "smooth" });

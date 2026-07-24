@@ -17,6 +17,12 @@ Thumbs.db
 
 # IDE & Editor settings
 .vscode/
-.idea/
-*.sublime-project
 *.sublime-workspace
+
+# Local Victor files & keys
+.victor/
+config.json
+credentials*
+*.bak
+.env*
+private*

@@ -22,7 +22,7 @@ if (!fs.existsSync(VICTOR_DIR)) fs.mkdirSync(VICTOR_DIR, { recursive: true });
 if (!fs.existsSync(MODELS_DIR)) fs.mkdirSync(MODELS_DIR, { recursive: true });
 if (!fs.existsSync(CONFIG_FILE)) {
   fs.writeFileSync(CONFIG_FILE, JSON.stringify({
-    keys: { openrouter: "", openai: "", gemini: "", ollama: "http://localhost:11434" },
+    keys: { openrouter: "", openai: "", gemini: "", huggingface: "", ollama: "http://localhost:11434" },
     installed: ["gemma4", "llama-3.3-70b", "deepseek-r1", "phi4", "qwen2.5-coder"]
   }, null, 2));
 }
@@ -45,15 +45,15 @@ const colors = {
 
 function printBanner() {
   console.log(`${colors.amber}${colors.bright}
-  ⚓ VICTOR CLI v1.5.0 — Every Model, One Dock
-  ${colors.dim}Registry: Local Ollama · OpenRouter · Hugging Face · Meta · Google Gemma 4${colors.reset}\n`);
+  ⚓ VICTOR CLI v1.6.0 — Every Model, One Dock
+  ${colors.dim}Registry: Local Ollama · Hugging Face Hub · OpenRouter · Meta · Google Gemma 4${colors.reset}\n`);
 }
 
 function loadConfig() {
   try {
     return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
   } catch {
-    return { keys: {}, installed: [] };
+    return { keys: { openrouter: "", openai: "", gemini: "", huggingface: "", ollama: "http://localhost:11434" }, installed: [] };
   }
 }
 
@@ -109,7 +109,7 @@ function showHelp() {
   console.log(`${colors.bright}COMMANDS:${colors.reset}`);
   console.log(`  ${colors.teal}victor pull <model-id>${colors.reset}     Pull real layers via Ollama & dock model locally`);
   console.log(`  ${colors.teal}victor run <model-id>${colors.reset}      Execute inference & stream output directly in terminal`);
-  console.log(`  ${colors.teal}victor ls${colors.reset}                  List all docked & local Ollama models`);
+  console.log(`  ${colors.teal}victor ls${colors.reset}                  List all docked, Hugging Face & local Ollama models`);
   console.log(`  ${colors.teal}victor search <query>${colors.reset}     Search models across all registries (Gemma4, DeepSeek, Llama 3.3)`);
   console.log(`  ${colors.teal}victor launch <agent>${colors.reset}    Launch coding agent (claude-code, opencode, openclaw, hermes, vscode)`);
   console.log(`  ${colors.teal}victor keys${colors.reset}                View or set API integration keys`);
@@ -132,10 +132,7 @@ function pullModel(modelName) {
     }
   };
 
-  let connectedOllama = false;
-
   const req = http.request(reqOptions, (res) => {
-    connectedOllama = true;
     let buffer = '';
 
     res.on('data', (chunk) => {
@@ -166,7 +163,6 @@ function pullModel(modelName) {
   });
 
   req.on('error', () => {
-    // If local Ollama server is offline, fall back to layer manifest pull simulation
     console.log(`${colors.amber}Notice:${colors.reset} Local Ollama daemon not active at http://localhost:11434. Simulating layer manifest pull...`);
     simulatedPull(modelName);
   });
@@ -256,8 +252,9 @@ function searchModels(query) {
     { name: "meta-llama/llama-3.3-70b-instruct", size: "70B", port: "Meta", tags: ["reasoning","chat"] },
     { name: "deepseek/deepseek-r1", size: "671B", port: "OpenRouter", tags: ["reasoning","math","code"] },
     { name: "phi4", size: "14B", port: "Ollama", tags: ["math","reasoning"] },
-    { name: "mistralai/mistral-7b-instruct", size: "7B", port: "Mistral", tags: ["chat"] },
-    { name: "qwen/qwen-2.5-coder-32b", size: "32B", port: "Hugging Face", tags: ["code"] }
+    { name: "meta-llama/Llama-3.2-3B-Instruct", size: "3B", port: "Hugging Face", tags: ["edge","chat"] },
+    { name: "microsoft/Phi-3-mini-4k-instruct", size: "3.8B", port: "Hugging Face", tags: ["reasoning","fast"] },
+    { name: "mistralai/Mistral-7B-Instruct-v0.3", size: "7B", port: "Hugging Face", tags: ["chat","general"] }
   ];
 
   const q = (query || "").toLowerCase();
@@ -275,11 +272,70 @@ function runModel(modelName) {
     console.log(`${colors.red}Error:${colors.reset} Specify a model to run. (e.g. victor run gemma4)`);
     return;
   }
-  console.log(`${colors.amber}⚡ Connecting to local execution context for '${modelName}'...${colors.reset}`);
+  console.log(`${colors.amber}⚡ Connecting to execution context for '${modelName}'...${colors.reset}`);
 
   const prompt = "Why is the sky blue?";
-  const postData = JSON.stringify({ model: modelName, prompt: prompt, stream: true });
+  const cfg = loadConfig();
 
+  // 1. Try Hugging Face Inference API if it's a Hugging Face model
+  if (modelName.includes('/') || modelName === 'phi3-mini' || modelName.includes('hf')) {
+    let apiModel = modelName;
+    if (modelName === 'phi3-mini') apiModel = 'microsoft/Phi-3-mini-4k-instruct';
+    if (modelName === 'llama3.2-3b-hf') apiModel = 'meta-llama/Llama-3.2-3B-Instruct';
+
+    console.log(`${colors.teal}→ Sending request to Hugging Face Inference API...${colors.reset}`);
+    const hfToken = cfg.keys.huggingface;
+    const hfHeaders = { 'Content-Type': 'application/json' };
+    if (hfToken) hfHeaders['Authorization'] = `Bearer ${hfToken}`;
+
+    const postData = JSON.stringify({ inputs: prompt });
+
+    const reqOptions = {
+      hostname: 'api-inference.huggingface.co',
+      path: `/models/${apiModel}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData),
+        ...(hfToken ? { 'Authorization': `Bearer ${hfToken}` } : {})
+      }
+    };
+
+    const req = https.request(reqOptions, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          let generated = '';
+          if (Array.isArray(json) && json[0]) {
+            generated = json[0].generated_text || json[0].summary_text;
+          } else if (json.generated_text) {
+            generated = json.generated_text;
+          }
+          if (generated) {
+            console.log(`\n${colors.bright}Response:${colors.reset}`);
+            console.log(colors.green + generated + colors.reset + '\n');
+          } else {
+            console.log(`${colors.red}Error:${colors.reset} No response text generated. Details:`, data);
+          }
+        } catch (e) {
+          console.log(`${colors.red}Error parsing Hugging Face response:${colors.reset}`, data);
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      console.log(`${colors.red}Hugging Face Request Error:${colors.reset}`, e.message);
+    });
+
+    req.write(postData);
+    req.end();
+    return;
+  }
+
+  // 2. Local Ollama request
+  const postData = JSON.stringify({ model: modelName, prompt: prompt, stream: true });
   const reqOptions = {
     hostname: 'localhost',
     port: 11434,
@@ -291,13 +347,11 @@ function runModel(modelName) {
     }
   };
 
-  let receivedOutput = false;
   console.log(`${colors.bright}Prompt:${colors.reset} ${prompt}\n${colors.bright}Response:${colors.reset}`);
 
   const req = http.request(reqOptions, (res) => {
     let buffer = '';
     res.on('data', (chunk) => {
-      receivedOutput = true;
       buffer += chunk.toString();
       const lines = buffer.split('\n');
       buffer = lines.pop();
@@ -353,14 +407,29 @@ function launchAgent(agentName) {
 function manageKeys(keyInput) {
   const cfg = loadConfig();
   if (keyInput) {
-    cfg.keys.openrouter = keyInput.trim();
-    saveConfig(cfg);
-    console.log(`${colors.green}✓ OpenRouter API key saved securely to ~/.victor/config.json${colors.reset}\n`);
+    const parts = keyInput.split(':');
+    if (parts.length === 2) {
+      const provider = parts[0].toLowerCase().trim();
+      const val = parts[1].trim();
+      if (cfg.keys[provider] !== undefined) {
+        cfg.keys[provider] = val;
+        saveConfig(cfg);
+        console.log(`${colors.green}✓ ${provider} API key saved securely to ~/.victor/config.json${colors.reset}\n`);
+      } else {
+        console.log(`${colors.red}Error:${colors.reset} Invalid provider. Use one of: openrouter, openai, gemini, huggingface.`);
+      }
+    } else {
+      cfg.keys.openrouter = keyInput.trim();
+      saveConfig(cfg);
+      console.log(`${colors.green}✓ OpenRouter API key saved securely to ~/.victor/config.json${colors.reset}\n`);
+    }
   } else {
     console.log(`${colors.bright}API INTEGRATION KEYS:${colors.reset}`);
-    console.log(`  OpenRouter : ${cfg.keys.openrouter ? colors.green + 'Connected ✓' : colors.dim + 'Not set'}${colors.reset}`);
-    console.log(`  OpenAI     : ${cfg.keys.openai ? colors.green + 'Connected ✓' : colors.dim + 'Not set'}${colors.reset}`);
-    console.log(`  Ollama     : ${cfg.keys.ollama || 'http://localhost:11434'}`);
-    console.log(`\nTo set OpenRouter key: ${colors.teal}victor keys sk-or-v1-...${colors.reset}\n`);
+    console.log(`  OpenRouter   : ${cfg.keys.openrouter ? colors.green + 'Connected ✓' : colors.dim + 'Not set'}${colors.reset}`);
+    console.log(`  OpenAI       : ${cfg.keys.openai ? colors.green + 'Connected ✓' : colors.dim + 'Not set'}${colors.reset}`);
+    console.log(`  Gemini       : ${cfg.keys.gemini ? colors.green + 'Connected ✓' : colors.dim + 'Not set'}${colors.reset}`);
+    console.log(`  Hugging Face : ${cfg.keys.huggingface ? colors.green + 'Connected ✓' : colors.dim + 'Not set'}${colors.reset}`);
+    console.log(`  Ollama       : ${cfg.keys.ollama || 'http://localhost:11434'}`);
+    console.log(`\nTo set a key: ${colors.teal}victor keys huggingface:hf_token_value${colors.reset}\n`);
   }
 }
