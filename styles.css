@@ -176,6 +176,18 @@ body {
   gap: 0.6rem;
 }
 
+.token-pill {
+  font-size: 0.78rem;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: var(--accent-cyan);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+}
+
+.text-red { color: #ef4444 !important; }
+
 /* BUTTONS */
 .btn {
   display: inline-flex;

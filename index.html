@@ -42,6 +42,9 @@
             </nav>
 
             <div class="nav-actions">
+                <div id="tokenCounterBadge" class="token-pill" title="24/7 Daily Token Quota Calculator">
+                    <span>🎟️ Tokens: <strong id="tokenCountText">50,000 / 50,000</strong></span>
+                </div>
                 <button id="openAdminModalBtn" class="btn btn-ghost-pill">👑 Admin</button>
                 <button id="openPermissionsBtn" class="btn btn-ghost-pill">🛡️ Privacy</button>
                 <button id="openApiKeysBtn" class="btn btn-ghost-pill">🔑 Keys</button>
@@ -337,8 +340,34 @@
                         <label>System Directive Prompt</label>
                         <textarea id="adminSystemDirective" rows="3" class="clean-input">You are VictorX—the ultimate high-intelligence AI assistant.</textarea>
                     </div>
+
+                    <hr style="border:none; border-top:1px solid var(--border-color); margin:1rem 0;">
+
+                    <div class="field-group mb-2">
+                        <label class="text-red">🚨 24/7 Safety & Violation Report Center</label>
+                        <p class="sub-text">Monitors prohibited keywords (bomb, kill, blood, weapons, terror). Auto-bans users on 3 strikes.</p>
+                        <div id="adminViolationLog" style="background:rgba(0,0,0,0.5); padding:0.75rem; border-radius:8px; font-family:var(--font-mono); font-size:0.78rem; max-height:120px; overflow-y:auto; border:1px solid var(--border-color);">
+                            <div><em>No banned users currently reported.</em></div>
+                        </div>
+                        <button id="adminUnbanAllBtn" class="btn btn-glass-sm mt-2">🔄 Reset All Safety Strikes & Unban</button>
+                    </div>
+
                     <button id="adminSaveSettingsBtn" class="btn btn-primary-gradient full-w mt-2">Save Directives</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🚫 ACCOUNT BANNED OVERLAY MODAL -->
+    <div id="bannedModal" class="modal-backdrop hidden">
+        <div class="modal-card" style="border-color: #ef4444; text-align: center;">
+            <div class="modal-header">
+                <h3 style="color: #ef4444; margin: 0 auto;">🚫 ACCOUNT BANNED & BLOCKED</h3>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem 0;">
+                <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🚫</div>
+                <p style="font-weight: 700; font-size: 1.1rem; color: #f87171;">Your session has been 24/7 BLOCKED & BANNED.</p>
+                <p class="sub-text mt-2">System detected 3/3 Safety Violations for prohibited content (bomb/kill/blood/weapons). All access is restricted until Admin unbans your account.</p>
             </div>
         </div>
     </div>

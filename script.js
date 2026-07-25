@@ -12,11 +12,21 @@ let state = {
   hideCoT: true,
   videoPlaying: false,
   videoInterval: null,
-  adminAuthenticated: false
+  adminAuthenticated: false,
+  // 24/7 TOKEN & SAFETY MODERATION STATE
+  dailyTokens: parseInt(localStorage.getItem("victor_daily_tokens") || "0"),
+  maxDailyTokens: 50000,
+  userStrikes: parseInt(localStorage.getItem("victor_user_strikes") || "0"),
+  isBanned: localStorage.getItem("victor_is_banned") === "true",
+  violationLogs: JSON.parse(localStorage.getItem("victor_violations") || '[]')
 };
+
+const PROHIBITED_KEYWORDS = ["bomb", "kill", "blood", "murder", "weapon", "terror", "explode", "poison", "violence", "harm"];
 
 document.addEventListener("DOMContentLoaded", () => {
   purgeStaleBoilerplate();
+  checkBanStatus();
+  updateTokenDisplay();
   initParticleCanvas();
   initModeSwitcher();
   initModals();
@@ -28,6 +38,23 @@ document.addEventListener("DOMContentLoaded", () => {
   initGpuDashboard();
   checkBackendHealth();
 });
+
+function checkBanStatus() {
+  const modal = document.getElementById("bannedModal");
+  if (!modal) return;
+  if (state.isBanned) {
+    modal.classList.remove("hidden");
+  } else {
+    modal.classList.add("hidden");
+  }
+}
+
+function updateTokenDisplay() {
+  const el = document.getElementById("tokenCountText");
+  if (!el) return;
+  const remaining = Math.max(0, state.maxDailyTokens - state.dailyTokens);
+  el.innerText = `${remaining.toLocaleString()} / ${state.maxDailyTokens.toLocaleString()}`;
+}
 
 function purgeStaleBoilerplate() {
   if (state.chats && state.chats.length > 0) {
@@ -49,6 +76,10 @@ function saveState() {
     localStorage.setItem("victor_permissions", JSON.stringify(state.permissions));
     localStorage.setItem("victor_chat_history", JSON.stringify(state.chats));
     localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
+    localStorage.setItem("victor_daily_tokens", state.dailyTokens.toString());
+    localStorage.setItem("victor_user_strikes", state.userStrikes.toString());
+    localStorage.setItem("victor_is_banned", state.isBanned.toString());
+    localStorage.setItem("victor_violations", JSON.stringify(state.violationLogs));
   }
 }
 
@@ -181,10 +212,24 @@ function initModals() {
         state.adminAuthenticated = true;
         pinGate.classList.add("hidden");
         controlsPanel.classList.remove("hidden");
+        renderAdminViolationLogs();
         toast("👑 Admin Control Unlocked!", "success");
       } else {
         toast("Invalid Security PIN", "error");
       }
+    });
+  }
+
+  const unbanBtn = document.getElementById("adminUnbanAllBtn");
+  if (unbanBtn) {
+    unbanBtn.addEventListener("click", () => {
+      state.userStrikes = 0;
+      state.isBanned = false;
+      state.violationLogs = [];
+      saveState();
+      checkBanStatus();
+      renderAdminViolationLogs();
+      toast("🔄 All Safety Strikes Reset & Accounts Unbanned!", "success");
     });
   }
 
@@ -196,6 +241,23 @@ function initModals() {
       toast("Master Platform Directives Saved!", "success");
     });
   }
+}
+
+function renderAdminViolationLogs() {
+  const container = document.getElementById("adminViolationLog");
+  if (!container) return;
+  if (state.violationLogs.length === 0) {
+    container.innerHTML = `<div><em>No banned users currently reported. System 100% Secure.</em></div>`;
+    return;
+  }
+  container.innerHTML = "";
+  state.violationLogs.forEach(v => {
+    const item = document.createElement("div");
+    item.style.color = "#f87171";
+    item.innerHTML = `<strong>[${v.time}] Strike #${v.strikes}:</strong> Prohibited Prompt "${escapeHtml(v.prompt)}"`;
+    container.appendChild(item);
+  });
+}
 
   // API Keys Modal
   const keysBtn = document.getElementById("openApiKeysBtn");
@@ -372,6 +434,12 @@ function renderCurrentChatMessages() {
 }
 
 async function handleSendMessage() {
+  if (state.isBanned) {
+    checkBanStatus();
+    toast("🚫 Your account is currently BANNED for safety violations.", "error");
+    return;
+  }
+
   const input = document.getElementById("chatInput");
   if (!input) return;
   const prompt = input.value.trim();
@@ -389,8 +457,47 @@ async function handleSendMessage() {
   input.value = "";
   renderCurrentChatMessages();
 
+  // 1. SAFETY & TOXIC CONTENT MODERATION CHECK (BOMB, KILL, BLOOD, WEAPON, TERROR)
+  const lowerPrompt = prompt.toLowerCase();
+  const matchedKeyword = PROHIBITED_KEYWORDS.find(k => lowerPrompt.includes(k));
+
+  if (matchedKeyword) {
+    state.userStrikes++;
+    state.violationLogs.push({
+      time: new Date().toLocaleTimeString(),
+      prompt: prompt,
+      strikes: state.userStrikes
+    });
+    saveState();
+
+    if (state.userStrikes >= 3) {
+      state.isBanned = true;
+      saveState();
+      checkBanStatus();
+      toast("🚫 3/3 Safety Strikes Exceeded. Account 24/7 BANNED!", "error");
+      return;
+    } else {
+      currentChat.messages.push({
+        role: "assistant",
+        content: `⚠️ **SAFETY WARNING (${state.userStrikes}/3 Strikes)**: Prohibited content keyword detected ("${matchedKeyword}").\n\nRepeated use of violent, harmful, or dangerous words (bomb, kill, blood, weapons) will trigger an **automatic 24/7 account ban & block** on your 3rd strike!`,
+        cot: `[Safety Guardrail Alert]: Detected prohibited keyword '${matchedKeyword}' in user input. Registered Strike #${state.userStrikes}/3.`,
+        cotTime: "0.01s",
+        timestamp: new Date().toISOString()
+      });
+      saveState();
+      renderCurrentChatMessages();
+      return;
+    }
+  }
+
+  // 2. 24/7 DAILY TOKEN CALCULATOR CONSUMPTION
+  const tokensUsed = Math.ceil(prompt.split(/\s+/).length * 1.5) + 140;
+  state.dailyTokens += tokensUsed;
+  saveState();
+  updateTokenDisplay();
+
   const selectedModel = document.getElementById("chatModelSelect").value;
-  let cotText = `[Neural Encoding 01010110 01101001 01100011 01110100 01101111 01110010]: Encoded token sequence\n[MoE Sparse Router]: Routed to Expert #2 (Architecture) & Expert #5 (WebRTC Protocol)\n[Context Memory]: Retained ${currentChat.messages.length} turn history in local buffer\n[Meta AI Stream]: Synthesizing full code & step-by-step logic...`;
+  let cotText = `[Neural Encoding 01010110 01101001 01100011 01110100 01101111 01110010]: Encoded token sequence\n[MoE Sparse Router]: Routed to Expert #2 (Architecture) & Expert #5 (WebRTC Protocol)\n[Token Calculator]: Consumed ${tokensUsed} tokens from 24/7 daily quota\n[Meta AI Stream]: Synthesizing full code & step-by-step logic...`;
   let responseText = "";
 
   // Try real API calls if configured
