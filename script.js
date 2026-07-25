@@ -1,85 +1,38 @@
 /* ==========================================================================
-   VictorX 1.0.0 — Next-Gen Multi-Modal AI Platform & Model Engine
+   VictorX 1.0.0 Pro — Next-Gen Multi-Modal AI Engine & Canvas Controller
    ========================================================================== */
 
-const PORTS = [
-  { id: "ollama",       name: "Local Ollama",  color: "#10B981", desc: "Local Ollama server (http://localhost:11434)" },
-  { id: "huggingface",  name: "Hugging Face",  color: "#FFD21E", desc: "Hugging Face Serverless Inference API models." },
-  { id: "meta",         name: "Meta",          color: "#7C9CFF", desc: "Llama open weights family." },
-  { id: "deepseek",     name: "DeepSeek",      color: "#38BDF8", desc: "DeepSeek R1 reasoning models." },
-  { id: "google",       name: "Google",        color: "#8FD14F", desc: "Gemma 3 & 4 open models." },
-  { id: "mistral",      name: "Mistral AI",    color: "#E5675F", desc: "Fast open weight models." },
-  { id: "qwen",         name: "Alibaba Qwen",  color: "#C792EA", desc: "Qwen 2.5 series." }
-];
-
-const MODELS = [
-  { id: "victorx-3b-moe",   name: "VictorX 3B MoE",   size: "8x3B",   port: "deepseek", tags: ["multimodal","moe","fast"], haul: 280000000, added: 1, desc: "VictorX Flagship Sparse MoE model with 10x reasoning & tool execution.", apiModel: "victorx-3b-moe" },
-  { id: "victorx-1b-fast",  name: "VictorX 1B Fast",  size: "1B",     port: "google",   tags: ["chat","edge","quantized"], haul: 195000000, added: 2, desc: "Ultra lightweight dense model optimized for sub-10ms mobile & web inference.", apiModel: "victorx-1b-fast" },
-  { id: "gemma4",          name: "Gemma 4",          size: "9B/27B", port: "google",   tags: ["multimodal","chat","edge"], haul: 125000000, added: 3, desc: "Google DeepMind's newest flagship open model.", apiModel: "gemma4" },
-  { id: "llama-3.3-70b",   name: "Llama 3.3 70B",    size: "70B",    port: "meta",     tags: ["text-generation","reasoning"], haul: 54000000, added: 4, desc: "State of the art open reasoning model fine tuned for chat & coding.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
-  { id: "deepseek-r1",    name: "DeepSeek R1",     size: "671B",   port: "deepseek", tags: ["reasoning","math","code"], haul: 90300000, added: 5, desc: "Frontier reasoning model with deep chain of thought capabilities.", apiModel: "deepseek/deepseek-r1" },
-  { id: "qwen2.5-coder",   name: "Qwen 2.5 Coder",   size: "32B",    port: "qwen",     tags: ["code","infilling"], haul: 42100000, added: 6, desc: "State of the art open coding model with 128K context window.", apiModel: "qwen/qwen-2.5-coder-32b" }
-];
-
-// STATE MANAGEMENT
 let state = {
-  activeTab: "chat-studio",
-  keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"fastapi":"http://localhost:8000","ollama":"http://localhost:11434","openrouter":"","openai":""}'),
-  permissions: JSON.parse(localStorage.getItem("victor_permissions") || '{"localStorage":true,"confidential":true,"gpu":true,"key":""}'),
+  activeMode: "chat",
+  keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"fastapi":"http://localhost:8000","ollama":"http://localhost:11434"}'),
+  permissions: JSON.parse(localStorage.getItem("victor_permissions") || '{"localStorage":true,"confidential":true,"gpu":true}'),
   chats: JSON.parse(localStorage.getItem("victor_chat_history") || '[]'),
   currentChatId: null,
-  imageGallery: JSON.parse(localStorage.getItem("victor_img_gallery") || '[]'),
-  videoGallery: JSON.parse(localStorage.getItem("victor_video_gallery") || '[]'),
-  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["victorx-3b-moe","victorx-1b-fast","gemma4","llama-3.3-70b"]')),
-  ollamaModels: [],
-  ollamaOnline: false,
-  quantMode: "int4",
-  flashAttn: true,
-  lora: true,
+  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["victorx-3b-moe","gemma4","llama-3.3-70b"]')),
   hideCoT: true,
   videoPlaying: false,
-  videoInterval: null
+  videoInterval: null,
+  adminAuthenticated: false
 };
 
-// INITIALIZATION
 document.addEventListener("DOMContentLoaded", () => {
-  purgeStaleBoilerplate();
-  initTabs();
-  initPermissionsModal();
-  initApiKeysModal();
-  initAdminModal();
+  initParticleCanvas();
+  initModeSwitcher();
+  initModals();
   initChatStudio();
   initImageStudio();
   initVideoStudio();
   initCodeStudio();
   initCliStudio();
   initGpuDashboard();
-  initModelDock();
   checkBackendHealth();
 });
-
-function purgeStaleBoilerplate() {
-  if (state.chats && state.chats.length > 0) {
-    state.chats.forEach(chat => {
-      if (chat.messages) {
-        chat.messages = chat.messages.filter(m => 
-          !m.content.includes("I have analyzed your prompt with 10x smart precision") &&
-          !m.content.includes("Key Takeaway") &&
-          !m.content.includes("Key Summary")
-        );
-      }
-    });
-    saveState();
-  }
-}
 
 function saveState() {
   if (state.permissions.localStorage) {
     localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
     localStorage.setItem("victor_permissions", JSON.stringify(state.permissions));
     localStorage.setItem("victor_chat_history", JSON.stringify(state.chats));
-    localStorage.setItem("victor_img_gallery", JSON.stringify(state.imageGallery));
-    localStorage.setItem("victor_video_gallery", JSON.stringify(state.videoGallery));
     localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
   }
 }
@@ -95,114 +48,125 @@ function toast(msg, type = "info") {
 }
 
 /* ==========================================================================
-   1. TAB SWITCHING
+   1. PARTICLE CANVAS ANIMATION SYSTEM
    ========================================================================== */
-function initTabs() {
-  const navTabs = document.querySelectorAll(".nav-tab");
-  navTabs.forEach(tab => {
-    tab.addEventListener("click", (e) => {
-      e.preventDefault();
-      const targetId = tab.getAttribute("data-target");
-      switchTab(targetId);
-    });
+function initParticleCanvas() {
+  const canvas = document.getElementById("particleCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener("resize", () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
   });
-}
 
-function switchTab(targetId) {
-  state.activeTab = targetId;
-  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
-  document.querySelectorAll(".studio-section").forEach(s => s.classList.remove("active"));
+  const particles = [];
+  const numParticles = 45;
 
-  const activeLink = document.querySelector(`.nav-tab[data-target="${targetId}"]`);
-  const activeSec = document.getElementById(targetId);
-  if (activeLink) activeLink.classList.add("active");
-  if (activeSec) activeSec.classList.add("active");
+  for (let i = 0; i < numParticles; i++) {
+    particles.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.8,
+      radius: Math.random() * 2 + 1
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    for (let i = 0; i < particles.length; i++) {
+      let p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0 || p.x > width) p.vx *= -1;
+      if (p.y < 0 || p.y > height) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(99, 102, 241, 0.4)";
+      ctx.fill();
+
+      for (let j = i + 1; j < particles.length; j++) {
+        let p2 = particles[j];
+        let dx = p.x - p2.x;
+        let dy = p.y - p2.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 130) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = `rgba(168, 85, 247, ${0.15 * (1 - dist / 130)})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
 }
 
 /* ==========================================================================
-   2. PERMISSIONS & API KEYS MODALS
+   2. MODE SWITCHER & NAVIGATION
    ========================================================================== */
-function initPermissionsModal() {
-  const btn = document.getElementById("openPermissionsBtn");
-  const modal = document.getElementById("permissionsModal");
-  if (btn && modal) {
-    btn.addEventListener("click", () => modal.classList.remove("hidden"));
-    modal.querySelectorAll('[data-close="permissionsModal"]').forEach(b => {
-      b.addEventListener("click", () => modal.classList.add("hidden"));
+function initModeSwitcher() {
+  const modeBtns = document.querySelectorAll(".mode-btn");
+  modeBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.getAttribute("data-mode");
+      switchMode(mode);
     });
-  }
-
-  const localToggle = document.getElementById("permLocalStorage");
-  const confToggle = document.getElementById("permConfidential");
-  const gpuToggle = document.getElementById("permGpu");
-
-  if (localToggle) localToggle.checked = state.permissions.localStorage;
-  if (confToggle) confToggle.checked = state.permissions.confidential;
-  if (gpuToggle) gpuToggle.checked = state.permissions.gpu;
-
-  [localToggle, confToggle, gpuToggle].forEach(t => {
-    if (t) {
-      t.addEventListener("change", () => {
-        state.permissions.localStorage = localToggle.checked;
-        state.permissions.confidential = confToggle.checked;
-        state.permissions.gpu = gpuToggle.checked;
-        saveState();
-        toast("Privacy & permissions updated securely", "success");
-      });
-    }
   });
 }
 
-function initApiKeysModal() {
-  const btn = document.getElementById("openApiKeysBtn");
-  const modal = document.getElementById("apiKeysModal");
-  if (btn && modal) {
-    btn.addEventListener("click", () => modal.classList.remove("hidden"));
-    modal.querySelectorAll('[data-close="apiKeysModal"]').forEach(b => {
-      b.addEventListener("click", () => modal.classList.add("hidden"));
-    });
-  }
+function switchMode(mode) {
+  state.activeMode = mode;
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".studio-view").forEach(v => v.classList.remove("active"));
 
-  const saveBtn = document.getElementById("saveApiKeysBtn");
-  if (saveBtn) {
-    saveBtn.addEventListener("click", () => {
-      state.keys.fastapi = document.getElementById("keyFastApi").value;
-      state.keys.ollama = document.getElementById("keyOllama").value;
-      state.keys.openrouter = document.getElementById("keyOpenRouter").value;
-      state.keys.openai = document.getElementById("keyOpenAi").value;
-      saveState();
-      modal.classList.add("hidden");
-      toast("API keys saved!", "success");
-      checkBackendHealth();
-    });
-  }
+  const activeBtn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+  const activeView = document.getElementById(`studio-${mode}`);
+  if (activeBtn) activeBtn.classList.add("active");
+  if (activeView) activeView.classList.add("active");
 }
 
-function initAdminModal() {
-  const btn = document.getElementById("openAdminModalBtn");
-  const modal = document.getElementById("adminModal");
-  const verifyBtn = document.getElementById("verifyAdminPinBtn");
+/* ==========================================================================
+   3. MODALS (ADMIN, API KEYS, PERMISSIONS)
+   ========================================================================== */
+function initModals() {
+  // Admin Modal
+  const adminBtn = document.getElementById("openAdminModalBtn");
+  const adminModal = document.getElementById("adminModal");
+  const verifyAdminBtn = document.getElementById("verifyAdminPinBtn");
   const pinInput = document.getElementById("adminPinInput");
   const pinGate = document.getElementById("adminPinGate");
   const controlsPanel = document.getElementById("adminControlsPanel");
   const saveAdminBtn = document.getElementById("adminSaveSettingsBtn");
 
-  if (btn && modal) {
-    btn.addEventListener("click", () => modal.classList.remove("hidden"));
-    modal.querySelectorAll('[data-close="adminModal"]').forEach(b => {
-      b.addEventListener("click", () => modal.classList.add("hidden"));
+  if (adminBtn && adminModal) {
+    adminBtn.addEventListener("click", () => adminModal.classList.remove("hidden"));
+    adminModal.querySelectorAll('[data-close="adminModal"]').forEach(b => {
+      b.addEventListener("click", () => adminModal.classList.add("hidden"));
     });
   }
 
-  if (verifyBtn && pinInput) {
-    verifyBtn.addEventListener("click", () => {
+  if (verifyAdminBtn && pinInput) {
+    verifyAdminBtn.addEventListener("click", () => {
       const entered = pinInput.value.trim();
-      // Verify against master hash or default PIN (20032004)
       if (entered === "20032004" || btoa(entered) === "MjAwMzIwMDQ=") {
         state.adminAuthenticated = true;
         pinGate.classList.add("hidden");
         controlsPanel.classList.remove("hidden");
-        toast("👑 Platform Owner Admin Access Unlocked!", "success");
+        toast("👑 Admin Control Unlocked!", "success");
       } else {
         toast("Invalid Admin PIN", "error");
       }
@@ -212,22 +176,41 @@ function initAdminModal() {
   if (saveAdminBtn) {
     saveAdminBtn.addEventListener("click", () => {
       const title = document.getElementById("adminBrandTitle").value;
-      const directive = document.getElementById("adminSystemDirective").value;
-      
       document.querySelector(".brand-name").innerText = title;
-      modal.classList.add("hidden");
+      adminModal.classList.add("hidden");
       toast("Master Platform Directives Saved!", "success");
+    });
+  }
+
+  // API Keys Modal
+  const keysBtn = document.getElementById("openApiKeysBtn");
+  const keysModal = document.getElementById("apiKeysModal");
+  if (keysBtn && keysModal) {
+    keysBtn.addEventListener("click", () => keysModal.classList.remove("hidden"));
+    keysModal.querySelectorAll('[data-close="apiKeysModal"]').forEach(b => {
+      b.addEventListener("click", () => keysModal.classList.add("hidden"));
+    });
+  }
+
+  const saveKeysBtn = document.getElementById("saveApiKeysBtn");
+  if (saveKeysBtn) {
+    saveKeysBtn.addEventListener("click", () => {
+      state.keys.fastapi = document.getElementById("keyFastApi").value;
+      state.keys.ollama = document.getElementById("keyOllama").value;
+      saveState();
+      keysModal.classList.add("hidden");
+      toast("Endpoints saved!", "success");
+      checkBackendHealth();
     });
   }
 }
 
 /* ==========================================================================
-   3. CHAT STUDIO ENGINE (10x SMART REASONING & TOOLS)
+   4. CHAT STUDIO & DEEP REASONING
    ========================================================================== */
 function initChatStudio() {
   const sendBtn = document.getElementById("sendChatBtn");
   const input = document.getElementById("chatInput");
-  const newChatBtn = document.getElementById("newChatBtn");
   const clearBtn = document.getElementById("clearChatBtn");
   const cotToggle = document.getElementById("hideCoTToggle");
 
@@ -248,10 +231,6 @@ function initChatStudio() {
     });
   }
 
-  if (newChatBtn) {
-    newChatBtn.addEventListener("click", () => createNewChatSession());
-  }
-
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       if (state.currentChatId) {
@@ -259,14 +238,14 @@ function initChatStudio() {
         if (c) c.messages = [];
         saveState();
         renderCurrentChatMessages();
-        toast("Session cleared", "info");
+        toast("View cleared", "info");
       }
     });
   }
 
-  document.querySelectorAll(".suggestion-chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      const prompt = chip.getAttribute("data-prompt");
+  document.querySelectorAll(".prompt-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const prompt = card.getAttribute("data-prompt");
       if (input) {
         input.value = prompt;
         handleSendMessage();
@@ -275,15 +254,14 @@ function initChatStudio() {
   });
 
   if (state.chats.length === 0) {
-    createNewChatSession("10x Smart Analysis Session");
+    createNewChatSession("Session 1");
   } else {
     state.currentChatId = state.chats[0].id;
-    renderChatHistorySidebar();
     renderCurrentChatMessages();
   }
 }
 
-function createNewChatSession(title = "New VictorX Chat") {
+function createNewChatSession(title = "New Session") {
   const newChat = {
     id: "chat_" + Date.now(),
     title: title,
@@ -293,48 +271,51 @@ function createNewChatSession(title = "New VictorX Chat") {
   state.chats.unshift(newChat);
   state.currentChatId = newChat.id;
   saveState();
-  renderChatHistorySidebar();
   renderCurrentChatMessages();
-}
-
-function renderChatHistorySidebar() {
-  const list = document.getElementById("chatHistoryList");
-  if (!list) return;
-  list.innerHTML = "";
-  state.chats.forEach(chat => {
-    const item = document.createElement("div");
-    item.className = `history-item ${chat.id === state.currentChatId ? 'active' : ''}`;
-    item.innerText = chat.title || "Untitled Session";
-    item.addEventListener("click", () => {
-      state.currentChatId = chat.id;
-      renderChatHistorySidebar();
-      renderCurrentChatMessages();
-    });
-    list.appendChild(item);
-  });
 }
 
 function renderCurrentChatMessages() {
   const container = document.getElementById("chatMessages");
   if (!container) return;
   const currentChat = state.chats.find(c => c.id === state.currentChatId);
+
   if (!currentChat || currentChat.messages.length === 0) {
     container.innerHTML = `
-      <div class="welcome-chat-card">
-        <div class="welcome-icon">⚡</div>
-        <h3>Welcome to VictorX Chat 1.0.0</h3>
-        <p>Powered by sparse Mixture-of-Experts (MoE) & 10x Smart Reasoning Engine with native privacy protection.</p>
-        <div class="prompt-suggestions">
-            <button class="suggestion-chip" data-prompt="Analyze market trends for AI SaaS models in 2026 with financial breakdowns.">📊 Market Analysis</button>
-            <button class="suggestion-chip" data-prompt="Write a complete Python FastAPI server for high-throughput video streaming with JWT auth.">🐍 Python FastAPI Backend</button>
-            <button class="suggestion-chip" data-prompt="Create a high-converting landing page HTML/CSS structure with dark glassmorphism.">🎨 Landing Page Web Code</button>
-            <button class="suggestion-chip" data-prompt="Explain Quantum Computing fundamentals with zero jargon and concrete analogies.">⚛️ Quantum Physics</button>
-        </div>
+      <div class="hero-welcome">
+          <div class="hero-glow-logo">⚡</div>
+          <h1>What can I help you build today?</h1>
+          <p>VictorX Next-Gen Multi-Modal AI Engine powered by Sparse MoE, Deep Reasoning & Zero-Leak Local Privacy.</p>
+          
+          <div class="quick-prompts-grid">
+              <button class="prompt-card" data-prompt="Build a complete Flutter E-commerce app with cart management.">
+                  <span class="card-icon">📱</span>
+                  <strong>Flutter Mobile App</strong>
+                  <span>Generate complete Dart UI & services</span>
+              </button>
+
+              <button class="prompt-card" data-prompt="Write a high-throughput Python FastAPI server with JWT authentication.">
+                  <span class="card-icon">🐍</span>
+                  <strong>Python FastAPI Server</strong>
+                  <span>Async REST API with Pydantic validation</span>
+              </button>
+
+              <button class="prompt-card" data-prompt="Create a modern landing page web code with glassmorphism CSS.">
+                  <span class="card-icon">🌐</span>
+                  <strong>Glassmorphism Web UI</strong>
+                  <span>Responsive HTML5 & CSS custom design</span>
+              </button>
+
+              <button class="prompt-card" data-prompt="Explain Quantum Computing fundamentals with clear analogies.">
+                  <span class="card-icon">⚛️</span>
+                  <strong>Quantum Physics</strong>
+                  <span>Deep step-by-step conceptual guide</span>
+              </button>
+          </div>
       </div>
     `;
-    container.querySelectorAll(".suggestion-chip").forEach(chip => {
-      chip.addEventListener("click", () => {
-        document.getElementById("chatInput").value = chip.getAttribute("data-prompt");
+    container.querySelectorAll(".prompt-card").forEach(card => {
+      card.addEventListener("click", () => {
+        document.getElementById("chatInput").value = card.getAttribute("data-prompt");
         handleSendMessage();
       });
     });
@@ -351,7 +332,7 @@ function renderCurrentChatMessages() {
     if (msg.role === "assistant" && msg.cot && !state.hideCoT) {
       contentHtml += `
         <details class="cot-accordion">
-          <summary class="cot-summary">🧠 10x Thinking Process (${msg.cotTime || '0.2s'})</summary>
+          <summary class="cot-summary">🧠 10x Deep Reasoning (${msg.cotTime || '0.18s'})</summary>
           <div class="cot-body">${escapeHtml(msg.cot)}</div>
         </details>
       `;
@@ -376,11 +357,6 @@ async function handleSendMessage() {
   const currentChat = state.chats.find(c => c.id === state.currentChatId);
   if (!currentChat) return;
 
-  if (currentChat.messages.length === 0) {
-    currentChat.title = prompt.substring(0, 32) + "...";
-    renderChatHistorySidebar();
-  }
-
   currentChat.messages.push({
     role: "user",
     content: prompt,
@@ -391,48 +367,26 @@ async function handleSendMessage() {
   renderCurrentChatMessages();
 
   const selectedModel = document.getElementById("chatModelSelect").value;
-  const toolEnabled = document.getElementById("toolCallingToggle").checked;
-
-  let cotText = `[VictorX MoE Router Gating]: Activated Expert #2 & Expert #5\n[Context Memory]: Loaded 32K context window token buffer\n[10x Deep Analysis]: Routing prompt tokens through neural matrices...`;
+  let cotText = `[VictorX MoE Router Gating]: Activated Expert #2 & Expert #5\n[Context Memory]: Loaded 32K context window buffer\n[10x Reasoning]: Synthesizing precise response for query...`;
   let responseText = "";
 
-  // 1. Try Local Ollama Server
-  if (selectedModel === "ollama-local" || state.ollamaOnline) {
+  // Try real API calls if configured
+  if (selectedModel === "ollama-local") {
     try {
-      const ollamaRes = await fetch(`${state.keys.ollama}/api/generate`, {
+      const res = await fetch(`${state.keys.ollama}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: selectedModel === "ollama-local" ? "llama3" : selectedModel, prompt: prompt, stream: false })
+        body: JSON.stringify({ model: "llama3", prompt: prompt, stream: false })
       });
-      if (ollamaRes.ok) {
-        const data = await ollamaRes.json();
-        responseText = data.response;
+      if (res.ok) {
+        const d = await res.json();
+        responseText = d.response;
       }
-    } catch (e) {
-      console.log("Ollama local connection skipped:", e);
-    }
+    } catch (e) {}
   }
 
-  // 2. Try FastAPI PyTorch Backend
-  if (!responseText && state.keys.fastapi) {
-    try {
-      const apiRes = await fetch(`${state.keys.fastapi}/api/v1/chat/completions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt, model: selectedModel, hide_cot: state.hideCoT })
-      });
-      if (apiRes.ok) {
-        const data = await apiRes.json();
-        responseText = data.response;
-      }
-    } catch (e) {
-      console.log("FastAPI backend skipped:", e);
-    }
-  }
-
-  // 3. Fallback to VictorX Engine Generator
   if (!responseText) {
-    responseText = generateSmartAiResponse(prompt, selectedModel, toolEnabled);
+    responseText = generateSmartAiResponse(prompt, selectedModel);
   }
 
   currentChat.messages.push({
@@ -447,67 +401,42 @@ async function handleSendMessage() {
   renderCurrentChatMessages();
 }
 
-function generateSmartAiResponse(prompt, model, toolEnabled) {
+function generateSmartAiResponse(prompt, model) {
   const raw = prompt.trim();
   const lower = raw.toLowerCase();
-  const cleanPrompt = lower.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
+  const clean = lower.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
 
-  // 1. GREETINGS & CASUAL DIALOGUE (ChatGPT / Claude / Meta AI Persona)
-  if (/^(hi|hii|hello|hey|hii buddy|hey buddy|greetings|sup|yo|hi there|hello there|good morning|good evening)$/i.test(cleanPrompt)) {
-    const greetings = [
-      `Hey there! 👋 Great to connect with you. I'm **VictorX**—your multi-modal AI assistant powered by sparse MoE, deep reasoning, and confidential local intelligence.\n\nHow can I help you today? Whether you want me to write code, design a full-stack web or mobile app, solve complex problems, or generate creative media, just tell me what you'd like to build and I'll jump right in!`,
-      `Hello! 😊 Welcome to VictorX 1.0.0. I'm here and fully ready to assist you. What would you like to build or explore today?`,
-      `Hey buddy! 👋 Good to see you. How can I assist you today? Feel free to ask me anything—from writing code and analyzing data to generating creative ideas or media!`
-    ];
-    return greetings[Math.floor(Math.random() * greetings.length)];
+  if (/^(hi|hii|hello|hey|hii buddy|hey buddy|sup|yo|hi there)$/i.test(clean)) {
+    return `Hey there! 👋 I'm **VictorX**—your multi-modal AI assistant powered by sparse MoE and confidential local intelligence.\n\nHow can I help you today? Whether you want me to write code, design apps, analyze complex topics, or generate media, just let me know!`;
   }
 
-  // 2. REQUEST TO BUILD REAL APPS / GENERATE ANYTHING
-  if (lower.includes("build") || lower.includes("generate") || lower.includes("real work") || lower.includes("make app") || lower.includes("create") || lower.includes("better all apps")) {
-    return `I am ready to build whatever you need! Whether it's a web application, a mobile Flutter app, a Python backend, or interactive scripts, I will generate the complete, working code right here.\n\n### ⚡ What would you like to create right now?\n\n- **1. Full Web App (HTML/CSS/JS)**: Tell me the app concept (e.g. *Task Dashboard*, *SaaS Landing Page*, *Crypto Tracker*, *Retro Arcade Game*).\n- **2. Mobile App (Flutter/Dart)**: Cross-platform mobile UI with custom themes & backend services.\n- **3. Backend Server (Python FastAPI)**: High-performance async REST APIs, JWT authentication, & database integration.\n- **4. AI Media**: Text-to-Image diffusion artwork or 4K Text-to-Video generation in the Image/Video Studios.\n\nGive me any prompt or requirement, and I will generate the full, working implementation for you immediately!`;
-  }
-
-  // 3. IDENTITY & CAPABILITIES QUERIES
-  if (lower.includes("who are you") || lower.includes("what can you do") || lower.includes("what are your capabilities")) {
-    return `I am **VictorX 1.0.0**, an advanced multi-modal AI platform engineered for high-performance reasoning, zero-leak privacy, and full-stack synthesis.\n\n### ⚡ What I Can Do For You:\n\n1. 💬 **Chat & Deep Reasoning**: Answer complex questions, write essays, analyze logic, and solve math step-by-step.\n2. 🎨 **Image AI Studio**: Generate photorealistic, cyberpunk, anime, or 3D render diffusion artwork.\n3. 🎬 **Video AI Studio**: Synthesize dynamic text-to-video & image-to-video clips with camera motion controls.\n4. ⚡ **Code & App Builder**: Synthesize production-ready Flutter apps, Python FastAPI backends, and HTML/CSS web apps with live preview.\n5. 🐞 **AI Bug Fixer**: Diagnose error stack traces and supply automated patches.\n\nHow can I help you get started right now?`;
-  }
-
-  // 4. CODING & TECHNICAL PROMPTS
-  if (lower.includes("fastapi") || lower.includes("python") || lower.includes("code") || lower.includes("flutter") || lower.includes("script") || lower.includes("game") || lower.includes("html") || lower.includes("react")) {
+  if (lower.includes("fastapi") || lower.includes("python") || lower.includes("code") || lower.includes("flutter")) {
     if (lower.includes("fastapi") || lower.includes("python")) {
-      return `Here is a complete, production-ready **Python FastAPI Backend Service** with async routing and CORS support:\n\n\`\`\`python\nfrom fastapi import FastAPI, HTTPException, Depends\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom pydantic import BaseModel\nimport uvicorn\n\napp = FastAPI(\n    title="VictorX Custom App Backend",\n    version="1.0.0",\n    description="High-throughput production API"\n)\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=["*"],\n    allow_methods=["*"],\n    allow_headers=["*"],\n)\n\nclass AppData(BaseModel):\n    title: str\n    description: str\n\n@app.get("/")\nasync def root():\n    return {"message": "VictorX AI Backend is running smoothly!"}\n\n@app.post("/api/v1/create")\nasync def create_item(data: AppData):\n    return {"status": "success", "item": data.dict()}\n\nif __name__ == "__main__":\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\`\n\nTo run this backend, save it to a file \`server.py\` and run \`python server.py\`!`;
+      return `Here is a production-ready **Python FastAPI Backend Server**:\n\n\`\`\`python\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport uvicorn\n\napp = FastAPI(title="VictorX Production API")\n\nclass PredictRequest(BaseModel):\n    prompt: str\n\n@app.post("/api/v1/predict")\nasync def predict(req: PredictRequest):\n    return {"status": "success", "result": f"Processed: {req.prompt}"}\n\nif __name__ == "__main__":\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
     }
 
     if (lower.includes("flutter") || lower.includes("dart")) {
-      return `Here is a complete **Flutter Mobile Application** ready to drop into \`lib/main.dart\`:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX Custom Mobile App',\n      debugShowCheckedModeBanner: false,\n      theme: ThemeData.dark().copyWith(\n        scaffoldBackgroundColor: const Color(0xFF090D16),\n        primaryColor: const Color(0xFF6366F1),\n      ),\n      home: const MainScreen(),\n    );\n  }\n}\n\nclass MainScreen extends StatelessWidget {\n  const MainScreen({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      appBar: AppBar(\n        title: const Text('VictorX AI App'),\n        backgroundColor: const Color(0xFF0F172A),\n      ),\n      body: const Center(\n        child: Text(\n          '🚀 Your Custom Flutter App is Live!',\n          style: TextStyle(fontSize: 20, color: Colors.white),\n        ),\n      ),\n    );\n  }\n}\n\`\`\``;
+      return `Here is a complete **Flutter Application Screen**:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX App',\n      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF050811)),\n      home: const Scaffold(body: Center(child: Text('🚀 VictorX Flutter App Live'))),\n    );\n  }\n}\n\`\`\``;
     }
   }
 
-  // 5. BUSINESS / MARKET / FINANCIAL ANALYSIS PROMPTS
-  if (lower.includes("market") || lower.includes("financial") || lower.includes("trend") || lower.includes("analysis") || lower.includes("business")) {
-    return `### 📊 2026 AI SaaS Market Analysis & Financial Projection\n\nHere is a comprehensive breakdown of the current market landscape:\n\n- **Global AI SaaS Market Valuation**: **$185.4 Billion** (CAGR of +38.2%).\n- **Compute Unit Economics**: Transitioning from dense models to **Sparse Top-2 MoE** architectures reduces inference GPU overhead by **65%**.\n- **Primary Growth Drivers**:\n  1. *Autonomous Agent Systems*: Multi-agent terminal tools replacing manual workflow steps.\n  2. *On-Device Edge Inference*: Quantized 1B–3B parameter LLMs operating locally on mobile/web.\n  3. *Zero-Leak Confidentiality*: Enterprise demand for encrypted local memory.\n\nLet me know if you would like me to model specific revenue forecasts or technical unit economics!`;
-  }
-
-  // 6. NATURAL CONVERSATIONAL RESPONDER FOR ALL OTHER PROMPTS (ChatGPT / Claude / Kimi style)
-  return `I have processed your request and here is a detailed, direct response tailored for you:\n\nRegarding **"${raw}"**:\n\nI am fully prepared to assist you with this. Whether you want me to write full source code, synthesize web or mobile UI layouts, perform deep analysis, or generate images & videos, just tell me what specific output you would like to build next!`;
+  return `I have processed your request for **"${raw}"**.\n\nTell me what specific code, design, or synthesis you'd like me to build next!`;
 }
 
 /* ==========================================================================
-   4. IMAGE STUDIO ENGINE (DIFFUSION & UPSCALER)
+   5. IMAGINE & VIDEO & CODE STUDIOS
    ========================================================================== */
 function initImageStudio() {
   const generateBtn = document.getElementById("generateImgBtn");
   if (!generateBtn) return;
 
   generateBtn.addEventListener("click", () => {
-    const prompt = document.getElementById("imgPrompt").value.trim() || "Futuristic neon AI metropolis";
+    const prompt = document.getElementById("imgPrompt").value.trim() || "Neon AI Metropolis";
     const style = document.getElementById("imgStyle").value;
     const aspect = document.getElementById("imgAspectRatio").value;
-    const steps = document.getElementById("imgSteps").value;
 
     toast("Rendering Diffusion Canvas...", "info");
 
-    const canvasBox = document.getElementById("imageCanvasBox");
     const placeholder = document.getElementById("imgPlaceholder");
     const outputWrap = document.getElementById("imgOutputWrap");
     const canvas = document.getElementById("imgDisplayCanvas");
@@ -516,55 +445,23 @@ function initImageStudio() {
     placeholder.classList.add("hidden");
     outputWrap.classList.remove("hidden");
 
-    // DRAW SYNTHETIC HIGH-RES ART ON CANVAS
-    let width = 800, height = 800;
-    if (aspect === "16:9") { width = 960; height = 540; }
-    else if (aspect === "9:16") { width = 540; height = 960; }
-    canvas.width = width;
-    canvas.height = height;
+    let w = 800, h = 800;
+    if (aspect === "16:9") { w = 960; h = 540; }
+    else if (aspect === "9:16") { w = 540; h = 960; }
+    canvas.width = w; canvas.height = h;
 
-    // Gradient & Art Pattern
-    const grad = ctx.createLinearGradient(0, 0, width, height);
-    if (style === "cyberpunk") {
-      grad.addColorStop(0, "#0f172a");
-      grad.addColorStop(0.5, "#ec4899");
-      grad.addColorStop(1, "#06b6d4");
-    } else if (style === "photorealistic") {
-      grad.addColorStop(0, "#18181b");
-      grad.addColorStop(0.5, "#3b82f6");
-      grad.addColorStop(1, "#10b981");
-    } else {
-      grad.addColorStop(0, "#1e1b4b");
-      grad.addColorStop(0.5, "#a855f7");
-      grad.addColorStop(1, "#f43f5e");
-    }
+    const grad = ctx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, "#050811");
+    grad.addColorStop(0.5, "#6366f1");
+    grad.addColorStop(1, "#a855f7");
 
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, w, h);
 
-    // Decorative Geometric AI Art Shapes
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.lineWidth = 3;
-    for (let i = 0; i < 15; i++) {
-      ctx.beginPath();
-      ctx.arc(width / 2 + (Math.random() - 0.5) * 300, height / 2 + (Math.random() - 0.5) * 300, Math.random() * 80 + 20, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // Text Overlay Signature
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 20px Outfit, sans-serif";
-    ctx.fillText(`VictorX Diffusion Studio v1.0 • ${style.toUpperCase()}`, 20, height - 30);
-    ctx.font = "14px Inter, sans-serif";
-    ctx.fillText(`Prompt: "${prompt.substring(0, 45)}..."`, 20, height - 10);
-
-    // Save to Gallery
-    const dataUrl = canvas.toDataURL();
-    state.imageGallery.unshift({ prompt, dataUrl, timestamp: new Date().toISOString() });
-    saveState();
-    renderImageGallery();
-
-    toast("HD Image Generated!", "success");
+    ctx.font = "bold 22px Outfit, sans-serif";
+    ctx.fillText(`VictorX Imagine Studio • ${style.toUpperCase()}`, 24, h - 30);
+    toast("Image Generated!", "success");
   });
 
   const downloadBtn = document.getElementById("downloadImgBtn");
@@ -573,293 +470,66 @@ function initImageStudio() {
       const canvas = document.getElementById("imgDisplayCanvas");
       const a = document.createElement("a");
       a.href = canvas.toDataURL("image/png");
-      a.download = `victorx-diffusion-${Date.now()}.png`;
+      a.download = `victorx-imagine-${Date.now()}.png`;
       a.click();
     });
   }
-
-  renderImageGallery();
 }
 
-function renderImageGallery() {
-  const gallery = document.getElementById("imageGallery");
-  if (!gallery) return;
-  gallery.innerHTML = "";
-  state.imageGallery.slice(0, 8).forEach(item => {
-    const img = document.createElement("img");
-    img.src = item.dataUrl;
-    img.className = "gallery-thumb";
-    img.title = item.prompt;
-    gallery.appendChild(img);
-  });
-}
-
-/* ==========================================================================
-   5. VIDEO STUDIO ENGINE (SYNTHETIC PLAYER & MOTION CONTROLS)
-   ========================================================================== */
 function initVideoStudio() {
   const generateBtn = document.getElementById("generateVideoBtn");
   if (!generateBtn) return;
 
   generateBtn.addEventListener("click", () => {
-    const prompt = document.getElementById("videoPrompt").value.trim() || "Cinematic drone flythrough";
-    const motion = document.getElementById("cameraMotion").value;
-    const duration = parseInt(document.getElementById("videoDuration").value);
-
-    toast("Rendering AI Video Frames...", "info");
-
     const placeholder = document.getElementById("videoPlaceholder");
     const outputWrap = document.getElementById("videoOutputWrap");
-    const animLayer = document.getElementById("videoAnimLayer");
+    const anim = document.getElementById("videoAnimLayer");
 
     placeholder.classList.add("hidden");
     outputWrap.classList.remove("hidden");
 
-    // Dynamic Video Background Canvas Simulation
-    animLayer.style.backgroundImage = `linear-gradient(135deg, rgba(99,102,241,0.8), rgba(236,72,153,0.8)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23090d16"/><circle cx="50" cy="50" r="30" fill="%236366f1" opacity="0.3"/></svg>')`;
-
-    startSyntheticVideoPlayback(duration);
-    toast("AI Video Render Complete!", "success");
+    anim.style.backgroundImage = `linear-gradient(135deg, rgba(99,102,241,0.8), rgba(236,72,153,0.8))`;
+    toast("Video Motion Rendered!", "success");
   });
-
-  const playPauseBtn = document.getElementById("playPauseVideoBtn");
-  if (playPauseBtn) {
-    playPauseBtn.addEventListener("click", () => {
-      const duration = parseInt(document.getElementById("videoDuration").value);
-      if (state.videoPlaying) {
-        stopSyntheticVideoPlayback();
-      } else {
-        startSyntheticVideoPlayback(duration);
-      }
-    });
-  }
 }
 
-function startSyntheticVideoPlayback(durationSec) {
-  stopSyntheticVideoPlayback();
-  state.videoPlaying = true;
-  const playBtn = document.getElementById("playPauseVideoBtn");
-  const fill = document.getElementById("videoProgressFill");
-  const timeDisp = document.getElementById("videoTimeDisplay");
-  const animLayer = document.getElementById("videoAnimLayer");
-  if (playBtn) playBtn.innerText = "⏸ Pause";
-
-  let start = Date.now();
-  let totalMs = durationSec * 1000;
-
-  state.videoInterval = setInterval(() => {
-    let elapsed = Date.now() - start;
-    if (elapsed >= totalMs) {
-      elapsed = totalMs;
-      stopSyntheticVideoPlayback();
-    }
-    let pct = (elapsed / totalMs) * 100;
-    if (fill) fill.style.width = `${pct}%`;
-    if (timeDisp) timeDisp.innerText = `0:0${Math.floor(elapsed/1000)} / 0:0${durationSec}`;
-
-    // Camera Motion Zoom/Pan Effect
-    let scale = 1 + (pct / 100) * 0.25;
-    if (animLayer) animLayer.style.transform = `scale(${scale}) rotate(${pct * 0.05}deg)`;
-  }, 50);
-}
-
-function stopSyntheticVideoPlayback() {
-  state.videoPlaying = false;
-  if (state.videoInterval) clearInterval(state.videoInterval);
-  const playBtn = document.getElementById("playPauseVideoBtn");
-  if (playBtn) playBtn.innerText = "▶ Play";
-}
-
-/* ==========================================================================
-   6. CODE STUDIO ENGINE (FLUTTER/PYTHON/WEB CODE SYNTH & LIVE PREVIEW)
-   ========================================================================== */
 function initCodeStudio() {
   const generateBtn = document.getElementById("generateCodeBtn");
-  const fixBtn = document.getElementById("fixBugBtn");
-  const codeTabs = document.querySelectorAll(".code-tab");
+  if (!generateBtn) return;
 
-  codeTabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-      const targetTab = tab.getAttribute("data-tab");
-      codeTabs.forEach(t => t.classList.remove("active"));
-      document.querySelectorAll(".code-tab-content").forEach(c => c.classList.remove("active"));
-      tab.classList.add("active");
-      if (targetTab === "editor") document.getElementById("codeEditorTab").classList.add("active");
-      else if (targetTab === "preview") document.getElementById("codePreviewTab").classList.add("active");
-    });
-  });
+  generateBtn.addEventListener("click", () => {
+    const stack = document.getElementById("codeStackSelect").value;
+    const prompt = document.getElementById("codePrompt").value.trim() || "Build app";
+    const codeArea = document.getElementById("codeDisplayArea");
 
-  if (generateBtn) {
-    generateBtn.addEventListener("click", () => {
-      const stack = document.getElementById("codeStackSelect").value;
-      const prompt = document.getElementById("codePrompt").value.trim() || "Build multi-modal app";
-
-      toast("Synthesizing Full Code Base...", "info");
-      const generatedCode = synthesizeCodeApp(stack, prompt);
-
-      const codeArea = document.getElementById("codeDisplayArea");
-      if (codeArea) codeArea.innerText = generatedCode;
-
-      // UPDATE LIVE PREVIEW IFRAME
-      const iframe = document.getElementById("codePreviewIframe");
-      if (iframe && stack === "web-html") {
-        iframe.srcdoc = generatedCode;
-      } else if (iframe) {
-        iframe.srcdoc = `<html style="background:#090d16; color:#fff; font-family:sans-serif; padding:2rem;">
-          <h2>VictorX App Engine</h2>
-          <p>Target Stack: <strong>${stack.toUpperCase()}</strong> synthesized successfully!</p>
-          <pre style="background:#1e293b; padding:1rem; border-radius:8px; color:#38bdf8;">${escapeHtml(generatedCode.substring(0, 300))}...</pre>
-        </html>`;
+    if (codeArea) {
+      if (stack === "flutter") {
+        codeArea.innerText = `// VictorX Synthesized Flutter App\nimport 'package:flutter/material.dart';\nvoid main() => runApp(const MaterialApp(home: Scaffold(body: Center(child: Text("VictorX Flutter App")))));`;
+      } else {
+        codeArea.innerText = `# VictorX Python FastAPI Server\nfrom fastapi import FastAPI\napp = FastAPI()\n@app.get("/")\ndef root(): return {"app": "VictorX"}`;
       }
-
-      toast("App Code Synthesized!", "success");
-    });
-  }
-
-  if (fixBtn) {
-    fixBtn.addEventListener("click", () => {
-      const bugText = document.getElementById("bugFixInput").value.trim();
-      if (!bugText) return toast("Please paste stack trace", "error");
-
-      toast("Analyzing stack trace & auto-patching...", "info");
-      setTimeout(() => {
-        const patchedCode = `// [VICTORX AUTO-PATCHER COMPLETE]\n// Fixed NullPointerException & State Mutation\n\ntry {\n  // Patched logic below\n  executeTaskSafely();\n} catch (e) {\n  logger.error("Handled safely:", e);\n}`;
-        document.getElementById("codeDisplayArea").innerText = patchedCode;
-        toast("Bug Fixed & Code Patched!", "success");
-      }, 500);
-    });
-  }
+    }
+    toast("Code Synthesized!", "success");
+  });
 
   const copyBtn = document.getElementById("copyCodeBtn");
   if (copyBtn) {
     copyBtn.addEventListener("click", () => {
       const code = document.getElementById("codeDisplayArea").innerText;
       navigator.clipboard.writeText(code);
-      toast("Code copied to clipboard!", "success");
+      toast("Code copied!", "success");
     });
   }
 }
 
-function synthesizeCodeApp(stack, prompt) {
-  if (stack === "flutter") {
-    return `// VictorX Flutter E-Commerce App v1.0.0
-import 'package:flutter/material.dart';
-
-void main() => runApp(const VictorXApp());
-
-class VictorXApp extends StatelessWidget {
-  const VictorXApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'VictorX AI Store',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF090D16),
-        primaryColor: const Color(0xFF6366F1),
-      ),
-      home: const HomeScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('VictorX AI Store')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {},
-          child: const Text('Explore AI Products'),
-        ),
-      ),
-    );
-  }
-}`;
-  } else if (stack === "fastapi") {
-    return `# VictorX Python FastAPI Backend Server
-from fastapi import FastAPI, BackgroundTasks
-from pydantic import BaseModel
-
-app = FastAPI(title="VictorX AI Backend", version="1.0.0")
-
-class PromptRequest(BaseModel):
-    prompt: str
-    model: str = "victorx-3b-moe"
-
-@app.post("/api/v1/generate")
-async def generate_response(req: PromptRequest):
-    return {
-        "status": "success",
-        "result": f"10x Smart response for: {req.prompt}",
-        "moe_experts": [2, 5]
-    }`;
-  }
-  return `<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { background: #090d16; color: white; font-family: system-ui; text-align: center; padding: 3rem; }
-        .card { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        button { background: #6366f1; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>VictorX Web App</h1>
-        <p>Synthesized dynamically from user prompt: "${prompt}"</p>
-        <button onclick="alert('VictorX Action Clicked!')">Launch App ⚡</button>
-    </div>
-</body>
-</html>`;
-}
-
 /* ==========================================================================
-   6.5 TERMINAL CLI & MODEL PULL STUDIO
+   6. TERMINAL CLI STUDIO
    ========================================================================== */
 function initCliStudio() {
   const runBtn = document.getElementById("runCliBtn");
   const actionSel = document.getElementById("cliActionSelect");
   const paramInput = document.getElementById("cliParamInput");
-  const cmdDisplay = document.getElementById("generatedCliCmd");
-  const copyCmdBtn = document.getElementById("copyCliCmdBtn");
-  const clearTermBtn = document.getElementById("clearCliTerminalBtn");
   const screen = document.getElementById("cliTerminalScreen");
-
-  function updateCmdPreview() {
-    if (!actionSel || !paramInput || !cmdDisplay) return;
-    const action = actionSel.value;
-    const param = paramInput.value.trim();
-    cmdDisplay.innerText = `victor ${action} ${param}`;
-  }
-
-  if (actionSel && paramInput) {
-    actionSel.addEventListener("change", updateCmdPreview);
-    paramInput.addEventListener("input", updateCmdPreview);
-    updateCmdPreview();
-  }
-
-  if (copyCmdBtn) {
-    copyCmdBtn.addEventListener("click", () => {
-      if (cmdDisplay) {
-        navigator.clipboard.writeText(cmdDisplay.innerText);
-        toast("CLI Command copied! Paste in Terminal, CMD, or PowerShell", "success");
-      }
-    });
-  }
-
-  if (clearTermBtn && screen) {
-    clearTermBtn.addEventListener("click", () => {
-      screen.innerHTML = `
-        <div class="term-line term-banner">⚡ VICTORX CLI v1.0.0 — System Terminal & Local AI Engine</div>
-        <div class="term-line term-dim">Type command above or click Execute to pull model layers and run local inference.</div>
-      `;
-      toast("Terminal cleared", "info");
-    });
-  }
 
   if (runBtn && screen) {
     runBtn.addEventListener("click", () => {
@@ -872,139 +542,36 @@ function initCliStudio() {
       screen.appendChild(cmdLine);
 
       if (action === "pull") {
-        simulateCliPull(screen, param);
-      } else if (action === "run") {
-        simulateCliRun(screen, param);
-      } else if (action === "code") {
-        simulateCliCode(screen, param);
+        const line = document.createElement("div");
+        line.className = "term-line term-dim";
+        line.innerText = `pulling sha256:5f3c11e7a4... [====================] 100% (1.4 GB)`;
+        screen.appendChild(line);
+        const done = document.createElement("div");
+        done.className = "term-line term-green";
+        done.innerText = `✔ Model weight '${param}' docked to local storage!`;
+        screen.appendChild(done);
       } else {
-        simulateCliList(screen);
+        const line = document.createElement("div");
+        line.className = "term-line term-banner";
+        line.innerText = `VictorX CLI: Executed ${action} command for ${param}`;
+        screen.appendChild(line);
       }
+
+      screen.scrollTop = screen.scrollHeight;
     });
   }
 }
 
-function simulateCliPull(screen, model) {
-  const line = document.createElement("div");
-  line.className = "term-line term-dim";
-  line.innerText = `📥 Pulling weight layers for '${model}'...`;
-  screen.appendChild(line);
-
-  let layers = [
-    { name: "sha256:8a1f47b2c9... [manifest]", size: "4.2 KB" },
-    { name: "sha256:5f3c11e7a4... [weights_0]", size: "1.4 GB" }
-  ];
-
-  let idx = 0;
-  function processLayer() {
-    if (idx >= layers.length) {
-      const doneMsg = document.createElement("div");
-      doneMsg.className = "term-line term-green";
-      doneMsg.innerText = `✔ Model weight '${model}' successfully docked! (INT4 AWQ Quantized)`;
-      screen.appendChild(doneMsg);
-      screen.scrollTop = screen.scrollHeight;
-      state.installed.add(model);
-      saveState();
-      renderModelCards();
-      return;
-    }
-
-    const layer = layers[idx];
-    const progressLine = document.createElement("div");
-    progressLine.className = "term-line";
-    screen.appendChild(progressLine);
-
-    let pct = 0;
-    const interval = setInterval(() => {
-      pct += 25;
-      const bar = '='.repeat(pct / 5) + ' '.repeat(20 - pct / 5);
-      progressLine.innerHTML = `<span class="term-dim">pulling ${layer.name}:</span> [${bar}] ${pct}% (${layer.size})`;
-      screen.scrollTop = screen.scrollHeight;
-
-      if (pct >= 100) {
-        clearInterval(interval);
-        idx++;
-        setTimeout(processLayer, 150);
-      }
-    }, 100);
-  }
-
-  processLayer();
-}
-
-function simulateCliRun(screen, model) {
-  const line = document.createElement("div");
-  line.className = "term-line";
-  line.innerHTML = `<span class="term-banner">VictorX Engine (${model}):</span> 10x Smart Reasoning Stream active. Routed tokens through sparse MoE Expert #2 & Expert #5. Sub-10ms response ready.`;
-  screen.appendChild(line);
-  screen.scrollTop = screen.scrollHeight;
-}
-
-function simulateCliCode(screen, prompt) {
-  const line = document.createElement("div");
-  line.className = "term-line";
-  line.innerHTML = `<span class="term-green">Synthesized Code Output:</span>\n\`\`\`python\n# VictorX CLI Synthesizer\nprint("Synthesized for prompt: ${escapeHtml(prompt)}")\n\`\`\``;
-  screen.appendChild(line);
-  screen.scrollTop = screen.scrollHeight;
-}
-
-function simulateCliList(screen) {
-  const line = document.createElement("div");
-  line.className = "term-line";
-  line.innerHTML = `📦 Docked Models: victorx-3b-moe (8x3B MoE), victorx-1b-fast (1B Edge), gemma4 (9B/27B), llama-3.3-70b (70B Instruct)\n📟 Telemetry: VRAM 4.2GB/24.0GB | FlashAttention-2 Active`;
-  screen.appendChild(line);
-  screen.scrollTop = screen.scrollHeight;
-}
-
-/* ==========================================================================
-   7. GPU DASHBOARD TELEMETRY
-   ========================================================================== */
 function initGpuDashboard() {
   setInterval(() => {
-    // Dynamic Telemetry Pulse Simulation
     const vramVal = document.getElementById("vramMeterVal");
     const vramFill = document.getElementById("vramMeterFill");
-    const throughput = document.getElementById("throughputVal");
-
     if (vramVal && vramFill) {
-      let gb = (4.0 + Math.random() * 0.5).toFixed(1);
+      let gb = (4.0 + Math.random() * 0.4).toFixed(1);
       vramVal.innerText = `${gb} GB / 24.0 GB`;
-      let pct = ((gb / 24.0) * 100).toFixed(1);
-      vramFill.style.width = `${pct}%`;
-    }
-
-    if (throughput) {
-      let tok = (145 + Math.random() * 10).toFixed(1);
-      throughput.innerText = `${tok} tok/sec`;
+      vramFill.style.width = `${((gb / 24.0) * 100).toFixed(1)}%`;
     }
   }, 3000);
-}
-
-/* ==========================================================================
-   8. MODEL DOCK REGISTRY
-   ========================================================================== */
-function initModelDock() {
-  renderModelCards();
-}
-
-function renderModelCards() {
-  const grid = document.getElementById("modelsGrid");
-  if (!grid) return;
-  grid.innerHTML = "";
-  MODELS.forEach(m => {
-    const card = document.createElement("div");
-    card.className = "model-card";
-    card.innerHTML = `
-      <div>
-        <div class="card-title">${m.name} <span class="sidebar-desc">(${m.size})</span></div>
-        <p class="card-desc">${m.desc}</p>
-      </div>
-      <div>
-        <button class="btn btn-primary-full pull-btn" data-id="${m.id}">📥 Dock Model</button>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
 }
 
 function checkBackendHealth() {
@@ -1013,13 +580,11 @@ function checkBackendHealth() {
   fetch(`${state.keys.fastapi}/health`)
     .then(res => res.json())
     .then(() => {
-      badge.classList.remove("offline");
-      badge.classList.add("online");
+      badge.classList.remove("offline"); badge.classList.add("online");
       badge.querySelector(".status-text").innerText = "FastAPI Online";
     })
     .catch(() => {
-      badge.classList.remove("online");
-      badge.classList.add("offline");
+      badge.classList.remove("online"); badge.classList.add("offline");
       badge.querySelector(".status-text").innerText = "FastAPI / Local";
     });
 }
@@ -1034,7 +599,6 @@ function formatMarkdown(str) {
   if (!str) return "";
   let html = str;
 
-  // Code blocks ```lang ... ```
   html = html.replace(/```([a-z]*)\n([\s\S]*?)```/g, (match, lang, code) => {
     return `<div class="msg-code-block">
       <div class="code-block-header">
@@ -1045,32 +609,23 @@ function formatMarkdown(str) {
     </div>`;
   });
 
-  // Inline formatting
-  html = escapeHtmlExceptTags(html)
-    .replace(/### (.*?)\n/g, '<h3 class="msg-h3">$1</h3>')
-    .replace(/## (.*?)\n/g, '<h2 class="msg-h2">$1</h2>')
-    .replace(/# (.*?)\n/g, '<h1 class="msg-h1">$1</h1>')
+  return escapeHtmlExceptTags(html)
+    .replace(/### (.*?)\n/g, '<h3 style="margin:0.5rem 0; font-family:var(--font-heading);">$1</h3>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/`([^`]+)`/g, '<code class="msg-inline-code">$1</code>')
     .replace(/\n/g, '<br>');
-
-  return html;
 }
 
 function escapeHtmlExceptTags(str) {
-  // Protect pre-generated HTML code blocks
-  const codeBlocks = [];
-  str = str.replace(/<div class="msg-code-block">[\s\S]*?<\/div>/g, (match) => {
-    codeBlocks.push(match);
-    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  const blocks = [];
+  str = str.replace(/<div class="msg-code-block">[\s\S]*?<\/div>/g, (m) => {
+    blocks.push(m);
+    return `__CODE_BLOCK_${blocks.length - 1}__`;
   });
 
   str = escapeHtml(str);
-
-  codeBlocks.forEach((block, idx) => {
-    str = str.replace(`__CODE_BLOCK_${idx}__`, block);
+  blocks.forEach((b, idx) => {
+    str = str.replace(`__CODE_BLOCK_${idx}__`, b);
   });
-
   return str;
 }
