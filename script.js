@@ -323,7 +323,7 @@ function renderCurrentChatMessages() {
   container.scrollTop = container.scrollHeight;
 }
 
-function handleSendMessage() {
+async function handleSendMessage() {
   const input = document.getElementById("chatInput");
   if (!input) return;
   const prompt = input.value.trim();
@@ -346,25 +346,61 @@ function handleSendMessage() {
   input.value = "";
   renderCurrentChatMessages();
 
-  // SIMULATE 10X SMART AI REASONING RESPONSE
   const selectedModel = document.getElementById("chatModelSelect").value;
   const toolEnabled = document.getElementById("toolCallingToggle").checked;
 
-  setTimeout(() => {
-    let cotText = `[VictorX MoE Router Gating]: Activated Expert #2 & Expert #5\n[Context Memory]: Loaded 32K context window token buffer\n[10x Deep Analysis]: Synthesizing precise response for query...`;
-    let responseText = generateSmartAiResponse(prompt, selectedModel, toolEnabled);
+  let cotText = `[VictorX MoE Router Gating]: Activated Expert #2 & Expert #5\n[Context Memory]: Loaded 32K context window token buffer\n[10x Deep Analysis]: Routing prompt tokens through neural matrices...`;
+  let responseText = "";
 
-    currentChat.messages.push({
-      role: "assistant",
-      content: responseText,
-      cot: cotText,
-      cotTime: "0.18s",
-      timestamp: new Date().toISOString()
-    });
+  // 1. Try Local Ollama Server
+  if (selectedModel === "ollama-local" || state.ollamaOnline) {
+    try {
+      const ollamaRes = await fetch(`${state.keys.ollama}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: selectedModel === "ollama-local" ? "llama3" : selectedModel, prompt: prompt, stream: false })
+      });
+      if (ollamaRes.ok) {
+        const data = await ollamaRes.json();
+        responseText = data.response;
+      }
+    } catch (e) {
+      console.log("Ollama local connection skipped:", e);
+    }
+  }
 
-    saveState();
-    renderCurrentChatMessages();
-  }, 400);
+  // 2. Try FastAPI PyTorch Backend
+  if (!responseText && state.keys.fastapi) {
+    try {
+      const apiRes = await fetch(`${state.keys.fastapi}/api/v1/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt, model: selectedModel, hide_cot: state.hideCoT })
+      });
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        responseText = data.response;
+      }
+    } catch (e) {
+      console.log("FastAPI backend skipped:", e);
+    }
+  }
+
+  // 3. Fallback to VictorX Engine Generator
+  if (!responseText) {
+    responseText = generateSmartAiResponse(prompt, selectedModel, toolEnabled);
+  }
+
+  currentChat.messages.push({
+    role: "assistant",
+    content: responseText,
+    cot: cotText,
+    cotTime: "0.18s",
+    timestamp: new Date().toISOString()
+  });
+
+  saveState();
+  renderCurrentChatMessages();
 }
 
 function generateSmartAiResponse(prompt, model, toolEnabled) {

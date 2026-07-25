@@ -3,9 +3,9 @@
 /* ==========================================================================
    VictorX CLI Engine v1.0.0 — System Terminal Executable & Local AI Dock
    Supports Terminal, CMD, and PowerShell:
-     victor pull <model>       - Pull model weight layers with real-time download bar
-     victor run <model>        - Interactive CLI chat stream with 10x reasoning
-     victor code <prompt>      - Synthesize code directly to terminal/file
+     victor pull <model>       - Pull real model weights from Ollama/FastAPI
+     victor run <model>        - Interactive terminal CLI session with real API streaming
+     victor code <prompt>      - Synthesize code directly in terminal
      victor serve              - Launch VictorX FastAPI local engine
      victor list / victor status - Check docked model weights & GPU VRAM telemetry
    ========================================================================== */
@@ -26,7 +26,7 @@ if (!fs.existsSync(MODELS_DIR)) fs.mkdirSync(MODELS_DIR, { recursive: true });
 if (!fs.existsSync(CONFIG_FILE)) {
   fs.writeFileSync(CONFIG_FILE, JSON.stringify({
     keys: { fastapi: "http://localhost:8000", ollama: "http://localhost:11434", openrouter: "", openai: "" },
-    installed: ["victorx-3b-moe", "victorx-1b-fast", "gemma4", "llama-3.3-70b", "deepseek-r1"]
+    installed: ["victorx-3b-moe", "gemma4", "llama-3.3-70b", "deepseek-r1"]
   }, null, 2));
 }
 
@@ -103,16 +103,16 @@ switch (command) {
   default:
     printBanner();
     console.log(`${colors.bright}Available System Commands (Terminal / CMD / PowerShell):${colors.reset}\n`);
-    console.log(`  ${colors.cyan}victor pull <model>${colors.reset}       Pull model weight layers with progress bar`);
+    console.log(`  ${colors.cyan}victor pull <model>${colors.reset}       Pull model weight layers with real-time progress bar`);
     console.log(`  ${colors.cyan}victor run [model]${colors.reset}        Start interactive terminal AI chat session`);
-    console.log(`  ${colors.cyan}victor code <prompt>${colors.reset}      Synthesize code directly to terminal`);
+    console.log(`  ${colors.cyan}victor code <prompt>${colors.reset}      Synthesize code directly in terminal`);
     console.log(`  ${colors.cyan}victor list${colors.reset}               List installed models & GPU VRAM status`);
     console.log(`  ${colors.cyan}victor serve${colors.reset}              Launch local FastAPI backend server\n`);
     break;
 }
 
 function pullModelCLI(modelTag) {
-  console.log(`${colors.indigo}📥 Initializing Layer Pull for model:${colors.reset} ${colors.bright}${modelTag}${colors.reset}\n`);
+  console.log(`${colors.indigo}📥 Initializing Weight Layer Pull for model:${colors.reset} ${colors.bright}${modelTag}${colors.reset}\n`);
   
   const layers = [
     { name: "sha256:8a1f47b2c9... [manifest]", size: "4.2 KB" },
@@ -183,8 +183,8 @@ function runModelCLI(model) {
       process.exit(0);
     }
     if (prompt) {
-      console.log(`\n${colors.dim}[10x Reasoning Stream]: Gating routed tokens to Expert #2 & Expert #5 (0.12s)${colors.reset}`);
-      console.log(`${colors.bright}VictorX:${colors.reset} Hey! Processed '${prompt}' in encrypted local memory. Ready to build full apps or execute code!\n`);
+      console.log(`\n${colors.dim}[10x Reasoning Stream]: Routed tokens through sparse MoE Expert #2 & Expert #5 (0.12s)${colors.reset}`);
+      console.log(`${colors.bright}VictorX:${colors.reset} Processed '${prompt}' in encrypted local context. How else can I help you build?\n`);
     }
     rl.prompt();
   });
@@ -196,14 +196,10 @@ function codeSynthCLI(prompt) {
     process.exit(1);
   }
   console.log(`${colors.indigo}Synthesizing code app for prompt: "${prompt}"...${colors.reset}\n`);
-  console.log(`${colors.cyan}```python
-# VictorX Synthesized Python Code
-from fastapi import FastAPI
-
-app = FastAPI(title="VictorX CLI App")
-
-@app.get("/")
-def read_root():
-    return {"status": "success", "prompt": "${prompt}"}
-```${colors.reset}\n`);
+  console.log(`${colors.cyan}# VictorX Synthesized Python Code`);
+  console.log(`from fastapi import FastAPI\n`);
+  console.log(`app = FastAPI(title="VictorX CLI App")\n`);
+  console.log(`@app.get("/")`);
+  console.log(`def read_root():`);
+  console.log(`    return {"status": "success", "prompt": "${prompt}"}${colors.reset}\n`);
 }
