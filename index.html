@@ -4,391 +4,224 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9747982919206794" crossorigin="anonymous"></script>
     <meta name="google-adsense-account" content="ca-pub-9747982919206794">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="google9b3c772b30ea79bb.html">
-    <title>VictorX 1.0.0 — Next-Gen AI Command Center</title>
+    <title>VictorX AI — India's Premier Frontier AI Engine</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains-Mono:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9747982919206794" crossorigin="anonymous"></script>
 </head>
-<body>
+<body class="theme-dark">
 
-    <!-- ANIMATED NEON PARTICLE CANVAS BACKDROP -->
+    <!-- BACKGROUND CANVAS & AMBIENT GLOW -->
     <canvas id="particleCanvas"></canvas>
     <div class="bg-glow-orb orb-1"></div>
     <div class="bg-glow-orb orb-2"></div>
 
-    <!-- TOP NAVIGATION BAR -->
-    <header class="navbar">
-        <div class="nav-container">
-            <a href="#" class="brand">
-                <div class="brand-icon">⚡</div>
-                <div class="brand-titles">
-                    <span class="brand-name">VictorX</span>
-                    <span class="brand-version">v1.0.0 Pro</span>
-                </div>
-            </a>
-
-            <!-- CENTER MODE SWITCHER -->
-            <nav class="mode-switcher">
-                <button class="mode-btn active" data-mode="chat">💬 Chat & CoT</button>
-                <button class="mode-btn" data-mode="image">🎨 Imagine AI</button>
-                <button class="mode-btn" data-mode="video">🎬 Motion Video</button>
-                <button class="mode-btn" data-mode="code">⚡ Code Synthesizer</button>
-                <button class="mode-btn" data-mode="cli">💻 CLI Terminal</button>
-                <button class="mode-btn" data-mode="gpu">⚙️ GPU Telemetry</button>
-            </nav>
-
-            <div class="nav-actions">
-                <div id="tokenCounterBadge" class="token-pill" title="24/7 Daily Token Quota Calculator">
-                    <span>🎟️ Tokens: <strong id="tokenCountText">50,000 / 50,000</strong></span>
-                </div>
-                <button id="openAdminModalBtn" class="btn btn-ghost-pill">👑 Admin</button>
-                <button id="openPermissionsBtn" class="btn btn-ghost-pill">🛡️ Privacy</button>
-                <button id="openApiKeysBtn" class="btn btn-ghost-pill">🔑 Keys</button>
+    <!-- SIDEBAR DRAWER (META AI & GEMINI STYLE) -->
+    <aside id="sidebarDrawer" class="sidebar-drawer">
+        <div class="drawer-header">
+            <div class="drawer-search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="drawerSearchInput" placeholder="Search chats / உரையாடல்களில் தேடு...">
             </div>
-        </div>
-    </header>
-
-    <!-- TOAST NOTIFICATIONS -->
-    <div id="toast" class="toast-container"></div>
-
-    <!-- MAIN APP CANVAS WORKSPACE -->
-    <main class="app-workspace">
-
-        <!-- 1. CHAT & DEEP REASONING STUDIO -->
-        <div id="studio-chat" class="studio-view active">
-            <div class="central-chat-container">
-                <header class="view-header">
-                    <div class="model-selector-box">
-                        <span class="pulse-status"></span>
-                        <select id="chatModelSelect" class="clean-select">
-                            <option value="victorx-3b-moe" selected>VictorX 3B MoE (Sparse Top-2 Router)</option>
-                            <option value="victorx-claude">VictorX Claude 3.7 Engine (Masterful Code)</option>
-                            <option value="victorx-gpt4o">VictorX GPT-4o Omni (High-Speed)</option>
-                            <option value="victorx-kimi">VictorX Kimi K1.5 Engine (Deep Research)</option>
-                            <option value="victorx-llama">VictorX Llama 3.3 70B (Instruct)</option>
-                            <option value="ollama-local">Local Ollama Model (http://localhost:11434)</option>
-                        </select>
-                    </div>
-
-                    <div class="view-controls">
-                        <button id="newChatSessionBtn" class="btn btn-ghost-pill">➕ New Session</button>
-                        <label class="toggle-pill">
-                            <span>Direct 10x Results</span>
-                            <input type="checkbox" id="hideCoTToggle" checked>
-                            <span class="pill-slider"></span>
-                        </label>
-                        <button id="clearChatBtn" class="btn btn-icon" title="Clear View">🧹</button>
-                    </div>
-                </header>
-
-                <div id="chatMessages" class="chat-flow">
-                    <div class="hero-welcome">
-                        <div class="hero-glow-logo">⚡</div>
-                        <h1>What can I help you build today?</h1>
-                        <p>VictorX Next-Gen Multi-Modal AI Engine powered by Sparse MoE, Deep Reasoning & Zero-Leak Local Privacy.</p>
-                        
-                        <div class="quick-prompts-grid">
-                            <button class="prompt-card" data-prompt="Build a complete Flutter E-commerce app with cart management.">
-                                <span class="card-icon">📱</span>
-                                <strong>Flutter Mobile App</strong>
-                                <span>Generate complete Dart UI & services</span>
-                            </button>
-
-                            <button class="prompt-card" data-prompt="Write a high-throughput Python FastAPI server with JWT authentication.">
-                                <span class="card-icon">🐍</span>
-                                <strong>Python FastAPI Server</strong>
-                                <span>Async REST API with Pydantic validation</span>
-                            </button>
-
-                            <button class="prompt-card" data-prompt="Create a modern landing page web code with glassmorphism CSS.">
-                                <span class="card-icon">🌐</span>
-                                <strong>Glassmorphism Web UI</strong>
-                                <span>Responsive HTML5 & CSS custom design</span>
-                            </button>
-
-                            <button class="prompt-card" data-prompt="Explain Quantum Computing fundamentals with clear analogies.">
-                                <span class="card-icon">⚛️</span>
-                                <strong>Quantum Physics</strong>
-                                <span>Deep step-by-step conceptual guide</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="floating-input-bar">
-                    <textarea id="chatInput" rows="1" placeholder="Ask VictorX anything or request full app generation..."></textarea>
-                    <div class="input-actions">
-                        <button id="sendChatBtn" class="btn-send-glow">Send ⚡</button>
-                    </div>
-                </div>
-            </div>
+            <button id="closeDrawerBtn" class="drawer-close-btn">&times;</button>
         </div>
 
-        <!-- 2. IMAGINE AI STUDIO -->
-        <div id="studio-image" class="studio-view">
-            <div class="studio-split-layout">
-                <div class="controls-card">
-                    <h3>🎨 Imagine Studio</h3>
-                    <p class="sub-text">Diffusion Text-to-Image & 4x Upscaling</p>
-                    
-                    <div class="field-group">
-                        <label>Prompt</label>
-                        <textarea id="imgPrompt" rows="3" placeholder="A futuristic cyberpunk city with neon reflections, hyperrealistic 8k..."></textarea>
-                    </div>
+        <div class="drawer-menu-list">
+            <button id="newChatDrawerBtn" class="drawer-menu-item primary">
+                <span class="icon">✍️</span>
+                <span class="label" data-i18n="newChat">New chat</span>
+            </button>
 
-                    <div class="field-group">
-                        <label>Style Preset</label>
-                        <select id="imgStyle" class="clean-select">
-                            <option value="photorealistic" selected>📸 Photorealistic</option>
-                            <option value="cyberpunk">🌃 Cyberpunk Sci-Fi</option>
-                            <option value="anime">🌸 Anime Artwork</option>
-                            <option value="3d-render">🎮 3D Unreal Engine 5</option>
-                        </select>
-                    </div>
+            <button class="drawer-menu-item" data-action="media">
+                <span class="icon">🖼️</span>
+                <span class="label" data-i18n="media">Media Gallery</span>
+                <span class="dot-indicator"></span>
+            </button>
 
-                    <div class="field-group">
-                        <label>Aspect Ratio</label>
-                        <select id="imgAspectRatio" class="clean-select">
-                            <option value="1:1" selected>1:1 Square</option>
-                            <option value="16:9">16:9 Landscape</option>
-                            <option value="9:16">9:16 Portrait</option>
-                        </select>
-                    </div>
+            <button class="drawer-menu-item" data-action="language">
+                <span class="icon">🌐</span>
+                <span class="label">Language / மொழி: <strong id="currentLangLabel">English</strong></span>
+            </button>
 
-                    <button id="generateImgBtn" class="btn btn-primary-gradient full-w">✨ Generate Image</button>
+            <button class="drawer-menu-item" data-action="admin">
+                <span class="icon">👑</span>
+                <span class="label" data-i18n="adminControl">Admin Panel</span>
+            </button>
+        </div>
+
+        <div class="drawer-section-title" data-i18n="recents">Recent Chats / சமீபத்தியவை</div>
+
+        <div id="drawerChatHistoryList" class="drawer-history-list">
+            <!-- Dynamic Recent Chat History -->
+        </div>
+
+        <div class="drawer-footer-user">
+            <div class="user-avatar-circle">VE</div>
+            <div class="user-info-text">
+                <strong id="userNameText">Victor Ezhil</strong>
+                <span>India AI Premium Pro</span>
+            </div>
+            <button id="drawerSettingsBtn" class="user-settings-btn" title="Settings">⚙️</button>
+        </div>
+    </aside>
+
+    <!-- MAIN INTERFACE WRAPPER -->
+    <div id="appViewport" class="app-viewport">
+
+        <!-- TOP BAR (META AI / CHATGPT STYLE) -->
+        <header class="app-header">
+            <div class="header-left">
+                <button id="toggleDrawerBtn" class="icon-btn-hamburger" title="Open Sidebar">☰</button>
+                <h1 class="brand-title">VictorX AI</h1>
+            </div>
+
+            <div class="header-right">
+                <div id="tokenBadge" class="token-pill-header" title="24/7 Daily Tokens">
+                    <span>🎟️ <strong id="tokenCountText">50,000 / 50,000</strong></span>
                 </div>
+                <button id="langSelectBtn" class="header-btn-lang" title="Switch Language">🌐</button>
+                <button id="openAdminModalBtn" class="header-btn-admin" title="Admin Governance">👑</button>
+            </div>
+        </header>
 
-                <div class="preview-card">
-                    <div id="imageCanvasBox" class="canvas-display-wrap">
-                        <div id="imgPlaceholder" class="placeholder-text">🎨 Canvas Ready</div>
-                        <div id="imgOutputWrap" class="image-wrap hidden">
-                            <canvas id="imgDisplayCanvas"></canvas>
-                            <button id="downloadImgBtn" class="btn btn-glass mt-2">📥 Download HD</button>
-                        </div>
+        <!-- TOAST NOTIFICATIONS -->
+        <div id="toast" class="toast-container"></div>
+
+        <!-- MAIN CHAT & RESPONSE FLOW CONTAINER -->
+        <main id="chatFlowContainer" class="chat-flow-container">
+
+            <!-- HERO WELCOME & CHIPS (META AI STYLE) -->
+            <div id="heroWelcomeView" class="hero-welcome-screen">
+                <div class="meta-ai-badge">⚡ VictorX 1.0.0 Pro • India AI Engine</div>
+                <h2 class="hero-heading" data-i18n="heroGreeting">What can I help you build today?</h2>
+                
+                <div class="suggestion-chips-column">
+                    <button class="meta-chip-btn" data-prompt="Create a photorealistic 8k image of an Indian festival cyber city at night.">
+                        <span class="chip-icon">🎨</span>
+                        <span data-i18n="chipCreateImg">Create an image / படம் உருவாக்கு</span>
+                    </button>
+
+                    <button class="meta-chip-btn" data-prompt="Build a full Omegle-like video chat platform with Python FastAPI WebSockets.">
+                        <span class="chip-icon">⚡</span>
+                        <span data-i18n="chipBuildApp">Build Video Chat Platform / செயலியை உருவாக்கு</span>
+                    </button>
+
+                    <button class="meta-chip-btn" data-prompt="Explain Quantum Computing in Tamil & English step by step.">
+                        <span class="chip-icon">🎓</span>
+                        <span data-i18n="chipLearnGrow">Learn and grow / கற்றுக்கொள்</span>
+                    </button>
+
+                    <button class="meta-chip-btn" data-prompt="Analyse market trends & AI startup blueprint for 2026.">
+                        <span class="chip-icon">💡</span>
+                        <span data-i18n="chipAnalyse">Analyse for me / பகுப்பாய்வு செய்</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MESSAGES CONTAINER -->
+            <div id="chatMessagesList" class="messages-list hidden"></div>
+
+        </main>
+
+        <!-- BOTTOM FLOATING INPUT CONTAINER (META AI & CHATGPT MOBILE STYLE) -->
+        <footer class="bottom-input-container">
+            <div class="input-card-box">
+                <textarea id="chatInput" rows="1" placeholder="Ask VictorX AI... / கேளுங்கள்..."></textarea>
+                
+                <div class="input-bottom-bar">
+                    <div class="bar-left">
+                        <button id="attachBtn" class="input-action-btn" title="Add Attachment">+</button>
+                        <span id="instantBadge" class="instant-pill">Instant ⚡</span>
+                    </div>
+
+                    <div class="bar-right">
+                        <button id="micBtn" class="input-action-btn" title="Voice Input">🎙️</button>
+                        <button id="sendBtn" class="input-send-btn">➔</button>
                     </div>
                 </div>
             </div>
-        </div>
+        </footer>
 
-        <!-- 3. MOTION VIDEO STUDIO -->
-        <div id="studio-video" class="studio-view">
-            <div class="studio-split-layout">
-                <div class="controls-card">
-                    <h3>🎬 Motion Video Studio</h3>
-                    <p class="sub-text">4K Text-to-Video & Camera Controls</p>
-                    
-                    <div class="field-group">
-                        <label>Video Prompt</label>
-                        <textarea id="videoPrompt" rows="3" placeholder="Cinematic drone flight through snow mountains at sunset..."></textarea>
-                    </div>
+    </div>
 
-                    <div class="field-group">
-                        <label>Camera Motion</label>
-                        <select id="cameraMotion" class="clean-select">
-                            <option value="zoom-in" selected>🔍 Zoom In</option>
-                            <option value="pan-right">➡️ Pan Right</option>
-                            <option value="orbit">🔄 Orbit 360°</option>
-                        </select>
-                    </div>
-
-                    <button id="generateVideoBtn" class="btn btn-primary-gradient full-w">🎥 Render Video</button>
-                </div>
-
-                <div class="preview-card">
-                    <div class="video-display-wrap">
-                        <div id="videoPlaceholder" class="placeholder-text">🎬 Video Player Ready</div>
-                        <div id="videoOutputWrap" class="video-wrap hidden">
-                            <div id="syntheticVideoScreen" class="video-screen">
-                                <div id="videoAnimLayer" class="video-anim"></div>
-                            </div>
-                            <div class="video-bar">
-                                <button id="playPauseVideoBtn" class="btn btn-glass-sm">▶ Play</button>
-                                <span id="videoTimeDisplay">0:00 / 0:04</span>
-                            </div>
-                        </div>
-                    </div>
+    <!-- LANGUAGE SELECTOR MODAL -->
+    <div id="langModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🌐 Choose Language / மொழியைத் தேர்ந்தெடுக்கவும்</h3>
+                <button class="close-modal-btn" data-close="langModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="language-options-grid">
+                    <button class="lang-opt-btn active" data-lang="en">🇬🇧 English</button>
+                    <button class="lang-opt-btn" data-lang="ta">🇮🇳 தமிழ் (Tamil)</button>
+                    <button class="lang-opt-btn" data-lang="hi">🇮🇳 हिंदी (Hindi)</button>
+                    <button class="lang-opt-btn" data-lang="te">🇮🇳 తెలుగు (Telugu)</button>
+                    <button class="lang-opt-btn" data-lang="ml">🇮🇳 മലയാളം (Malayalam)</button>
+                    <button class="lang-opt-btn" data-lang="kn">🇮🇳 ಕನ್ನಡ (Kannada)</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 4. CODE SYNTHESIZER STUDIO -->
-        <div id="studio-code" class="studio-view">
-            <div class="studio-split-layout">
-                <div class="controls-card">
-                    <h3>⚡ Code Synthesizer</h3>
-                    <p class="sub-text">Flutter, Python & Web Code Generator</p>
-
-                    <div class="field-group">
-                        <label>Target Stack</label>
-                        <select id="codeStackSelect" class="clean-select">
-                            <option value="flutter" selected>📱 Flutter Mobile App</option>
-                            <option value="fastapi">🐍 Python FastAPI Backend</option>
-                            <option value="web-html">🌐 HTML5 / CSS Web App</option>
-                        </select>
-                    </div>
-
-                    <div class="field-group">
-                        <label>App Requirement</label>
-                        <textarea id="codePrompt" rows="4" placeholder="Build a complete product dashboard with dark theme..."></textarea>
-                    </div>
-
-                    <button id="generateCodeBtn" class="btn btn-primary-gradient full-w">🚀 Synthesize Code</button>
-                </div>
-
-                <div class="preview-card">
-                    <div class="code-editor-wrap">
-                        <div class="code-editor-header">
-                            <span>💻 Generated Code</span>
-                            <button id="copyCodeBtn" class="btn btn-glass-sm">📋 Copy Code</button>
-                        </div>
-                        <pre><code id="codeDisplayArea">// Select target stack and click Synthesize</code></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 5. TERMINAL CLI STUDIO -->
-        <div id="studio-cli" class="studio-view">
-            <div class="studio-split-layout">
-                <div class="controls-card">
-                    <h3>💻 Terminal CLI Dock</h3>
-                    <p class="sub-text">Run <code>victor pull</code> & <code>victor run</code></p>
-                    
-                    <div class="field-group">
-                        <label>Command Action</label>
-                        <select id="cliActionSelect" class="clean-select">
-                            <option value="pull" selected>📥 Pull Model Layer (victor pull)</option>
-                            <option value="run">⚡ Run Session (victor run)</option>
-                            <option value="list">📦 List Weights (victor list)</option>
-                        </select>
-                    </div>
-
-                    <div class="field-group">
-                        <label>Model Tag</label>
-                        <input type="text" id="cliParamInput" class="clean-input" value="victorx-3b-moe">
-                    </div>
-
-                    <button id="runCliBtn" class="btn btn-primary-gradient full-w">▶ Execute CLI Command</button>
-                </div>
-
-                <div class="preview-card">
-                    <div class="terminal-screen" id="cliTerminalScreen">
-                        <div class="term-line term-banner">⚡ VICTORX CLI v1.0.0 — System Terminal Executable</div>
-                        <div class="term-line term-dim">Run 'victor pull <model>' in PowerShell/Terminal or click Execute.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 6. GPU TELEMETRY -->
-        <div id="studio-gpu" class="studio-view">
-            <div class="gpu-dashboard-grid">
-                <div class="metric-card">
-                    <h4>📟 GPU VRAM</h4>
-                    <h2 id="vramMeterVal">4.2 GB / 24.0 GB</h2>
-                    <div class="meter-bar"><div id="vramMeterFill" class="meter-fill" style="width: 18%;"></div></div>
-                </div>
-
-                <div class="metric-card">
-                    <h4>⚡ Throughput</h4>
-                    <h2 id="throughputVal">148.5 tok/sec</h2>
-                    <span class="text-green">FlashAttention-2 Active</span>
-                </div>
-
-                <div class="metric-card">
-                    <h4>🧠 Sparse MoE Router</h4>
-                    <h2>Top-2 Active</h2>
-                    <span class="text-purple">Experts #2 & #5 Engaged</span>
-                </div>
-
-                <div class="metric-card">
-                    <h4>💾 KV Cache</h4>
-                    <h2>12.4% Utilized</h2>
-                    <span class="sub-text">Paged Attention Buffer</span>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- ADMIN CONTROL CENTER MODAL -->
+    <!-- PRIVATE ADMIN CONTROL CENTER MODAL (HIDDEN PIN ONLY) -->
     <div id="adminModal" class="modal-backdrop hidden">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>👑 Platform Owner Control Center</h3>
+                <h3>👑 Private Admin Control Panel</h3>
                 <button class="close-modal-btn" data-close="adminModal">&times;</button>
             </div>
             <div class="modal-body">
                 <div id="adminPinGate" class="field-group">
                     <label>Master Security PIN</label>
                     <div class="inline-row">
-                        <input type="password" id="adminPinInput" class="clean-input" placeholder="Enter Master Security PIN...">
+                        <input type="password" id="adminPinInput" class="clean-input" placeholder="Enter Security PIN...">
                         <button id="verifyAdminPinBtn" class="btn btn-primary">Unlock</button>
                     </div>
                 </div>
 
                 <div id="adminControlsPanel" class="hidden">
                     <div class="field-group mb-2">
-                        <label>Branding Title</label>
-                        <input type="text" id="adminBrandTitle" class="clean-input" value="VictorX AI Platform v1.0.0 Pro">
+                        <label>FastAPI / PyTorch Backend Endpoint</label>
+                        <input type="text" id="adminFastApiUrl" class="clean-input" value="http://localhost:8000">
+                    </div>
+                    <div class="field-group mb-2">
+                        <label>Ollama Host Address</label>
+                        <input type="text" id="adminOllamaUrl" class="clean-input" value="http://localhost:11434">
                     </div>
                     <div class="field-group mb-2">
                         <label>System Directive Prompt</label>
-                        <textarea id="adminSystemDirective" rows="3" class="clean-input">You are VictorX—the ultimate high-intelligence AI assistant.</textarea>
+                        <textarea id="adminSystemDirective" rows="3" class="clean-input">You are VictorX—India's premier AI assistant. You answer all questions with high intelligence, multi-language fluency, and instant full code generation.</textarea>
                     </div>
-
-                    <hr style="border:none; border-top:1px solid var(--border-color); margin:1rem 0;">
 
                     <div class="field-group mb-2">
                         <label class="text-red">🚨 24/7 Safety & Violation Report Center</label>
-                        <p class="sub-text">Monitors prohibited keywords (bomb, kill, blood, weapons, terror). Auto-bans users on 3 strikes.</p>
-                        <div id="adminViolationLog" style="background:rgba(0,0,0,0.5); padding:0.75rem; border-radius:8px; font-family:var(--font-mono); font-size:0.78rem; max-height:120px; overflow-y:auto; border:1px solid var(--border-color);">
-                            <div><em>No banned users currently reported.</em></div>
+                        <div id="adminViolationLog" class="violation-log-box">
+                            <div><em>No banned users reported. System 100% Secure.</em></div>
                         </div>
-                        <button id="adminUnbanAllBtn" class="btn btn-glass-sm mt-2">🔄 Reset All Safety Strikes & Unban</button>
+                        <button id="adminUnbanAllBtn" class="btn btn-glass-sm mt-2">🔄 Reset Safety Strikes & Unban</button>
                     </div>
 
-                    <button id="adminSaveSettingsBtn" class="btn btn-primary-gradient full-w mt-2">Save Directives</button>
+                    <button id="adminSaveSettingsBtn" class="btn btn-primary-gradient full-w mt-2">Save Private Settings</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 🚫 ACCOUNT BANNED OVERLAY MODAL -->
+    <!-- 🚫 ACCOUNT BANNED MODAL -->
     <div id="bannedModal" class="modal-backdrop hidden">
-        <div class="modal-card" style="border-color: #ef4444; text-align: center;">
+        <div class="modal-card ban-card">
             <div class="modal-header">
                 <h3 style="color: #ef4444; margin: 0 auto;">🚫 ACCOUNT BANNED & BLOCKED</h3>
             </div>
-            <div class="modal-body" style="padding: 1.5rem 0;">
+            <div class="modal-body" style="padding: 1.5rem 0; text-align: center;">
                 <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🚫</div>
                 <p style="font-weight: 700; font-size: 1.1rem; color: #f87171;">Your session has been 24/7 BLOCKED & BANNED.</p>
-                <p class="sub-text mt-2">System detected 3/3 Safety Violations for prohibited content (bomb/kill/blood/weapons). All access is restricted until Admin unbans your account.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- API KEYS MODAL -->
-    <div id="apiKeysModal" class="modal-backdrop hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>🔑 API Keys & Endpoints</h3>
-                <button class="close-modal-btn" data-close="apiKeysModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="field-group mb-2">
-                    <label>FastAPI Backend Endpoint</label>
-                    <input type="text" id="keyFastApi" class="clean-input" value="http://localhost:8000">
-                </div>
-                <div class="field-group mb-2">
-                    <label>Ollama Host Address</label>
-                    <input type="text" id="keyOllama" class="clean-input" value="http://localhost:11434">
-                </div>
-                <button id="saveApiKeysBtn" class="btn btn-primary-gradient full-w mt-2">Save Endpoints</button>
+                <p class="sub-text mt-2">System detected 3/3 Safety Violations for prohibited content (bomb/kill/blood/weapons). Contact Admin to unban.</p>
             </div>
         </div>
     </div>

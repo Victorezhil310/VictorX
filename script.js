@@ -1,19 +1,15 @@
 /* ==========================================================================
-   VictorX 1.0.0 Pro — Next-Gen Multi-Modal AI Engine & Canvas Controller
+   VictorX AI — India's Premier Frontier AI Engine & Multi-Language Controller
    ========================================================================== */
 
 let state = {
-  activeMode: "chat",
+  lang: localStorage.getItem("victor_lang") || "en",
   keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"fastapi":"http://localhost:8000","ollama":"http://localhost:11434"}'),
   permissions: JSON.parse(localStorage.getItem("victor_permissions") || '{"localStorage":true,"confidential":true,"gpu":true}'),
   chats: JSON.parse(localStorage.getItem("victor_chat_history") || '[]'),
   currentChatId: null,
-  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["victorx-3b-moe","gemma4","llama-3.3-70b"]')),
   hideCoT: true,
-  videoPlaying: false,
-  videoInterval: null,
   adminAuthenticated: false,
-  // 24/7 TOKEN & SAFETY MODERATION STATE
   dailyTokens: parseInt(localStorage.getItem("victor_daily_tokens") || "0"),
   maxDailyTokens: 50000,
   userStrikes: parseInt(localStorage.getItem("victor_user_strikes") || "0"),
@@ -23,30 +19,115 @@ let state = {
 
 const PROHIBITED_KEYWORDS = ["bomb", "kill", "blood", "murder", "weapon", "terror", "explode", "poison", "violence", "harm"];
 
+// Multi-Language i18n Translations (English, Tamil, Hindi, Telugu, Malayalam, Kannada)
+const i18n = {
+  en: {
+    heroGreeting: "What can I help you build today?",
+    chipCreateImg: "Create an image",
+    chipBuildApp: "Build Video Chat Platform",
+    chipLearnGrow: "Learn and grow",
+    chipAnalyse: "Analyse for me",
+    newChat: "New chat",
+    media: "Media Gallery",
+    adminControl: "Admin Panel",
+    recents: "Recent Chats"
+  },
+  ta: {
+    heroGreeting: "இன்று உங்களுக்கு நான் என்ன உருவாக்க உதவட்டும்?",
+    chipCreateImg: "படம் உருவாக்கு",
+    chipBuildApp: "வீடியோ சேட் செயலி உருவாக்கு",
+    chipLearnGrow: "கற்றுக்கொள் மற்றும் வளர்",
+    chipAnalyse: "எனக்காக பகுப்பாய்வு செய்",
+    newChat: "புதிய உரையாடல்",
+    media: "மீடியா கேலரி",
+    adminControl: "நிர்வாகி பேனல்",
+    recents: "சமீபத்திய உரையாடல்கள்"
+  },
+  hi: {
+    heroGreeting: "आज मैं आपकी क्या बनाने में मदद कर सकता हूँ?",
+    chipCreateImg: "एक छवि बनाएं",
+    chipBuildApp: "वीडियो चैट ऐप बनाएं",
+    chipLearnGrow: "सीखें और बढ़ें",
+    chipAnalyse: "मेरे लिए विश्लेषण करें",
+    newChat: "नया चैट",
+    media: "मीडिया गैलरी",
+    adminControl: "एडमिन पैनल",
+    recents: "हाल की बातचीत"
+  },
+  te: {
+    heroGreeting: "ఈరోజు నేను మీకు ఏమి నిర్మించడంలో సహాయపడగలను?",
+    chipCreateImg: "చిత్రాన్ని సృష్టించండి",
+    chipBuildApp: "వీడియో చాట్ యాప్‌ను రూపొందించండి",
+    chipLearnGrow: "నేర్చుకోండి మరియు ఎదగండి",
+    chipAnalyse: "నా కోసం విశ్లేషించండి",
+    newChat: "కొత్త చాట్",
+    media: "మీడియా గ్యాలరీ",
+    adminControl: "అడ్మిన్ ప్యానెల్",
+    recents: "ఇటీవలి చాట్‌లు"
+  },
+  ml: {
+    heroGreeting: "ഇന്ന് നിങ്ങൾക്ക് എന്താണ് നിർമ്മിക്കാൻ ഞാൻ സഹായിക്കേണ്ടത്?",
+    chipCreateImg: "ഒരു ചിത്രം സൃഷ്ടിക്കുക",
+    chipBuildApp: "വീഡിയോ ചാറ്റ് ആപ്പ് നിർമ്മിക്കുക",
+    chipLearnGrow: "പഠിക്കുക, വളരുക",
+    chipAnalyse: "എനിക്കായി വിശകലനം ചെയ്യുക",
+    newChat: "പുതിയ ചാറ്റ്",
+    media: "മീഡിയ ഗാലറി",
+    adminControl: "അഡ്മിൻ പാനൽ",
+    recents: "സമീപകാല ചാറ്റുകൾ"
+  },
+  kn: {
+    heroGreeting: "ಇಂದು ನಿಮಗಾಗಿ ಏನನ್ನು ನಿರ್ಮಿಸಲು ನಾನು ಸಹಾಯ ಮಾಡಲಿ?",
+    chipCreateImg: "ಚಿತ್ರವನ್ನು ರಚಿಸಿ",
+    chipBuildApp: "ವೀಡಿಯೊ ಚಾಟ್ ಅಪ್ಲಿಕೇಶನ್ ನಿರ್ಮಿಸಿ",
+    chipLearnGrow: "ಕಲಿಯಿರಿ ಮತ್ತು ಬೆಳೆಯಿರಿ",
+    chipAnalyse: "ನನಗಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    newChat: "ಹೊಸ ಚಾಟ್",
+    media: "ಮೀಡಿಯಾ ಗ್ಯಾಲರಿ",
+    adminControl: "ಅಡ್ಮಿನ್ ಪ್ಯಾನಲ್",
+    recents: "ಇತ್ತೀಚಿನ ಚಾಟ್‌ಗಳು"
+  }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   purgeStaleBoilerplate();
   checkBanStatus();
   updateTokenDisplay();
   initParticleCanvas();
-  initModeSwitcher();
+  initSidebarDrawer();
+  initLanguageSystem();
   initModals();
   initChatStudio();
-  initImageStudio();
-  initVideoStudio();
-  initCodeStudio();
-  initCliStudio();
-  initGpuDashboard();
+  populateSampleRecentHistory();
   checkBackendHealth();
 });
+
+function saveState() {
+  localStorage.setItem("victor_lang", state.lang);
+  localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
+  localStorage.setItem("victor_permissions", JSON.stringify(state.permissions));
+  localStorage.setItem("victor_chat_history", JSON.stringify(state.chats));
+  localStorage.setItem("victor_daily_tokens", state.dailyTokens.toString());
+  localStorage.setItem("victor_user_strikes", state.userStrikes.toString());
+  localStorage.setItem("victor_is_banned", state.isBanned.toString());
+  localStorage.setItem("victor_violations", JSON.stringify(state.violationLogs));
+}
+
+function toast(msg, type = "info") {
+  const container = document.getElementById("toast");
+  if (!container) return;
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.innerText = msg;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
 
 function checkBanStatus() {
   const modal = document.getElementById("bannedModal");
   if (!modal) return;
-  if (state.isBanned) {
-    modal.classList.remove("hidden");
-  } else {
-    modal.classList.add("hidden");
-  }
+  if (state.isBanned) modal.classList.remove("hidden");
+  else modal.classList.add("hidden");
 }
 
 function updateTokenDisplay() {
@@ -70,31 +151,8 @@ function purgeStaleBoilerplate() {
   }
 }
 
-function saveState() {
-  if (state.permissions.localStorage) {
-    localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
-    localStorage.setItem("victor_permissions", JSON.stringify(state.permissions));
-    localStorage.setItem("victor_chat_history", JSON.stringify(state.chats));
-    localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
-    localStorage.setItem("victor_daily_tokens", state.dailyTokens.toString());
-    localStorage.setItem("victor_user_strikes", state.userStrikes.toString());
-    localStorage.setItem("victor_is_banned", state.isBanned.toString());
-    localStorage.setItem("victor_violations", JSON.stringify(state.violationLogs));
-  }
-}
-
-function toast(msg, type = "info") {
-  const container = document.getElementById("toast");
-  if (!container) return;
-  const t = document.createElement("div");
-  t.className = `toast ${type}`;
-  t.innerText = msg;
-  container.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
-}
-
 /* ==========================================================================
-   1. PARTICLE CANVAS ANIMATION SYSTEM
+   1. PARTICLE CANVAS ANIMATION
    ========================================================================== */
 function initParticleCanvas() {
   const canvas = document.getElementById("particleCanvas");
@@ -110,26 +168,19 @@ function initParticleCanvas() {
   });
 
   const particles = [];
-  const numParticles = 45;
-
-  for (let i = 0; i < numParticles; i++) {
+  for (let i = 0; i < 40; i++) {
     particles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.8,
-      vy: (Math.random() - 0.5) * 0.8,
+      x: Math.random() * width, y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.7, vy: (Math.random() - 0.5) * 0.7,
       radius: Math.random() * 2 + 1
     });
   }
 
   function animate() {
     ctx.clearRect(0, 0, width, height);
-
     for (let i = 0; i < particles.length; i++) {
       let p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-
+      p.x += p.vx; p.y += p.vy;
       if (p.x < 0 || p.x > width) p.vx *= -1;
       if (p.y < 0 || p.y > height) p.vy *= -1;
 
@@ -140,56 +191,125 @@ function initParticleCanvas() {
 
       for (let j = i + 1; j < particles.length; j++) {
         let p2 = particles[j];
-        let dx = p.x - p2.x;
-        let dy = p.y - p2.y;
+        let dx = p.x - p2.x, dy = p.y - p2.y;
         let dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 130) {
+        if (dist < 120) {
           ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.strokeStyle = `rgba(168, 85, 247, ${0.15 * (1 - dist / 130)})`;
+          ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = `rgba(168, 85, 247, ${0.12 * (1 - dist / 120)})`;
           ctx.lineWidth = 0.8;
           ctx.stroke();
         }
       }
     }
-
     requestAnimationFrame(animate);
   }
-
   animate();
 }
 
 /* ==========================================================================
-   2. MODE SWITCHER & NAVIGATION
+   2. SIDEBAR DRAWER & SAMPLE HISTORY (META AI & GEMINI STYLE)
    ========================================================================== */
-function initModeSwitcher() {
-  const modeBtns = document.querySelectorAll(".mode-btn");
-  modeBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const mode = btn.getAttribute("data-mode");
-      switchMode(mode);
+function initSidebarDrawer() {
+  const drawer = document.getElementById("sidebarDrawer");
+  const toggleBtn = document.getElementById("toggleDrawerBtn");
+  const closeBtn = document.getElementById("closeDrawerBtn");
+  const newChatBtn = document.getElementById("newChatDrawerBtn");
+
+  if (toggleBtn && drawer) {
+    toggleBtn.addEventListener("click", () => drawer.classList.add("open"));
+  }
+
+  if (closeBtn && drawer) {
+    closeBtn.addEventListener("click", () => drawer.classList.remove("open"));
+  }
+
+  if (newChatBtn) {
+    newChatBtn.addEventListener("click", () => {
+      createNewChatSession("New Session");
+      if (drawer) drawer.classList.remove("open");
     });
+  }
+}
+
+function populateSampleRecentHistory() {
+  const container = document.getElementById("drawerChatHistoryList");
+  if (!container) return;
+
+  const sampleTitles = [
+    "Building VictorX AI",
+    "VictorMe App Blueprint",
+    "Simple Admin Panel",
+    "Mining app reality check",
+    "Watching ads for income in India",
+    "Building VICTORLIVE platform",
+    "VictorAI Studio Architecture",
+    "Designing VictorMedia AI OS"
+  ];
+
+  container.innerHTML = "";
+  sampleTitles.forEach(t => {
+    const item = document.createElement("div");
+    item.className = "history-drawer-item";
+    item.innerText = t;
+    item.addEventListener("click", () => {
+      createNewChatSession(t);
+      const drawer = document.getElementById("sidebarDrawer");
+      if (drawer) drawer.classList.remove("open");
+    });
+    container.appendChild(item);
   });
 }
 
-function switchMode(mode) {
-  state.activeMode = mode;
-  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
-  document.querySelectorAll(".studio-view").forEach(v => v.classList.remove("active"));
+/* ==========================================================================
+   3. MULTI-LANGUAGE SYSTEM (ENGLISH, TAMIL, HINDI, TELUGU, MALAYALAM, KANNADA)
+   ========================================================================== */
+function initLanguageSystem() {
+  const btn = document.getElementById("langSelectBtn");
+  const modal = document.getElementById("langModal");
+  const langBtns = document.querySelectorAll(".lang-opt-btn");
 
-  const activeBtn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
-  const activeView = document.getElementById(`studio-${mode}`);
-  if (activeBtn) activeBtn.classList.add("active");
-  if (activeView) activeView.classList.add("active");
+  if (btn && modal) {
+    btn.addEventListener("click", () => modal.classList.remove("hidden"));
+    modal.querySelectorAll('[data-close="langModal"]').forEach(b => {
+      b.addEventListener("click", () => modal.classList.add("hidden"));
+    });
+  }
+
+  langBtns.forEach(b => {
+    b.addEventListener("click", () => {
+      const selected = b.getAttribute("data-lang");
+      state.lang = selected;
+      saveState();
+      langBtns.forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      applyLanguageTranslations();
+      modal.classList.add("hidden");
+      toast(`Language switched to ${b.innerText}!`, "success");
+    });
+  });
+
+  applyLanguageTranslations();
+}
+
+function applyLanguageTranslations() {
+  const langData = i18n[state.lang] || i18n.en;
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (langData[key]) {
+      el.innerText = langData[key];
+    }
+  });
+
+  const labelMap = { en: "English", ta: "தமிழ்", hi: "हिंदी", te: "తెలుగు", ml: "മലയാളം", kn: "ಕನ್ನಡ" };
+  const lbl = document.getElementById("currentLangLabel");
+  if (lbl) lbl.innerText = labelMap[state.lang] || "English";
 }
 
 /* ==========================================================================
-   3. MODALS (ADMIN, API KEYS, PERMISSIONS)
+   4. PRIVATE ADMIN CONTROL CENTER MODAL
    ========================================================================== */
 function initModals() {
-  // Admin Modal
   const adminBtn = document.getElementById("openAdminModalBtn");
   const adminModal = document.getElementById("adminModal");
   const verifyAdminBtn = document.getElementById("verifyAdminPinBtn");
@@ -213,7 +333,7 @@ function initModals() {
         pinGate.classList.add("hidden");
         controlsPanel.classList.remove("hidden");
         renderAdminViolationLogs();
-        toast("👑 Admin Control Unlocked!", "success");
+        toast("👑 Private Admin Panel Unlocked!", "success");
       } else {
         toast("Invalid Security PIN", "error");
       }
@@ -223,22 +343,19 @@ function initModals() {
   const unbanBtn = document.getElementById("adminUnbanAllBtn");
   if (unbanBtn) {
     unbanBtn.addEventListener("click", () => {
-      state.userStrikes = 0;
-      state.isBanned = false;
-      state.violationLogs = [];
-      saveState();
-      checkBanStatus();
-      renderAdminViolationLogs();
-      toast("🔄 All Safety Strikes Reset & Accounts Unbanned!", "success");
+      state.userStrikes = 0; state.isBanned = false; state.violationLogs = [];
+      saveState(); checkBanStatus(); renderAdminViolationLogs();
+      toast("🔄 Safety Strikes Reset & Accounts Unbanned!", "success");
     });
   }
 
   if (saveAdminBtn) {
     saveAdminBtn.addEventListener("click", () => {
-      const title = document.getElementById("adminBrandTitle").value;
-      document.querySelector(".brand-name").innerText = title;
+      state.keys.fastapi = document.getElementById("adminFastApiUrl").value;
+      state.keys.ollama = document.getElementById("adminOllamaUrl").value;
+      saveState();
       adminModal.classList.add("hidden");
-      toast("Master Platform Directives Saved!", "success");
+      toast("Private Admin Directives Saved!", "success");
     });
   }
 }
@@ -247,56 +364,24 @@ function renderAdminViolationLogs() {
   const container = document.getElementById("adminViolationLog");
   if (!container) return;
   if (state.violationLogs.length === 0) {
-    container.innerHTML = `<div><em>No banned users currently reported. System 100% Secure.</em></div>`;
+    container.innerHTML = `<div><em>No banned users reported. System 100% Secure.</em></div>`;
     return;
   }
   container.innerHTML = "";
   state.violationLogs.forEach(v => {
     const item = document.createElement("div");
     item.style.color = "#f87171";
-    item.innerHTML = `<strong>[${v.time}] Strike #${v.strikes}:</strong> Prohibited Prompt "${escapeHtml(v.prompt)}"`;
+    item.innerHTML = `<strong>[${v.time}] Strike #${v.strikes}:</strong> Prohibited "${escapeHtml(v.prompt)}"`;
     container.appendChild(item);
   });
 }
 
-  // API Keys Modal
-  const keysBtn = document.getElementById("openApiKeysBtn");
-  const keysModal = document.getElementById("apiKeysModal");
-  if (keysBtn && keysModal) {
-    keysBtn.addEventListener("click", () => keysModal.classList.remove("hidden"));
-    keysModal.querySelectorAll('[data-close="apiKeysModal"]').forEach(b => {
-      b.addEventListener("click", () => keysModal.classList.add("hidden"));
-    });
-  }
-
-  const saveKeysBtn = document.getElementById("saveApiKeysBtn");
-  if (saveKeysBtn) {
-    saveKeysBtn.addEventListener("click", () => {
-      state.keys.fastapi = document.getElementById("keyFastApi").value;
-      state.keys.ollama = document.getElementById("keyOllama").value;
-      saveState();
-      keysModal.classList.add("hidden");
-      toast("Endpoints saved!", "success");
-      checkBackendHealth();
-    });
-  }
-}
-
 /* ==========================================================================
-   4. CHAT STUDIO & DEEP REASONING
+   5. CHAT STUDIO & MULTI-TURN AI ENGINE
    ========================================================================== */
 function initChatStudio() {
-  const sendBtn = document.getElementById("sendChatBtn");
+  const sendBtn = document.getElementById("sendBtn");
   const input = document.getElementById("chatInput");
-  const clearBtn = document.getElementById("clearChatBtn");
-  const cotToggle = document.getElementById("hideCoTToggle");
-
-  if (cotToggle) {
-    cotToggle.addEventListener("change", (e) => {
-      state.hideCoT = e.target.checked;
-      renderCurrentChatMessages();
-    });
-  }
 
   if (sendBtn && input) {
     sendBtn.addEventListener("click", () => handleSendMessage());
@@ -308,29 +393,9 @@ function initChatStudio() {
     });
   }
 
-  const newSessionBtn = document.getElementById("newChatSessionBtn");
-  if (newSessionBtn) {
-    newSessionBtn.addEventListener("click", () => {
-      createNewChatSession("New 10x Session");
-      toast("➕ New Session Created!", "success");
-    });
-  }
-
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      if (state.currentChatId) {
-        const c = state.chats.find(x => x.id === state.currentChatId);
-        if (c) c.messages = [];
-        saveState();
-        renderCurrentChatMessages();
-        toast("View cleared", "info");
-      }
-    });
-  }
-
-  document.querySelectorAll(".prompt-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const prompt = card.getAttribute("data-prompt");
+  document.querySelectorAll(".meta-chip-btn").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const prompt = chip.getAttribute("data-prompt");
       if (input) {
         input.value = prompt;
         handleSendMessage();
@@ -360,77 +425,38 @@ function createNewChatSession(title = "New Session") {
 }
 
 function renderCurrentChatMessages() {
-  const container = document.getElementById("chatMessages");
-  if (!container) return;
+  const heroView = document.getElementById("heroWelcomeView");
+  const msgList = document.getElementById("chatMessagesList");
+  if (!msgList || !heroView) return;
+
   const currentChat = state.chats.find(c => c.id === state.currentChatId);
 
   if (!currentChat || currentChat.messages.length === 0) {
-    container.innerHTML = `
-      <div class="hero-welcome">
-          <div class="hero-glow-logo">⚡</div>
-          <h1>What can I help you build today?</h1>
-          <p>VictorX Next-Gen Multi-Modal AI Engine powered by Sparse MoE, Deep Reasoning & Zero-Leak Local Privacy.</p>
-          
-          <div class="quick-prompts-grid">
-              <button class="prompt-card" data-prompt="Build a complete Flutter E-commerce app with cart management.">
-                  <span class="card-icon">📱</span>
-                  <strong>Flutter Mobile App</strong>
-                  <span>Generate complete Dart UI & services</span>
-              </button>
-
-              <button class="prompt-card" data-prompt="Write a high-throughput Python FastAPI server with JWT authentication.">
-                  <span class="card-icon">🐍</span>
-                  <strong>Python FastAPI Server</strong>
-                  <span>Async REST API with Pydantic validation</span>
-              </button>
-
-              <button class="prompt-card" data-prompt="Create a modern landing page web code with glassmorphism CSS.">
-                  <span class="card-icon">🌐</span>
-                  <strong>Glassmorphism Web UI</strong>
-                  <span>Responsive HTML5 & CSS custom design</span>
-              </button>
-
-              <button class="prompt-card" data-prompt="Explain Quantum Computing fundamentals with clear analogies.">
-                  <span class="card-icon">⚛️</span>
-                  <strong>Quantum Physics</strong>
-                  <span>Deep step-by-step conceptual guide</span>
-              </button>
-          </div>
-      </div>
-    `;
-    container.querySelectorAll(".prompt-card").forEach(card => {
-      card.addEventListener("click", () => {
-        document.getElementById("chatInput").value = card.getAttribute("data-prompt");
-        handleSendMessage();
-      });
-    });
+    heroView.classList.remove("hidden");
+    msgList.classList.add("hidden");
     return;
   }
 
-  container.innerHTML = "";
+  heroView.classList.add("hidden");
+  msgList.classList.remove("hidden");
+  msgList.innerHTML = "";
+
   currentChat.messages.forEach(msg => {
     const msgEl = document.createElement("div");
     msgEl.className = `chat-msg ${msg.role}`;
-    const avatarText = msg.role === "user" ? "U" : "VX";
+    const avatarText = msg.role === "user" ? "VE" : "VX";
     
-    let contentHtml = "";
-    if (msg.role === "assistant" && msg.cot && !state.hideCoT) {
-      contentHtml += `
-        <details class="cot-accordion">
-          <summary class="cot-summary">🧠 10x Deep Reasoning (${msg.cotTime || '0.18s'})</summary>
-          <div class="cot-body">${escapeHtml(msg.cot)}</div>
-        </details>
-      `;
-    }
-    contentHtml += `<div>${formatMarkdown(msg.content)}</div>`;
+    let contentHtml = `<div>${formatMarkdown(msg.content)}</div>`;
 
     msgEl.innerHTML = `
       <div class="msg-avatar">${avatarText}</div>
       <div class="msg-content">${contentHtml}</div>
     `;
-    container.appendChild(msgEl);
+    msgList.appendChild(msgEl);
   });
-  container.scrollTop = container.scrollHeight;
+  
+  const container = document.getElementById("chatFlowContainer");
+  if (container) container.scrollTop = container.scrollHeight;
 }
 
 async function handleSendMessage() {
@@ -457,56 +483,44 @@ async function handleSendMessage() {
   input.value = "";
   renderCurrentChatMessages();
 
-  // 1. SAFETY & TOXIC CONTENT MODERATION CHECK (BOMB, KILL, BLOOD, WEAPON, TERROR)
+  // 1. MODERATION CHECK
   const lowerPrompt = prompt.toLowerCase();
   const matchedKeyword = PROHIBITED_KEYWORDS.find(k => lowerPrompt.includes(k));
 
   if (matchedKeyword) {
     state.userStrikes++;
-    state.violationLogs.push({
-      time: new Date().toLocaleTimeString(),
-      prompt: prompt,
-      strikes: state.userStrikes
-    });
+    state.violationLogs.push({ time: new Date().toLocaleTimeString(), prompt: prompt, strikes: state.userStrikes });
     saveState();
 
     if (state.userStrikes >= 3) {
-      state.isBanned = true;
-      saveState();
-      checkBanStatus();
-      toast("🚫 3/3 Safety Strikes Exceeded. Account 24/7 BANNED!", "error");
+      state.isBanned = true; saveState(); checkBanStatus();
+      toast("🚫 3/3 Safety Strikes Exceeded. Account BANNED!", "error");
       return;
     } else {
       currentChat.messages.push({
         role: "assistant",
-        content: `⚠️ **SAFETY WARNING (${state.userStrikes}/3 Strikes)**: Prohibited content keyword detected ("${matchedKeyword}").\n\nRepeated use of violent, harmful, or dangerous words (bomb, kill, blood, weapons) will trigger an **automatic 24/7 account ban & block** on your 3rd strike!`,
-        cot: `[Safety Guardrail Alert]: Detected prohibited keyword '${matchedKeyword}' in user input. Registered Strike #${state.userStrikes}/3.`,
-        cotTime: "0.01s",
+        content: `⚠️ **SAFETY WARNING (${state.userStrikes}/3 Strikes)**: Prohibited keyword detected ("${matchedKeyword}"). Repeated violent words will trigger an automatic 24/7 account ban.`,
         timestamp: new Date().toISOString()
       });
-      saveState();
-      renderCurrentChatMessages();
+      saveState(); renderCurrentChatMessages();
       return;
     }
   }
 
-  // 2. 24/7 DAILY TOKEN CALCULATOR CONSUMPTION
+  // 2. DAILY TOKEN CONSUMPTION
   const tokensUsed = Math.ceil(prompt.split(/\s+/).length * 1.5) + 140;
   state.dailyTokens += tokensUsed;
-  saveState();
-  updateTokenDisplay();
+  saveState(); updateTokenDisplay();
 
-  const selectedModel = document.getElementById("chatModelSelect").value;
-  let cotText = `[Neural Encoding 01010110 01101001 01100011 01110100 01101111 01110010]: Encoded token sequence\n[MoE Sparse Router]: Routed to Expert #2 (Architecture) & Expert #5 (WebRTC Protocol)\n[Token Calculator]: Consumed ${tokensUsed} tokens from 24/7 daily quota\n[Meta AI Stream]: Synthesizing full code & step-by-step logic...`;
   let responseText = "";
 
-  // Try real API calls if configured
-  if (selectedModel === "ollama-local") {
+  // Query Backend if active
+  if (state.keys.fastapi) {
     try {
-      const res = await fetch(`${state.keys.ollama}/api/generate`, {
+      const res = await fetch(`${state.keys.fastapi}/api/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "llama3", prompt: prompt, stream: false })
+        body: JSON.stringify({ prompt: prompt })
       });
       if (res.ok) {
         const d = await res.json();
@@ -516,14 +530,12 @@ async function handleSendMessage() {
   }
 
   if (!responseText) {
-    responseText = generateSmartAiResponse(prompt, selectedModel, currentChat.messages);
+    responseText = generateSmartAiResponse(prompt, currentChat.messages);
   }
 
   currentChat.messages.push({
     role: "assistant",
     content: responseText,
-    cot: cotText,
-    cotTime: "0.14s",
     timestamp: new Date().toISOString()
   });
 
@@ -531,212 +543,37 @@ async function handleSendMessage() {
   renderCurrentChatMessages();
 }
 
-function generateSmartAiResponse(prompt, model, history = []) {
+function generateSmartAiResponse(prompt, history = []) {
   const raw = prompt.trim();
   const lower = raw.toLowerCase();
   const clean = lower.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
-
-  // Combine recent history into full conversation context string
   const fullContext = history.map(h => h.content).join(" ").toLowerCase();
 
-  // 1. GREETINGS & CASUAL DIALOGUE
-  if (/^(hi|hii|hello|hey|hii buddy|hey buddy|sup|yo|hi there)$/i.test(clean)) {
-    return `Hey there! 👋 I'm **VictorX**—your multi-modal AI assistant powered by sparse MoE, Meta AI reasoning, and local intelligence.\n\nHow can I help you today? Whether you want me to build a complete video chat platform (like Omegle), write Python FastAPI code, design Flutter apps, or generate images & videos, just tell me!`;
+  if (/^(hi|hii|hello|hey|hii buddy|sup|yo)$/i.test(clean)) {
+    return `Hey there! 👋 I'm **VictorX AI**—India's premier frontier AI engine.\n\nHow can I help you today? Whether you want to build a complete video chat platform (like Omegle), write Python FastAPI servers, design Flutter mobile apps, or generate 8k artwork, just tell me!`;
   }
 
-  // 2. IMAGE CREATION REQUESTS ("create image", "give me image now", "image like chatgpt")
   if (lower.includes("image") || lower.includes("picture") || lower.includes("photo") || lower.includes("draw")) {
-    // Auto-switch to Imagine AI Studio or return full image output description
-    setTimeout(() => switchMode("image"), 1000);
-    return `🎨 **VictorX Imagine AI Studio Initialized!**\n\nI have switched to the **Imagine AI Studio** tab for you. I am rendering your diffusion artwork with **Photorealistic Style** at 1024x1024 resolution.\n\nClick **Generate Image** in the Imagine AI tab to download your high-resolution render!`;
+    return `🎨 **VictorX Imagine AI Artwork Rendered!**\n\nI have generated your 8k high-resolution artwork for: **"${raw}"**.\n\n*Style*: Photorealistic 8k Cinematic\n*Engine*: VictorX Diffusion v1.0.0`;
   }
 
-  // 3. OMEGLE / LIVE VIDEO CHAT PLATFORM BUILD REQUEST (OR FOLLOW UP "build now", "make it")
   if (lower.includes("omegle") || lower.includes("video chat") || (fullContext.includes("omegle") && (lower.includes("build") || lower.includes("make") || lower.includes("now") || lower.includes("do it")))) {
-    return `### 🎥 VictorX Omegle Live — Real-Time WebRTC Video Chat Platform\n\nHere is your **complete, full-stack Omegle-like random video chat platform** with WebRTC peer-to-peer streaming, WebSocket signaling server, skip controls, and sleek dark glassmorphism UI!\n\n#### 🌐 1. Complete Frontend UI (\`index.html\`)\n\n\`\`\`html\n<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>VictorX Omegle Live Video Chat</title>\n    <style>\n        body { background: #050811; color: white; font-family: system-ui; text-align: center; margin: 0; padding: 1rem; }\n        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; margin: 1.5rem auto; }\n        video { width: 100%; height: 320px; background: #0f172a; border-radius: 12px; border: 2px solid #6366f1; object-fit: cover; }\n        .btn-skip { background: linear-gradient(135deg, #ef4444, #ec4899); color: white; border: none; padding: 0.85rem 2rem; border-radius: 99px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(239,68,68,0.4); }\n        .chat-box { max-width: 900px; margin: 1rem auto; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; height: 160px; overflow-y: auto; text-align: left; }\n    </style>\n</head>\n<body>\n    <h1>🎥 VictorX Live — Random Peer Video Chat</h1>\n    <p>Connected via WebRTC PeerConnection & Fast Signal Server</p>\n    \n    <div class="video-grid">\n        <div>\n            <h3>You (Local Stream)</h3>\n            <video id="localVideo" autoplay muted playsinline></video>\n        </div>\n        <div>\n            <h3>Stranger (Peer Stream)</h3>\n            <video id="remoteVideo" autoplay playsinline></video>\n        </div>\n    </div>\n\n    <button id="skipBtn" class="btn-skip" onclick="nextPeer()">⏩ Skip & Connect Next Stranger</button>\n    <div id="chatLog" class="chat-box"></div>\n\n    <script>\n        let localStream, peerConnection;\n        const ws = new WebSocket('ws://localhost:8000/ws/signal');\n        \n        async function initCamera() {\n            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });\n            document.getElementById('localVideo').srcObject = localStream;\n        }\n        \n        function nextPeer() {\n            if (peerConnection) peerConnection.close();\n            document.getElementById('chatLog').innerHTML += '<div><em>Connecting to a new stranger...</em></div>';\n            ws.send(JSON.stringify({ type: 'find_peer' }));\n        }\n        \n        initCamera();\n    </script>\n</body>\n</html>\n\`\`\`\n\n#### 🐍 2. Python FastAPI WebRTC Signaling Server (\`server.py\`)\n\n\`\`\`python\nfrom fastapi import FastAPI, WebSocket, WebSocketDisconnect\nfrom typing import List\nimport json\n\napp = FastAPI(title="VictorX Omegle Signaling Server")\n\nclass ConnectionManager:\n    def __init__(self):\n        self.active_waiting: List[WebSocket] = []\n\n    async def connect(self, websocket: WebSocket):\n        await websocket.accept()\n        if self.active_waiting:\n            peer = self.active_waiting.pop(0)\n            # Pair the two WebSockets\n            await websocket.send_text(json.dumps({"type": "paired", "role": "offerer"}))\n            await peer.send_text(json.dumps({"type": "paired", "role": "answerer"}))\n        else:\n            self.active_waiting.append(websocket)\n\nmanager = ConnectionManager()\n\n@app.websocket("/ws/signal")\nasync def websocket_endpoint(websocket: WebSocket):\n    await manager.connect(websocket)\n    try:\n        while True:\n            data = await websocket.receive_text()\n    except WebSocketDisconnect:\n        pass\n\nif __name__ == "__main__":\n    import uvicorn\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\`\n\n### 🚀 How to Run Your Omegle Video Chat Platform:\n1. **Start Signaling Server**: Run \`python server.py\`.\n2. **Open Web Frontend**: Open \`index.html\` in two browser tabs—the server will instantly match them up and establish direct WebRTC video streams!`;
+    return `### 🎥 VictorX Omegle Live — Real-Time WebRTC Video Chat Platform\n\nHere is your **complete, full-stack Omegle-like video chat platform** with WebRTC peer-to-peer video streaming, WebSocket signaling server, skip stranger controls, and dark theme UI!\n\n#### 🌐 1. Complete Frontend UI (\`index.html\`)\n\n\`\`\`html\n<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>VictorX Omegle Live Video Chat</title>\n    <style>\n        body { background: #0c0f17; color: white; font-family: system-ui; text-align: center; margin: 0; padding: 1rem; }\n        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; margin: 1.5rem auto; }\n        video { width: 100%; height: 320px; background: #171c2c; border-radius: 16px; border: 2px solid #6366f1; object-fit: cover; }\n        .btn-skip { background: linear-gradient(135deg, #ef4444, #ec4899); color: white; border: none; padding: 0.85rem 2rem; border-radius: 99px; font-weight: bold; font-size: 1rem; cursor: pointer; }\n    </style>\n</head>\n<body>\n    <h1>🎥 VictorX Live — Random Video Chat</h1>\n    <div class="video-grid">\n        <div><h3>You (Local Stream)</h3><video id="localVideo" autoplay muted playsinline></video></div>\n        <div><h3>Stranger (Peer Stream)</h3><video id="remoteVideo" autoplay playsinline></video></div>\n    </div>\n    <button id="skipBtn" class="btn-skip" onclick="nextPeer()">⏩ Skip & Connect Next Stranger</button>\n\n    <script>\n        let localStream, peerConnection;\n        const ws = new WebSocket('ws://localhost:8000/ws/signal');\n        async function initCamera() {\n            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });\n            document.getElementById('localVideo').srcObject = localStream;\n        }\n        function nextPeer() {\n            if (peerConnection) peerConnection.close();\n            ws.send(JSON.stringify({ type: 'find_peer' }));\n        }\n        initCamera();\n    </script>\n</body>\n</html>\n\`\`\`\n\n#### 🐍 2. Python FastAPI WebRTC Signaling Server (\`server.py\`)\n\n\`\`\`python\nfrom fastapi import FastAPI, WebSocket, WebSocketDisconnect\nfrom typing import List\nimport json\n\napp = FastAPI(title="VictorX Omegle Signaling Server")\n\nclass ConnectionManager:\n    def __init__(self):\n        self.active_waiting: List[WebSocket] = []\n    async def connect(self, websocket: WebSocket):\n        await websocket.accept()\n        if self.active_waiting:\n            peer = self.active_waiting.pop(0)\n            await websocket.send_text(json.dumps({"type": "paired", "role": "offerer"}))\n            await peer.send_text(json.dumps({"type": "paired", "role": "answerer"}))\n        else:\n            self.active_waiting.append(websocket)\n\nmanager = ConnectionManager()\n@app.websocket("/ws/signal")\nasync def websocket_endpoint(websocket: WebSocket):\n    await manager.connect(websocket)\n    try:\n        while True: await websocket.receive_text()\n    except WebSocketDisconnect: pass\n\nif __name__ == "__main__":\n    import uvicorn\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
   }
 
-  // 4. GENERAL APP / CODE BUILD REQUESTS
-  if (lower.includes("build") || lower.includes("generate") || lower.includes("create") || lower.includes("make")) {
-    if (lower.includes("fastapi") || lower.includes("python")) {
-      return `Here is a complete, production-ready **Python FastAPI Backend Server**:\n\n\`\`\`python\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport uvicorn\n\napp = FastAPI(title="VictorX Production API")\n\nclass PredictRequest(BaseModel):\n    prompt: str\n\n@app.post("/api/v1/predict")\nasync def predict(req: PredictRequest):\n    return {"status": "success", "result": f"Processed: {req.prompt}"}\n\nif __name__ == "__main__":\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
-    }
-
-    if (lower.includes("flutter") || lower.includes("dart")) {
-      return `Here is a complete **Flutter Application Screen**:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX App',\n      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF050811)),\n      home: const Scaffold(body: Center(child: Text('🚀 VictorX Flutter App Live'))),\n    );\n  } \n}\n\`\`\``;
-    }
-
-    // Default Web App Code Synth
-    return `Here is a complete, standalone **Interactive Web Application** ready to run:\n\n\`\`\`html\n<!DOCTYPE html>\n<html>\n<head>\n    <title>VictorX Custom App</title>\n    <style>\n        body { background: #050811; color: white; font-family: system-ui; text-align: center; padding: 3rem; }\n        .card { background: rgba(255,255,255,0.05); padding: 2.5rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); max-width: 500px; margin: 0 auto; }\n        button { background: #6366f1; color: white; border: none; padding: 0.85rem 1.75rem; border-radius: 99px; font-weight: bold; cursor: pointer; }\n    </style>\n</head>\n<body>\n    <div class="card">\n        <h1>VictorX App Engine</h1>\n        <p>Synthesized for prompt: "${escapeHtml(raw)}"</p>\n        <button onclick="alert('VictorX App Executing!')">Run App ⚡</button>\n    </div>\n</body>\n</html>\n\`\`\``;
+  if (lower.includes("fastapi") || lower.includes("python")) {
+    return `Here is a production-ready **Python FastAPI Backend Server**:\n\n\`\`\`python\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\nimport uvicorn\n\napp = FastAPI(title="VictorX Production API")\n\nclass PredictRequest(BaseModel):\n    prompt: str\n\n@app.post("/api/v1/predict")\nasync def predict(req: PredictRequest):\n    return {"status": "success", "result": f"Processed: {req.prompt}"}\n\nif __name__ == "__main__":\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
   }
 
-  return `I have processed your request for **"${raw}"**.\n\nTell me what specific feature, code, or design you would like me to build next!`;
-}
-
-/* ==========================================================================
-   5. IMAGINE & VIDEO & CODE STUDIOS
-   ========================================================================== */
-function initImageStudio() {
-  const generateBtn = document.getElementById("generateImgBtn");
-  if (!generateBtn) return;
-
-  generateBtn.addEventListener("click", () => {
-    const prompt = document.getElementById("imgPrompt").value.trim() || "Neon AI Metropolis";
-    const style = document.getElementById("imgStyle").value;
-    const aspect = document.getElementById("imgAspectRatio").value;
-
-    toast("Rendering Diffusion Canvas...", "info");
-
-    const placeholder = document.getElementById("imgPlaceholder");
-    const outputWrap = document.getElementById("imgOutputWrap");
-    const canvas = document.getElementById("imgDisplayCanvas");
-    const ctx = canvas.getContext("2d");
-
-    placeholder.classList.add("hidden");
-    outputWrap.classList.remove("hidden");
-
-    let w = 800, h = 800;
-    if (aspect === "16:9") { w = 960; h = 540; }
-    else if (aspect === "9:16") { w = 540; h = 960; }
-    canvas.width = w; canvas.height = h;
-
-    const grad = ctx.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, "#050811");
-    grad.addColorStop(0.5, "#6366f1");
-    grad.addColorStop(1, "#a855f7");
-
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 22px Outfit, sans-serif";
-    ctx.fillText(`VictorX Imagine Studio • ${style.toUpperCase()}`, 24, h - 30);
-    toast("Image Generated!", "success");
-  });
-
-  const downloadBtn = document.getElementById("downloadImgBtn");
-  if (downloadBtn) {
-    downloadBtn.addEventListener("click", () => {
-      const canvas = document.getElementById("imgDisplayCanvas");
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = `victorx-imagine-${Date.now()}.png`;
-      a.click();
-    });
+  if (lower.includes("flutter") || lower.includes("dart")) {
+    return `Here is a complete **Flutter Application Screen**:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX App',\n      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF0C0F17)),\n      home: const Scaffold(body: Center(child: Text('🚀 VictorX Flutter App Live'))),\n    );\n  }\n}\n\`\`\``;
   }
-}
 
-function initVideoStudio() {
-  const generateBtn = document.getElementById("generateVideoBtn");
-  if (!generateBtn) return;
-
-  generateBtn.addEventListener("click", () => {
-    const placeholder = document.getElementById("videoPlaceholder");
-    const outputWrap = document.getElementById("videoOutputWrap");
-    const anim = document.getElementById("videoAnimLayer");
-
-    placeholder.classList.add("hidden");
-    outputWrap.classList.remove("hidden");
-
-    anim.style.backgroundImage = `linear-gradient(135deg, rgba(99,102,241,0.8), rgba(236,72,153,0.8))`;
-    toast("Video Motion Rendered!", "success");
-  });
-}
-
-function initCodeStudio() {
-  const generateBtn = document.getElementById("generateCodeBtn");
-  if (!generateBtn) return;
-
-  generateBtn.addEventListener("click", () => {
-    const stack = document.getElementById("codeStackSelect").value;
-    const prompt = document.getElementById("codePrompt").value.trim() || "Build app";
-    const codeArea = document.getElementById("codeDisplayArea");
-
-    if (codeArea) {
-      if (stack === "flutter") {
-        codeArea.innerText = `// VictorX Synthesized Flutter App\nimport 'package:flutter/material.dart';\nvoid main() => runApp(const MaterialApp(home: Scaffold(body: Center(child: Text("VictorX Flutter App")))));`;
-      } else {
-        codeArea.innerText = `# VictorX Python FastAPI Server\nfrom fastapi import FastAPI\napp = FastAPI()\n@app.get("/")\ndef root(): return {"app": "VictorX"}`;
-      }
-    }
-    toast("Code Synthesized!", "success");
-  });
-
-  const copyBtn = document.getElementById("copyCodeBtn");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", () => {
-      const code = document.getElementById("codeDisplayArea").innerText;
-      navigator.clipboard.writeText(code);
-      toast("Code copied!", "success");
-    });
-  }
-}
-
-/* ==========================================================================
-   6. TERMINAL CLI STUDIO
-   ========================================================================== */
-function initCliStudio() {
-  const runBtn = document.getElementById("runCliBtn");
-  const actionSel = document.getElementById("cliActionSelect");
-  const paramInput = document.getElementById("cliParamInput");
-  const screen = document.getElementById("cliTerminalScreen");
-
-  if (runBtn && screen) {
-    runBtn.addEventListener("click", () => {
-      const action = actionSel.value;
-      const param = paramInput.value.trim() || "victorx-3b-moe";
-
-      const cmdLine = document.createElement("div");
-      cmdLine.className = "term-line";
-      cmdLine.innerHTML = `<span class="term-green">victorx></span> victor ${action} ${escapeHtml(param)}`;
-      screen.appendChild(cmdLine);
-
-      if (action === "pull") {
-        const line = document.createElement("div");
-        line.className = "term-line term-dim";
-        line.innerText = `pulling sha256:5f3c11e7a4... [====================] 100% (1.4 GB)`;
-        screen.appendChild(line);
-        const done = document.createElement("div");
-        done.className = "term-line term-green";
-        done.innerText = `✔ Model weight '${param}' docked to local storage!`;
-        screen.appendChild(done);
-      } else {
-        const line = document.createElement("div");
-        line.className = "term-line term-banner";
-        line.innerText = `VictorX CLI: Executed ${action} command for ${param}`;
-        screen.appendChild(line);
-      }
-
-      screen.scrollTop = screen.scrollHeight;
-    });
-  }
-}
-
-function initGpuDashboard() {
-  setInterval(() => {
-    const vramVal = document.getElementById("vramMeterVal");
-    const vramFill = document.getElementById("vramMeterFill");
-    if (vramVal && vramFill) {
-      let gb = (4.0 + Math.random() * 0.4).toFixed(1);
-      vramVal.innerText = `${gb} GB / 24.0 GB`;
-      vramFill.style.width = `${((gb / 24.0) * 100).toFixed(1)}%`;
-    }
-  }, 3000);
+  return `I have processed your prompt **"${raw}"**.\n\nLet me know what specific app code, design, or synthesis you'd like me to build next!`;
 }
 
 function checkBackendHealth() {
-  const badge = document.getElementById("ollamaStatusBadge");
-  if (!badge) return;
-  fetch(`${state.keys.fastapi}/health`)
-    .then(res => res.json())
-    .then(() => {
-      badge.classList.remove("offline"); badge.classList.add("online");
-      badge.querySelector(".status-text").innerText = "FastAPI Online";
-    })
-    .catch(() => {
-      badge.classList.remove("online"); badge.classList.add("offline");
-      badge.querySelector(".status-text").innerText = "FastAPI / Local";
-    });
+  fetch(`${state.keys.fastapi}/health`).catch(() => {});
 }
 
 function escapeHtml(str) {
