@@ -15,6 +15,10 @@
 </head>
 <body>
 
+    <!-- BACKGROUND GLOW EFFECTS -->
+    <div class="bg-glow-orb orb-1"></div>
+    <div class="bg-glow-orb orb-2"></div>
+
     <!-- NAV HEADER -->
     <header class="navbar">
         <div class="nav-container">
@@ -49,16 +53,17 @@
                 <a href="#image-studio" class="nav-tab" data-target="image-studio">🎨 Image AI</a>
                 <a href="#video-studio" class="nav-tab" data-target="video-studio">🎬 Video AI</a>
                 <a href="#code-studio" class="nav-tab" data-target="code-studio">⚡ Code AI</a>
+                <a href="#cli-studio" class="nav-tab" data-target="cli-studio">💻 Terminal & Pull</a>
                 <a href="#gpu-dashboard" class="nav-tab" data-target="gpu-dashboard">⚙️ Optimization</a>
                 <a href="#models-dock" class="nav-tab" data-target="models-dock">📦 Model Dock</a>
             </nav>
 
             <div class="nav-right">
-                <div id="ollamaStatusBadge" class="ollama-status-pill offline" title="Ollama & FastAPI Backend Status">
+                <div id="ollamaStatusBadge" class="ollama-status-pill offline" title="FastAPI / Ollama Server Status">
                     <span class="status-dot"></span>
                     <span class="status-text">FastAPI / Ollama</span>
                 </div>
-                <button id="openPermissionsBtn" class="btn btn-ghost-pill" title="Security & Device Permissions">🛡️ Privacy & Security</button>
+                <button id="openPermissionsBtn" class="btn btn-ghost-pill" title="Security & Device Permissions">🛡️ Privacy</button>
                 <button id="openApiKeysBtn" class="btn btn-ghost-pill" title="API Key Manager">🔑 Keys</button>
                 <button id="authBtn" class="btn btn-primary-gradient">Sign In</button>
             </div>
@@ -79,13 +84,14 @@
                     <button id="newChatBtn" class="btn btn-primary-full">
                         <span>➕ New 10x Smart Session</span>
                     </button>
+                    
                     <div class="sidebar-block">
                         <label class="sidebar-label">Active Model Engine</label>
                         <select id="chatModelSelect" class="studio-select">
                             <option value="victorx-3b-moe" selected>VictorX 3B MoE (Sparse Top-2 Router)</option>
-                            <option value="victorx-claude">VictorX Claude 3.7 Engine (Masterful Code & Reasoning)</option>
+                            <option value="victorx-claude">VictorX Claude 3.7 Engine (Masterful Code)</option>
                             <option value="victorx-gpt4o">VictorX GPT-4o Omni (High-Speed Conversational)</option>
-                            <option value="victorx-kimi">VictorX Kimi K1.5 Engine (Deep Context & Research)</option>
+                            <option value="victorx-kimi">VictorX Kimi K1.5 Engine (Deep Research)</option>
                             <option value="victorx-llama">VictorX Llama 3.3 70B (Instruct)</option>
                             <option value="ollama-local">Local Ollama Model (http://localhost:11434)</option>
                         </select>
@@ -99,7 +105,7 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
-                        <p class="sidebar-desc">Hide raw thinking logs and present instant, refined, high-precision results.</p>
+                        <p class="sidebar-desc">Present clean, instant solutions while saving deep CoT reasoning logs under the hood.</p>
                     </div>
 
                     <div class="sidebar-block">
@@ -151,20 +157,20 @@
                     <div id="chatMessages" class="chat-messages-scroll">
                         <div class="welcome-chat-card">
                             <div class="welcome-icon">⚡</div>
-                            <h3>Welcome to VictorX Chat 1.0.0</h3>
-                            <p>Powered by sparse Mixture-of-Experts (MoE) & 10x Smart Reasoning Engine with native privacy protection.</p>
+                            <h3>Welcome to VictorX AI Platform 1.0.0</h3>
+                            <p>Powered by sparse Mixture-of-Experts (MoE) & 10x Smart Reasoning Engine with zero-leak local encryption.</p>
                             <div class="prompt-suggestions">
-                                <button class="suggestion-chip" data-prompt="Analyze market trends for AI SaaS models in 2026 with financial breakdowns.">📊 Market Analysis</button>
-                                <button class="suggestion-chip" data-prompt="Write a complete Python FastAPI server for high-throughput video streaming with JWT auth.">🐍 Python FastAPI Backend</button>
-                                <button class="suggestion-chip" data-prompt="Create a high-converting landing page HTML/CSS structure with dark glassmorphism.">🎨 Landing Page Web Code</button>
-                                <button class="suggestion-chip" data-prompt="Explain Quantum Computing fundamentals with zero jargon and concrete analogies.">⚛️ Quantum Physics</button>
+                                <button class="suggestion-chip" data-prompt="Build a complete Flutter E-commerce Product Dashboard with dark mode theme.">📱 Flutter Mobile App</button>
+                                <button class="suggestion-chip" data-prompt="Write a high-throughput Python FastAPI server with CORS & JWT auth.">🐍 Python FastAPI Server</button>
+                                <button class="suggestion-chip" data-prompt="Create a high-converting glassmorphism landing page HTML/CSS structure.">🌐 Landing Page Web Code</button>
+                                <button class="suggestion-chip" data-prompt="Explain Quantum Computing & Qubits with zero jargon.">⚛️ Quantum Physics</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="chat-input-wrapper">
                         <div class="chat-input-bar">
-                            <textarea id="chatInput" rows="1" placeholder="Ask VictorX anything... (Shift+Enter for new line)"></textarea>
+                            <textarea id="chatInput" rows="1" placeholder="Ask VictorX anything or request full app generation... (Shift+Enter for newline)"></textarea>
                             <div class="chat-input-tools">
                                 <button id="attachFileBtn" class="chat-tool-btn" title="Attach Document / Code">📎</button>
                                 <button id="voiceInputBtn" class="chat-tool-btn" title="Voice Input">🎙️</button>
@@ -174,7 +180,7 @@
                             </div>
                         </div>
                         <div class="input-footer-note">
-                            <span>🔒 Confidential & Hidden Storage — Data strictly stays on your local environment.</span>
+                            <span>🔒 Confidential & Encrypted Local Storage — Data strictly stays on your local device.</span>
                         </div>
                     </div>
                 </div>
@@ -448,7 +454,69 @@
         </section>
 
 
-        <!-- 5. GPU & OPTIMIZATION DASHBOARD SECTION -->
+        <!-- 5. VICTORX TERMINAL CLI & MODEL PULL STUDIO SECTION -->
+        <section id="cli-studio" class="studio-section">
+            <div class="studio-container">
+                <div class="studio-header">
+                    <h2>💻 Terminal CLI Engine & Model Pull Studio</h2>
+                    <p>Run <code>victor pull</code>, <code>victor run</code>, and <code>victor code</code> in Terminal, CMD, or PowerShell</p>
+                </div>
+
+                <div class="studio-grid-code">
+                    <!-- LEFT CONTROLS & COMMAND BUILDER -->
+                    <div class="code-controls-panel">
+                        <div class="control-group">
+                            <label class="control-label">Command Action</label>
+                            <select id="cliActionSelect" class="studio-select">
+                                <option value="pull" selected>📥 Pull Model Layer (victor pull)</option>
+                                <option value="run">⚡ Run Model Session (victor run)</option>
+                                <option value="code">🐍 Synthesize Code CLI (victor code)</option>
+                                <option value="list">📦 List Docked Weights (victor list)</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">Target Model Tag / Prompt</label>
+                            <input type="text" id="cliParamInput" class="studio-input" value="victorx-3b-moe">
+                        </div>
+
+                        <button id="runCliBtn" class="btn btn-primary-gradient btn-full">
+                            <span>▶ Execute Command in Terminal</span>
+                        </button>
+
+                        <hr class="panel-divider">
+
+                        <div class="control-group">
+                            <label class="control-label">Generated System CLI Command</label>
+                            <div class="cli-cmd-box">
+                                <code id="generatedCliCmd">victor pull victorx-3b-moe</code>
+                                <button id="copyCliCmdBtn" class="btn btn-glass-sm mt-2">📋 Copy CLI Command</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT INTERACTIVE TERMINAL SCREEN -->
+                    <div class="code-viewer-panel">
+                        <div class="code-header-bar">
+                            <div class="code-tabs">
+                                <button class="code-tab active">🖥️ Terminal Output (CMD / PowerShell)</button>
+                            </div>
+                            <div class="code-header-actions">
+                                <button id="clearCliTerminalBtn" class="btn btn-outline-sm">🧹 Clear Terminal</button>
+                            </div>
+                        </div>
+
+                        <div class="terminal-screen" id="cliTerminalScreen">
+                            <div class="term-line term-banner">⚡ VICTORX CLI v1.0.0 — System Terminal & Local AI Engine</div>
+                            <div class="term-line term-dim">Type command above or click Execute to pull model layers and run local inference.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 6. GPU & OPTIMIZATION DASHBOARD SECTION -->
         <section id="gpu-dashboard" class="studio-section">
             <div class="studio-container">
                 <div class="studio-header">
@@ -564,7 +632,7 @@
         </section>
 
 
-        <!-- 6. MODEL DOCK & REGISTRY SECTION -->
+        <!-- 7. MODEL DOCK & REGISTRY SECTION -->
         <section id="models-dock" class="studio-section">
             <div class="studio-container">
                 <!-- HERO BANNER -->

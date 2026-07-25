@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initImageStudio();
   initVideoStudio();
   initCodeStudio();
+  initCliStudio();
   initGpuDashboard();
   initModelDock();
   checkBackendHealth();
@@ -734,6 +735,145 @@ async def generate_response(req: PromptRequest):
     </div>
 </body>
 </html>`;
+}
+
+/* ==========================================================================
+   6.5 TERMINAL CLI & MODEL PULL STUDIO
+   ========================================================================== */
+function initCliStudio() {
+  const runBtn = document.getElementById("runCliBtn");
+  const actionSel = document.getElementById("cliActionSelect");
+  const paramInput = document.getElementById("cliParamInput");
+  const cmdDisplay = document.getElementById("generatedCliCmd");
+  const copyCmdBtn = document.getElementById("copyCliCmdBtn");
+  const clearTermBtn = document.getElementById("clearCliTerminalBtn");
+  const screen = document.getElementById("cliTerminalScreen");
+
+  function updateCmdPreview() {
+    if (!actionSel || !paramInput || !cmdDisplay) return;
+    const action = actionSel.value;
+    const param = paramInput.value.trim();
+    cmdDisplay.innerText = `victor ${action} ${param}`;
+  }
+
+  if (actionSel && paramInput) {
+    actionSel.addEventListener("change", updateCmdPreview);
+    paramInput.addEventListener("input", updateCmdPreview);
+    updateCmdPreview();
+  }
+
+  if (copyCmdBtn) {
+    copyCmdBtn.addEventListener("click", () => {
+      if (cmdDisplay) {
+        navigator.clipboard.writeText(cmdDisplay.innerText);
+        toast("CLI Command copied! Paste in Terminal, CMD, or PowerShell", "success");
+      }
+    });
+  }
+
+  if (clearTermBtn && screen) {
+    clearTermBtn.addEventListener("click", () => {
+      screen.innerHTML = `
+        <div class="term-line term-banner">⚡ VICTORX CLI v1.0.0 — System Terminal & Local AI Engine</div>
+        <div class="term-line term-dim">Type command above or click Execute to pull model layers and run local inference.</div>
+      `;
+      toast("Terminal cleared", "info");
+    });
+  }
+
+  if (runBtn && screen) {
+    runBtn.addEventListener("click", () => {
+      const action = actionSel.value;
+      const param = paramInput.value.trim() || "victorx-3b-moe";
+
+      const cmdLine = document.createElement("div");
+      cmdLine.className = "term-line";
+      cmdLine.innerHTML = `<span class="term-green">victorx></span> victor ${action} ${escapeHtml(param)}`;
+      screen.appendChild(cmdLine);
+
+      if (action === "pull") {
+        simulateCliPull(screen, param);
+      } else if (action === "run") {
+        simulateCliRun(screen, param);
+      } else if (action === "code") {
+        simulateCliCode(screen, param);
+      } else {
+        simulateCliList(screen);
+      }
+    });
+  }
+}
+
+function simulateCliPull(screen, model) {
+  const line = document.createElement("div");
+  line.className = "term-line term-dim";
+  line.innerText = `📥 Pulling weight layers for '${model}'...`;
+  screen.appendChild(line);
+
+  let layers = [
+    { name: "sha256:8a1f47b2c9... [manifest]", size: "4.2 KB" },
+    { name: "sha256:5f3c11e7a4... [weights_0]", size: "1.4 GB" }
+  ];
+
+  let idx = 0;
+  function processLayer() {
+    if (idx >= layers.length) {
+      const doneMsg = document.createElement("div");
+      doneMsg.className = "term-line term-green";
+      doneMsg.innerText = `✔ Model weight '${model}' successfully docked! (INT4 AWQ Quantized)`;
+      screen.appendChild(doneMsg);
+      screen.scrollTop = screen.scrollHeight;
+      state.installed.add(model);
+      saveState();
+      renderModelCards();
+      return;
+    }
+
+    const layer = layers[idx];
+    const progressLine = document.createElement("div");
+    progressLine.className = "term-line";
+    screen.appendChild(progressLine);
+
+    let pct = 0;
+    const interval = setInterval(() => {
+      pct += 25;
+      const bar = '='.repeat(pct / 5) + ' '.repeat(20 - pct / 5);
+      progressLine.innerHTML = `<span class="term-dim">pulling ${layer.name}:</span> [${bar}] ${pct}% (${layer.size})`;
+      screen.scrollTop = screen.scrollHeight;
+
+      if (pct >= 100) {
+        clearInterval(interval);
+        idx++;
+        setTimeout(processLayer, 150);
+      }
+    }, 100);
+  }
+
+  processLayer();
+}
+
+function simulateCliRun(screen, model) {
+  const line = document.createElement("div");
+  line.className = "term-line";
+  line.innerHTML = `<span class="term-banner">VictorX Engine (${model}):</span> 10x Smart Reasoning Stream active. Routed tokens through sparse MoE Expert #2 & Expert #5. Sub-10ms response ready.`;
+  screen.appendChild(line);
+  screen.scrollTop = screen.scrollHeight;
+}
+
+function simulateCliCode(screen, prompt) {
+  const line = document.createElement("div");
+  line.className = "term-line";
+  line.innerHTML = `<span class="term-green">Synthesized Code Output:</span>\n\`\`\`python\n# VictorX CLI Synthesizer\nprint("Synthesized for prompt: ${escapeHtml(prompt)}")\n\`\`\``;
+  screen.appendChild(line);
+  screen.scrollTop = screen.scrollHeight;
+}
+
+function simulateCliList(screen) {
+  const line = document.createElement("div");
+  line.className = "term-line";
+  line.innerHTML = `📦 Docked Models: victorx-3b-moe (8x3B MoE), victorx-1b-fast (1B Edge), gemma4 (9B/27B), llama-3.3-70b (70B Instruct)\n📟 Telemetry: VRAM 4.2GB/24.0GB | FlashAttention-2 Active`;
+  screen.appendChild(line);
+  screen.scrollTop = screen.scrollHeight;
 }
 
 /* ==========================================================================
