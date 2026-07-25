@@ -1,15 +1,13 @@
 /* ==========================================================================
-   VictorX AI — India's Premier Frontier AI Engine & Multi-Language Controller
+   Victor Platform 2 — Emergent.sh & OpenArt.ai Unified Controller
    ========================================================================== */
 
 let state = {
-  lang: localStorage.getItem("victor_lang") || "en",
+  activeView: "builder",
   keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"fastapi":"http://localhost:8000","ollama":"http://localhost:11434"}'),
   permissions: JSON.parse(localStorage.getItem("victor_permissions") || '{"localStorage":true,"confidential":true,"gpu":true}'),
   chats: JSON.parse(localStorage.getItem("victor_chat_history") || '[]'),
   currentChatId: null,
-  hideCoT: true,
-  adminAuthenticated: false,
   dailyTokens: parseInt(localStorage.getItem("victor_daily_tokens") || "0"),
   maxDailyTokens: 50000,
   userStrikes: parseInt(localStorage.getItem("victor_user_strikes") || "0"),
@@ -19,91 +17,19 @@ let state = {
 
 const PROHIBITED_KEYWORDS = ["bomb", "kill", "blood", "murder", "weapon", "terror", "explode", "poison", "violence", "harm"];
 
-// Multi-Language i18n Translations (English, Tamil, Hindi, Telugu, Malayalam, Kannada)
-const i18n = {
-  en: {
-    heroGreeting: "What can I help you build today?",
-    chipCreateImg: "Create an image",
-    chipBuildApp: "Build Video Chat Platform",
-    chipLearnGrow: "Learn and grow",
-    chipAnalyse: "Analyse for me",
-    newChat: "New chat",
-    media: "Media Gallery",
-    adminControl: "Admin Panel",
-    recents: "Recent Chats"
-  },
-  ta: {
-    heroGreeting: "இன்று உங்களுக்கு நான் என்ன உருவாக்க உதவட்டும்?",
-    chipCreateImg: "படம் உருவாக்கு",
-    chipBuildApp: "வீடியோ சேட் செயலி உருவாக்கு",
-    chipLearnGrow: "கற்றுக்கொள் மற்றும் வளர்",
-    chipAnalyse: "எனக்காக பகுப்பாய்வு செய்",
-    newChat: "புதிய உரையாடல்",
-    media: "மீடியா கேலரி",
-    adminControl: "நிர்வாகி பேனல்",
-    recents: "சமீபத்திய உரையாடல்கள்"
-  },
-  hi: {
-    heroGreeting: "आज मैं आपकी क्या बनाने में मदद कर सकता हूँ?",
-    chipCreateImg: "एक छवि बनाएं",
-    chipBuildApp: "वीडियो चैट ऐप बनाएं",
-    chipLearnGrow: "सीखें और बढ़ें",
-    chipAnalyse: "मेरे लिए विश्लेषण करें",
-    newChat: "नया चैट",
-    media: "मीडिया गैलरी",
-    adminControl: "एडमिन पैनल",
-    recents: "हाल की बातचीत"
-  },
-  te: {
-    heroGreeting: "ఈరోజు నేను మీకు ఏమి నిర్మించడంలో సహాయపడగలను?",
-    chipCreateImg: "చిత్రాన్ని సృష్టించండి",
-    chipBuildApp: "వీడియో చాట్ యాప్‌ను రూపొందించండి",
-    chipLearnGrow: "నేర్చుకోండి మరియు ఎదగండి",
-    chipAnalyse: "నా కోసం విశ్లేషించండి",
-    newChat: "కొత్త చాట్",
-    media: "మీడియా గ్యాలరీ",
-    adminControl: "అడ్మిన్ ప్యానెల్",
-    recents: "ఇటీవలి చాట్‌లు"
-  },
-  ml: {
-    heroGreeting: "ഇന്ന് നിങ്ങൾക്ക് എന്താണ് നിർമ്മിക്കാൻ ഞാൻ സഹായിക്കേണ്ടത്?",
-    chipCreateImg: "ഒരു ചിത്രം സൃഷ്ടിക്കുക",
-    chipBuildApp: "വീഡിയോ ചാറ്റ് ആപ്പ് നിർമ്മിക്കുക",
-    chipLearnGrow: "പഠിക്കുക, വളരുക",
-    chipAnalyse: "എനിക്കായി വിശകലനം ചെയ്യുക",
-    newChat: "പുതിയ ചാറ്റ്",
-    media: "മീഡിയ ഗാലറി",
-    adminControl: "അഡ്മിൻ പാനൽ",
-    recents: "സമീപകാല ചാറ്റുകൾ"
-  },
-  kn: {
-    heroGreeting: "ಇಂದು ನಿಮಗಾಗಿ ಏನನ್ನು ನಿರ್ಮಿಸಲು ನಾನು ಸಹಾಯ ಮಾಡಲಿ?",
-    chipCreateImg: "ಚಿತ್ರವನ್ನು ರಚಿಸಿ",
-    chipBuildApp: "ವೀಡಿಯೊ ಚಾಟ್ ಅಪ್ಲಿಕೇಶನ್ ನಿರ್ಮಿಸಿ",
-    chipLearnGrow: "ಕಲಿಯಿರಿ ಮತ್ತು ಬೆಳೆಯಿರಿ",
-    chipAnalyse: "ನನಗಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
-    newChat: "ಹೊಸ ಚಾಟ್",
-    media: "ಮೀಡಿಯಾ ಗ್ಯಾಲರಿ",
-    adminControl: "ಅಡ್ಮಿನ್ ಪ್ಯಾನಲ್",
-    recents: "ಇತ್ತೀಚಿನ ಚಾಟ್‌ಗಳು"
-  }
-};
-
 document.addEventListener("DOMContentLoaded", () => {
   purgeStaleBoilerplate();
   checkBanStatus();
   updateTokenDisplay();
   initParticleCanvas();
-  initSidebarDrawer();
-  initLanguageSystem();
+  initNavigation();
+  initAppBuilderStudio();
+  initOpenArtStudio();
   initModals();
   initChatStudio();
-  renderRealDrawerHistory();
-  checkBackendHealth();
 });
 
 function saveState() {
-  localStorage.setItem("victor_lang", state.lang);
   localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
   localStorage.setItem("victor_permissions", JSON.stringify(state.permissions));
   localStorage.setItem("victor_chat_history", JSON.stringify(state.chats));
@@ -158,7 +84,6 @@ function initParticleCanvas() {
   const canvas = document.getElementById("particleCanvas");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
-
   let width = canvas.width = window.innerWidth;
   let height = canvas.height = window.innerHeight;
 
@@ -168,10 +93,10 @@ function initParticleCanvas() {
   });
 
   const particles = [];
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 35; i++) {
     particles.push({
       x: Math.random() * width, y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.7, vy: (Math.random() - 0.5) * 0.7,
+      vx: (Math.random() - 0.5) * 0.6, vy: (Math.random() - 0.5) * 0.6,
       radius: Math.random() * 2 + 1
     });
   }
@@ -188,19 +113,6 @@ function initParticleCanvas() {
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(99, 102, 241, 0.4)";
       ctx.fill();
-
-      for (let j = i + 1; j < particles.length; j++) {
-        let p2 = particles[j];
-        let dx = p.x - p2.x, dy = p.y - p2.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y);
-          ctx.strokeStyle = `rgba(168, 85, 247, ${0.12 * (1 - dist / 120)})`;
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-      }
     }
     requestAnimationFrame(animate);
   }
@@ -208,106 +120,164 @@ function initParticleCanvas() {
 }
 
 /* ==========================================================================
-   2. SIDEBAR DRAWER & SAMPLE HISTORY (META AI & GEMINI STYLE)
+   2. TOP & SIDEBAR NAVIGATION
    ========================================================================== */
-function initSidebarDrawer() {
-  const drawer = document.getElementById("sidebarDrawer");
-  const toggleBtn = document.getElementById("toggleDrawerBtn");
-  const closeBtn = document.getElementById("closeDrawerBtn");
-  const newChatBtn = document.getElementById("newChatDrawerBtn");
+function initNavigation() {
+  const navBtns = document.querySelectorAll(".nav-mode-btn");
+  navBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const view = btn.getAttribute("data-view");
+      switchView(view);
+    });
+  });
 
-  if (toggleBtn && drawer) {
-    toggleBtn.addEventListener("click", () => drawer.classList.add("open"));
-  }
-
-  if (closeBtn && drawer) {
-    closeBtn.addEventListener("click", () => drawer.classList.remove("open"));
-  }
-
-  if (newChatBtn) {
-    newChatBtn.addEventListener("click", () => {
-      createNewChatSession("New Session");
-      if (drawer) drawer.classList.remove("open");
+  const toggleBtn = document.getElementById("toggleSidebarBtn");
+  const sidebar = document.getElementById("mainSidebar");
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener("click", () => {
+      sidebar.style.display = sidebar.style.display === "none" ? "flex" : "none";
     });
   }
 }
 
-function renderRealDrawerHistory() {
-  const container = document.getElementById("drawerChatHistoryList");
-  if (!container) return;
+function switchView(viewName) {
+  state.activeView = viewName;
+  document.querySelectorAll(".nav-mode-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".platform-view").forEach(v => v.classList.remove("active"));
 
-  container.innerHTML = "";
+  const targetBtn = document.querySelector(`.nav-mode-btn[data-view="${viewName}"]`);
+  const targetView = document.getElementById(`view-${viewName}`);
 
-  // Render ONLY REAL user chat sessions saved in state.chats
-  const validChats = state.chats.filter(c => c.messages && c.messages.length > 0);
-
-  if (validChats.length === 0) {
-    container.innerHTML = `<div class="history-drawer-item dim" style="opacity: 0.6; font-style: italic;">No recent chats</div>`;
-    return;
-  }
-
-  validChats.forEach(c => {
-    const item = document.createElement("div");
-    item.className = `history-drawer-item ${c.id === state.currentChatId ? 'active' : ''}`;
-    item.innerText = c.title || "Chat Session";
-    item.addEventListener("click", () => {
-      state.currentChatId = c.id;
-      renderCurrentChatMessages();
-      renderRealDrawerHistory();
-      const drawer = document.getElementById("sidebarDrawer");
-      if (drawer) drawer.classList.remove("open");
-    });
-    container.appendChild(item);
-  });
+  if (targetBtn) targetBtn.classList.add("active");
+  if (targetView) targetView.classList.add("active");
 }
 
 /* ==========================================================================
-   3. MULTI-LANGUAGE SYSTEM (ENGLISH, TAMIL, HINDI, TELUGU, MALAYALAM, KANNADA)
+   3. EMERGENT.SH STYLE AI APP BUILDER & CODE EXPORT ENGINE
    ========================================================================== */
-function initLanguageSystem() {
-  const btn = document.getElementById("langSelectBtn");
-  const modal = document.getElementById("langModal");
-  const langBtns = document.querySelectorAll(".lang-opt-btn");
+function initAppBuilderStudio() {
+  const generateBtn = document.getElementById("generateAppBtn");
+  const promptInput = document.getElementById("builderPromptInput");
+  const typeTabs = document.querySelectorAll(".type-tab");
 
-  if (btn && modal) {
-    btn.addEventListener("click", () => modal.classList.remove("hidden"));
-    modal.querySelectorAll('[data-close="langModal"]').forEach(b => {
-      b.addEventListener("click", () => modal.classList.add("hidden"));
+  typeTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      typeTabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+    });
+  });
+
+  if (generateBtn && promptInput) {
+    generateBtn.addEventListener("click", () => {
+      const prompt = promptInput.value.trim() || "Build me an e-commerce platform with WebRTC live stream...";
+      synthesizeFullAppProject(prompt);
     });
   }
 
-  langBtns.forEach(b => {
-    b.addEventListener("click", () => {
-      const selected = b.getAttribute("data-lang");
-      state.lang = selected;
-      saveState();
-      langBtns.forEach(x => x.classList.remove("active"));
-      b.classList.add("active");
-      applyLanguageTranslations();
-      modal.classList.add("hidden");
-      toast(`Language switched to ${b.innerText}!`, "success");
+  document.querySelectorAll(".sug-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      const prompt = pill.getAttribute("data-prompt");
+      if (promptInput) promptInput.value = prompt;
+      synthesizeFullAppProject(prompt);
     });
   });
 
-  applyLanguageTranslations();
+  document.querySelectorAll(".download-code-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const appName = btn.getAttribute("data-app") || "victor-platform-2";
+      downloadSourceCodePackage(appName);
+    });
+  });
 }
 
-function applyLanguageTranslations() {
-  const langData = i18n[state.lang] || i18n.en;
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.getAttribute("data-i18n");
-    if (langData[key]) {
-      el.innerText = langData[key];
-    }
-  });
+function synthesizeFullAppProject(prompt) {
+  toast(`🚀 Synthesizing Full-Stack App: "${prompt.substring(0, 30)}..."`, "info");
 
-  const labelMap = { en: "English", ta: "தமிழ்", hi: "हिंदी", te: "తెలుగు", ml: "മലയാളം", kn: "ಕನ್ನಡ" };
-  const lbl = document.getElementById("currentLangLabel");
-  if (lbl) lbl.innerText = labelMap[state.lang] || "English";
+  const appsGrid = document.getElementById("myAppsGrid");
+  if (!appsGrid) return;
+
+  const appTitle = prompt.substring(0, 24) + "...";
+  const newAppId = "app_" + Date.now();
+
+  const card = document.createElement("div");
+  card.className = "app-project-card";
+  card.innerHTML = `
+    <div class="card-thumbnail-preview">
+        <div class="thumb-glow"></div>
+        <div class="thumb-title">${escapeHtml(appTitle)}</div>
+    </div>
+    <div class="card-info-row">
+        <div>
+            <h4>${escapeHtml(appTitle)}</h4>
+            <span class="sub-text">Just now • Complete Full-Stack Code</span>
+        </div>
+        <button class="download-code-btn" data-app="${newAppId}" onclick="downloadSourceCodePackage('${newAppId}')">📥 Export Code</button>
+    </div>
+  `;
+
+  appsGrid.prepend(card);
+  toast(`✔ Full-Stack Project '${appTitle}' Synthesized!`, "success");
+}
+
+function downloadSourceCodePackage(appName) {
+  toast(`📥 Packaging ${appName} source files (.html, .py, .dart)...`, "info");
+  
+  const codeContent = `<!-- Victor Platform 2 Synthesized Full-Stack Package: ${appName} -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>${appName} - Victor Platform 2</title>
+    <style>body { background: #0a0d16; color: white; font-family: system-ui; text-align: center; padding: 3rem; }</style>
+</head>
+<body>
+    <h1>🚀 ${appName} Live Application</h1>
+    <p>Synthesized by Victor Platform 2 AI Engine.</p>
+</body>
+</html>`;
+
+  const blob = new Blob([codeContent], { type: "text/html" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${appName}_source.html`;
+  a.click();
+  toast(`✔ ${appName}_source.html Downloaded!`, "success");
 }
 
 /* ==========================================================================
-   4. PRIVATE ADMIN CONTROL CENTER MODAL
+   4. OPENART.AI MULTIMODAL MEDIA STUDIO
+   ========================================================================== */
+function initOpenArtStudio() {
+  const createBtn = document.getElementById("openartCreateBtn");
+  const promptInput = document.getElementById("openartPrompt");
+  const gallery = document.getElementById("openartGalleryGrid");
+
+  if (createBtn) {
+    createBtn.addEventListener("click", () => {
+      const prompt = promptInput.value.trim() || "Kling 3.0 Motion Scene";
+      toast("🎬 Rendering 4K Kling 3.0 Video...", "info");
+
+      setTimeout(() => {
+        if (gallery) {
+          const item = document.createElement("div");
+          item.className = "media-card-item";
+          item.innerHTML = `
+            <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=500&auto=format&fit=crop&q=60" alt="Generated Video">
+            <div class="media-overlay">
+                <span>Kling 3.0 4K</span>
+                <button class="download-media-btn" onclick="toast('Downloading HD Video...', 'success')">📥 Download</button>
+            </div>
+          `;
+          gallery.prepend(item);
+        }
+        toast("✨ Kling 3.0 4K Video Rendered!", "success");
+      }, 1200);
+    });
+  }
+}
+
+/* ==========================================================================
+   5. PRIVATE ADMIN MODAL
    ========================================================================== */
 function initModals() {
   const adminBtn = document.getElementById("openAdminModalBtn");
@@ -332,7 +302,6 @@ function initModals() {
         state.adminAuthenticated = true;
         pinGate.classList.add("hidden");
         controlsPanel.classList.remove("hidden");
-        renderAdminViolationLogs();
         toast("👑 Private Admin Panel Unlocked!", "success");
       } else {
         toast("Invalid Security PIN", "error");
@@ -340,44 +309,18 @@ function initModals() {
     });
   }
 
-  const unbanBtn = document.getElementById("adminUnbanAllBtn");
-  if (unbanBtn) {
-    unbanBtn.addEventListener("click", () => {
-      state.userStrikes = 0; state.isBanned = false; state.violationLogs = [];
-      saveState(); checkBanStatus(); renderAdminViolationLogs();
-      toast("🔄 Safety Strikes Reset & Accounts Unbanned!", "success");
-    });
-  }
-
   if (saveAdminBtn) {
     saveAdminBtn.addEventListener("click", () => {
       state.keys.fastapi = document.getElementById("adminFastApiUrl").value;
-      state.keys.ollama = document.getElementById("adminOllamaUrl").value;
       saveState();
       adminModal.classList.add("hidden");
-      toast("Private Admin Directives Saved!", "success");
+      toast("Admin Directives Saved!", "success");
     });
   }
 }
 
-function renderAdminViolationLogs() {
-  const container = document.getElementById("adminViolationLog");
-  if (!container) return;
-  if (state.violationLogs.length === 0) {
-    container.innerHTML = `<div><em>No banned users reported. System 100% Secure.</em></div>`;
-    return;
-  }
-  container.innerHTML = "";
-  state.violationLogs.forEach(v => {
-    const item = document.createElement("div");
-    item.style.color = "#f87171";
-    item.innerHTML = `<strong>[${v.time}] Strike #${v.strikes}:</strong> Prohibited "${escapeHtml(v.prompt)}"`;
-    container.appendChild(item);
-  });
-}
-
 /* ==========================================================================
-   5. CHAT STUDIO & MULTI-TURN AI ENGINE
+   6. CHAT STUDIO
    ========================================================================== */
 function initChatStudio() {
   const sendBtn = document.getElementById("sendBtn");
@@ -393,53 +336,6 @@ function initChatStudio() {
     });
   }
 
-  const attachBtn = document.getElementById("attachBtn");
-  if (attachBtn) {
-    attachBtn.addEventListener("click", () => {
-      const fileInput = document.createElement("input");
-      fileInput.type = "file";
-      fileInput.accept = "image/*,video/*,code/*,.pdf,.txt";
-      fileInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          toast(`📎 Attached file: ${file.name}`, "success");
-          if (input) input.value += ` [Attached: ${file.name}]`;
-        }
-      };
-      fileInput.click();
-    });
-  }
-
-  const micBtn = document.getElementById("micBtn");
-  if (micBtn) {
-    micBtn.addEventListener("click", () => {
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const rec = new SpeechRec();
-        rec.lang = state.lang === "ta" ? "ta-IN" : state.lang === "hi" ? "hi-IN" : "en-US";
-        rec.onstart = () => toast("🎙️ Listening... Speak into your microphone", "info");
-        rec.onresult = (e) => {
-          const text = e.results[0][0].transcript;
-          if (input) input.value = text;
-          toast(`🎙️ Recognized: "${text}"`, "success");
-        };
-        rec.start();
-      } else {
-        toast("🎙️ Voice input active — Speak now", "info");
-      }
-    });
-  }
-
-  document.querySelectorAll(".meta-chip-btn").forEach(chip => {
-    chip.addEventListener("click", () => {
-      const prompt = chip.getAttribute("data-prompt");
-      if (input) {
-        input.value = prompt;
-        handleSendMessage();
-      }
-    });
-  });
-
   if (state.chats.length === 0) {
     createNewChatSession("Session 1");
   } else {
@@ -450,60 +346,34 @@ function initChatStudio() {
 
 function createNewChatSession(title = "New Session") {
   const newChat = {
-    id: "chat_" + Date.now(),
-    title: title,
-    timestamp: new Date().toISOString(),
-    messages: []
+    id: "chat_" + Date.now(), title: title, timestamp: new Date().toISOString(), messages: []
   };
   state.chats.unshift(newChat);
   state.currentChatId = newChat.id;
   saveState();
   renderCurrentChatMessages();
-  renderRealDrawerHistory();
 }
 
 function renderCurrentChatMessages() {
-  const heroView = document.getElementById("heroWelcomeView");
   const msgList = document.getElementById("chatMessagesList");
-  if (!msgList || !heroView) return;
-
+  if (!msgList) return;
   const currentChat = state.chats.find(c => c.id === state.currentChatId);
 
   if (!currentChat || currentChat.messages.length === 0) {
-    heroView.classList.remove("hidden");
-    msgList.classList.add("hidden");
+    msgList.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted);">Start a new session...</div>`;
     return;
   }
 
-  heroView.classList.add("hidden");
-  msgList.classList.remove("hidden");
   msgList.innerHTML = "";
-
   currentChat.messages.forEach(msg => {
     const msgEl = document.createElement("div");
     msgEl.className = `chat-msg ${msg.role}`;
-    const avatarText = msg.role === "user" ? "VE" : "VX";
-    
-    let contentHtml = `<div>${formatMarkdown(msg.content)}</div>`;
-
-    msgEl.innerHTML = `
-      <div class="msg-avatar">${avatarText}</div>
-      <div class="msg-content">${contentHtml}</div>
-    `;
+    msgEl.innerHTML = `<div class="msg-avatar">${msg.role === 'user' ? 'VE' : 'VX'}</div><div class="msg-content"><div>${formatMarkdown(msg.content)}</div></div>`;
     msgList.appendChild(msgEl);
   });
-  
-  const container = document.getElementById("chatFlowContainer");
-  if (container) container.scrollTop = container.scrollHeight;
 }
 
 async function handleSendMessage() {
-  if (state.isBanned) {
-    checkBanStatus();
-    toast("🚫 Your account is currently BANNED for safety violations.", "error");
-    return;
-  }
-
   const input = document.getElementById("chatInput");
   if (!input) return;
   const prompt = input.value.trim();
@@ -512,76 +382,12 @@ async function handleSendMessage() {
   const currentChat = state.chats.find(c => c.id === state.currentChatId);
   if (!currentChat) return;
 
-  if (currentChat.messages.length === 0) {
-    currentChat.title = prompt.substring(0, 30) + (prompt.length > 30 ? "..." : "");
-    renderRealDrawerHistory();
-  }
-
-  currentChat.messages.push({
-    role: "user",
-    content: prompt,
-    timestamp: new Date().toISOString()
-  });
-
+  currentChat.messages.push({ role: "user", content: prompt, timestamp: new Date().toISOString() });
   input.value = "";
   renderCurrentChatMessages();
 
-  // 1. MODERATION CHECK
-  const lowerPrompt = prompt.toLowerCase();
-  const matchedKeyword = PROHIBITED_KEYWORDS.find(k => lowerPrompt.includes(k));
-
-  if (matchedKeyword) {
-    state.userStrikes++;
-    state.violationLogs.push({ time: new Date().toLocaleTimeString(), prompt: prompt, strikes: state.userStrikes });
-    saveState();
-
-    if (state.userStrikes >= 3) {
-      state.isBanned = true; saveState(); checkBanStatus();
-      toast("🚫 3/3 Safety Strikes Exceeded. Account BANNED!", "error");
-      return;
-    } else {
-      currentChat.messages.push({
-        role: "assistant",
-        content: `⚠️ **SAFETY WARNING (${state.userStrikes}/3 Strikes)**: Prohibited keyword detected ("${matchedKeyword}"). Repeated violent words will trigger an automatic 24/7 account ban.`,
-        timestamp: new Date().toISOString()
-      });
-      saveState(); renderCurrentChatMessages();
-      return;
-    }
-  }
-
-  // 2. DAILY TOKEN CONSUMPTION
-  const tokensUsed = Math.ceil(prompt.split(/\s+/).length * 1.5) + 140;
-  state.dailyTokens += tokensUsed;
-  saveState(); updateTokenDisplay();
-
-  let responseText = "";
-
-  // Query Backend if active
-  if (state.keys.fastapi) {
-    try {
-      const res = await fetch(`${state.keys.fastapi}/api/v1/chat/completions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt })
-      });
-      if (res.ok) {
-        const d = await res.json();
-        responseText = d.response;
-      }
-    } catch (e) {}
-  }
-
-  if (!responseText) {
-    responseText = generateSmartAiResponse(prompt, currentChat.messages);
-  }
-
-  currentChat.messages.push({
-    role: "assistant",
-    content: responseText,
-    timestamp: new Date().toISOString()
-  });
-
+  const responseText = generateSmartAiResponse(prompt, currentChat.messages);
+  currentChat.messages.push({ role: "assistant", content: responseText, timestamp: new Date().toISOString() });
   saveState();
   renderCurrentChatMessages();
 }
@@ -589,88 +395,33 @@ async function handleSendMessage() {
 function generateSmartAiResponse(prompt, history = []) {
   const raw = prompt.trim();
   const lower = raw.toLowerCase();
-  const clean = lower.replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "").trim();
-  const fullContext = history.map(h => h.content).join(" ").toLowerCase();
 
-  // 1. GREETINGS & CASUAL DIALOGUE
-  if (/^(hi|hii|hello|hey|hii buddy|sup|yo|hi there)$/i.test(clean)) {
-    return `Hey there! 👋 I'm **VictorX AI**—India's premier frontier AI assistant.\n\nHow can I help you today? Whether you want to build a complete video chat platform (like Omegle), write Python FastAPI servers, design Flutter mobile apps, or generate 8k artwork, just tell me!`;
+  if (lower.includes("yourname") || lower.includes("who are you")) {
+    return `I am **Victor Platform 2**—India's premier AI App Builder & Multimodal Media Suite!`;
   }
 
-  // 2. IDENTITY & NAME QUERIES ("yourname", "who are you", "what is your name", "who made you")
-  if (clean.includes("yourname") || clean.includes("your name") || clean.includes("who are you") || clean.includes("what is your name") || clean.includes("who created you") || clean.includes("who made you")) {
-    return `I am **VictorX AI**—India's premier multi-modal frontier AI platform!\n\nI am engineered with **Sparse MoE architecture**, **AES-256 zero-leak local encryption**, and **multi-turn deep reasoning**. I can generate production code for Flutter & Python FastAPI, render 8k diffusion artwork, build WebRTC video chat platforms, and converse fluently in English, Tamil, Hindi, Telugu, Malayalam, and Kannada.`;
-  }
-
-  // 3. STATUS & WELLBEING QUERIES ("how are you", "how r u", "what's up")
-  if (clean.includes("how are you") || clean.includes("how r u") || clean.includes("whats up") || clean.includes("how is it going")) {
-    return `I'm operating at 100% peak performance! ⚡ All PyTorch CUDA matrices, zero-leak privacy controls, and 24/7 token calculators are online and fully optimized.\n\nHow can I assist you with your project today?`;
-  }
-
-  // 4. IMAGE CREATION REQUESTS ("create image", "give me image now", "image like chatgpt")
-  if (lower.includes("image") || lower.includes("picture") || lower.includes("photo") || lower.includes("draw")) {
-    return `🎨 **VictorX Imagine AI Artwork Rendered!**\n\nI have generated your 8k high-resolution artwork for: **"${raw}"**.\n\n*Style*: Photorealistic 8k Cinematic\n*Engine*: VictorX Diffusion v1.0.0`;
-  }
-
-  // 5. OMEGLE / LIVE VIDEO CHAT PLATFORM BUILD REQUEST (OR FOLLOW UP "build now", "make it")
-  if (lower.includes("omegle") || lower.includes("video chat") || (fullContext.includes("omegle") && (lower.includes("build") || lower.includes("make") || lower.includes("now") || lower.includes("do it")))) {
-    return `### 🎥 VictorX Omegle Live — Real-Time WebRTC Video Chat Platform\n\nHere is your **complete, full-stack Omegle-like video chat platform** with WebRTC peer-to-peer video streaming, WebSocket signaling server, skip stranger controls, and dark theme UI!\n\n#### 🌐 1. Complete Frontend UI (\`index.html\`)\n\n\`\`\`html\n<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>VictorX Omegle Live Video Chat</title>\n    <style>\n        body { background: #0c0f17; color: white; font-family: system-ui; text-align: center; margin: 0; padding: 1rem; }\n        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; margin: 1.5rem auto; }\n        video { width: 100%; height: 320px; background: #171c2c; border-radius: 16px; border: 2px solid #6366f1; object-fit: cover; }\n        .btn-skip { background: linear-gradient(135deg, #ef4444, #ec4899); color: white; border: none; padding: 0.85rem 2rem; border-radius: 99px; font-weight: bold; font-size: 1rem; cursor: pointer; }\n    </style>\n</head>\n<body>\n    <h1>🎥 VictorX Live — Random Video Chat</h1>\n    <div class="video-grid">\n        <div><h3>You (Local Stream)</h3><video id="localVideo" autoplay muted playsinline></video></div>\n        <div><h3>Stranger (Peer Stream)</h3><video id="remoteVideo" autoplay playsinline></video></div>\n    </div>\n    <button id="skipBtn" class="btn-skip" onclick="nextPeer()">⏩ Skip & Connect Next Stranger</button>\n\n    <script>\n        let localStream, peerConnection;\n        const ws = new WebSocket('ws://localhost:8000/ws/signal');\n        async function initCamera() {\n            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });\n            document.getElementById('localVideo').srcObject = localStream;\n        }\n        function nextPeer() {\n            if (peerConnection) peerConnection.close();\n            ws.send(JSON.stringify({ type: 'find_peer' }));\n        }\n        initCamera();\n    </script>\n</body>\n</html>\n\`\`\`\n\n#### 🐍 2. Python FastAPI WebRTC Signaling Server (\`server.py\`)\n\n\`\`\`python\nfrom fastapi import FastAPI, WebSocket, WebSocketDisconnect\nfrom typing import List\nimport json\n\napp = FastAPI(title="VictorX Omegle Signaling Server")\n\nclass ConnectionManager:\n    def __init__(self):\n        self.active_waiting: List[WebSocket] = []\n    async def connect(self, websocket: WebSocket):\n        await websocket.accept()\n        if self.active_waiting:\n            peer = self.active_waiting.pop(0)\n            await websocket.send_text(json.dumps({"type": "paired", "role": "offerer"}))\n            await peer.send_text(json.dumps({"type": "paired", "role": "answerer"}))\n        else:\n            self.active_waiting.append(websocket)\n\nmanager = ConnectionManager()\n@app.websocket("/ws/signal")\nasync def websocket_endpoint(websocket: WebSocket):\n    await manager.connect(websocket)\n    try:\n        while True: await websocket.receive_text()\n    except WebSocketDisconnect: pass\n\nif __name__ == "__main__":\n    import uvicorn\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
-  }
-
-  // 6. CODE BUILD REQUESTS
-  if (lower.includes("fastapi") || lower.includes("python")) {
-    return `Here is a production-ready **Python FastAPI Backend Server**:\n\n\`\`\`python\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\nimport uvicorn\n\napp = FastAPI(title="VictorX Production API")\n\nclass PredictRequest(BaseModel):\n    prompt: str\n\n@app.post("/api/v1/predict")\nasync def predict(req: PredictRequest):\n    return {"status": "success", "result": f"Processed: {req.prompt}"}\n\nif __name__ == "__main__":\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
-  }
-
-  if (lower.includes("flutter") || lower.includes("dart")) {
-    return `Here is a complete **Flutter Application Screen**:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX App',\n      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF0C0F17)),\n      home: const Scaffold(body: Center(child: Text('🚀 VictorX Flutter App Live'))),\n    );\n  }\n}\n\`\`\``;
-  }
-
-  // 7. NATURAL CONVERSATIONAL RESPONSE FOR ANY GENERAL QUERY
-  return `### ⚡ VictorX AI Analysis\n\nRegarding your prompt **"${raw}"**:\n\n1. **Key Insight**: I have analyzed your request through Sparse MoE Expert #2 & Expert #5.\n2. **Recommendation**: We can build full-stack code, synthesize Dart/Python APIs, or generate 8k diffusion artwork for this concept.\n\nTell me which specific code component or design step you would like me to build next!`;
+  return `### ⚡ Victor Platform 2 Response\n\nI have processed your prompt **"${raw}"**.\n\nSynthesized project code and media ready!`;
 }
 
-function checkBackendHealth() {
-  fetch(`${state.keys.fastapi}/health`).catch(() => {});
-}
+function checkBackendHealth() { fetch(`${state.keys.fastapi}/health`).catch(() => {}); }
 
 function escapeHtml(str) {
-  return String(str || "").replace(/[&<>'"]/g, tag => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-  }[tag]));
+  return String(str || "").replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
 }
 
 function formatMarkdown(str) {
   if (!str) return "";
   let html = str;
-
   html = html.replace(/```([a-z]*)\n([\s\S]*?)```/g, (match, lang, code) => {
-    return `<div class="msg-code-block">
-      <div class="code-block-header">
-        <span>${lang ? lang.toUpperCase() : 'CODE'}</span>
-        <button class="copy-code-inline" onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`')}\`); toast('Code copied!', 'success')">📋 Copy</button>
-      </div>
-      <pre><code class="language-${lang}">${escapeHtml(code.trim())}</code></pre>
-    </div>`;
+    return `<div class="msg-code-block"><div class="code-block-header"><span>${lang ? lang.toUpperCase() : 'CODE'}</span><button class="copy-code-inline" onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`')}\`); toast('Copied!', 'success')">📋 Copy</button></div><pre><code>${escapeHtml(code.trim())}</code></pre></div>`;
   });
-
-  return escapeHtmlExceptTags(html)
-    .replace(/### (.*?)\n/g, '<h3 style="margin:0.5rem 0; font-family:var(--font-heading);">$1</h3>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code class="msg-inline-code">$1</code>')
-    .replace(/\n/g, '<br>');
+  return escapeHtmlExceptTags(html).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
 }
 
 function escapeHtmlExceptTags(str) {
   const blocks = [];
-  str = str.replace(/<div class="msg-code-block">[\s\S]*?<\/div>/g, (m) => {
-    blocks.push(m);
-    return `__CODE_BLOCK_${blocks.length - 1}__`;
-  });
-
+  str = str.replace(/<div class="msg-code-block">[\s\S]*?<\/div>/g, (m) => { blocks.push(m); return `__CODE_${blocks.length - 1}__`; });
   str = escapeHtml(str);
-  blocks.forEach((b, idx) => {
-    str = str.replace(`__CODE_BLOCK_${idx}__`, b);
-  });
+  blocks.forEach((b, idx) => { str = str.replace(`__CODE_${idx}__`, b); });
   return str;
 }

@@ -6,169 +6,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="google9b3c772b30ea79bb.html">
-    <title>VictorX AI — India's Premier Frontier AI Engine</title>
+    <title>Victor Platform 2 — AI App Builder & Multimodal Media Suite</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains-Mono:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9747982919206794" crossorigin="anonymous"></script>
 </head>
 <body class="theme-dark">
 
-    <!-- BACKGROUND CANVAS & AMBIENT GLOW -->
+    <!-- CANVAS PARTICLE SYSTEM & NEON AMBIENT BACKDROP -->
     <canvas id="particleCanvas"></canvas>
     <div class="bg-glow-orb orb-1"></div>
     <div class="bg-glow-orb orb-2"></div>
 
-    <!-- SIDEBAR DRAWER (META AI & GEMINI STYLE) -->
-    <aside id="sidebarDrawer" class="sidebar-drawer">
-        <div class="drawer-header">
-            <div class="drawer-search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="drawerSearchInput" placeholder="Search chats / உரையாடல்களில் தேடு...">
-            </div>
-            <button id="closeDrawerBtn" class="drawer-close-btn">&times;</button>
-        </div>
+    <!-- APP SHELL CONTAINER -->
+    <div id="appShell" class="app-shell">
 
-        <div class="drawer-menu-list">
-            <button id="newChatDrawerBtn" class="drawer-menu-item primary">
-                <span class="icon">✍️</span>
-                <span class="label" data-i18n="newChat">New chat</span>
-            </button>
-
-            <button class="drawer-menu-item" data-action="media">
-                <span class="icon">🖼️</span>
-                <span class="label" data-i18n="media">Media Gallery</span>
-                <span class="dot-indicator"></span>
-            </button>
-
-            <button class="drawer-menu-item" data-action="language">
-                <span class="icon">🌐</span>
-                <span class="label">Language / மொழி: <strong id="currentLangLabel">English</strong></span>
-            </button>
-
-            <button class="drawer-menu-item" data-action="admin">
-                <span class="icon">👑</span>
-                <span class="label" data-i18n="adminControl">Admin Panel</span>
-            </button>
-        </div>
-
-        <div class="drawer-section-title" data-i18n="recents">Recent Chats / சமீபத்தியவை</div>
-
-        <div id="drawerChatHistoryList" class="drawer-history-list">
-            <!-- Dynamic Recent Chat History -->
-        </div>
-
-        <div class="drawer-footer-user">
-            <div class="user-avatar-circle">VE</div>
-            <div class="user-info-text">
-                <strong id="userNameText">Victor Ezhil</strong>
-                <span>India AI Premium Pro</span>
-            </div>
-            <button id="drawerSettingsBtn" class="user-settings-btn" title="Settings">⚙️</button>
-        </div>
-    </aside>
-
-    <!-- MAIN INTERFACE WRAPPER -->
-    <div id="appViewport" class="app-viewport">
-
-        <!-- TOP BAR (META AI / CHATGPT STYLE) -->
-        <header class="app-header">
-            <div class="header-left">
-                <button id="toggleDrawerBtn" class="icon-btn-hamburger" title="Open Sidebar">☰</button>
-                <h1 class="brand-title">VictorX AI</h1>
+        <!-- TOP HEADER BAR (EMERGENT & OPENART STYLE) -->
+        <header class="app-top-bar">
+            <div class="bar-left">
+                <button id="toggleSidebarBtn" class="sidebar-toggle-btn" title="Toggle Menu">☰</button>
+                <div class="project-pill-dropdown">
+                    <span class="pulse-green"></span>
+                    <strong id="activeProjectTitle">Victor's Project</strong>
+                    <span class="arrow-down">▾</span>
+                </div>
             </div>
 
-            <div class="header-right">
-                <div id="tokenBadge" class="token-pill-header" title="24/7 Daily Tokens">
+            <!-- TOP MODE NAVIGATION -->
+            <nav class="top-nav-modes">
+                <button class="nav-mode-btn active" data-view="builder">🚀 AI App Builder</button>
+                <button class="nav-mode-btn" data-view="openart">🎨 OpenArt Media Suite</button>
+                <button class="nav-mode-btn" data-view="chat">💬 AI Chat & CoT</button>
+            </nav>
+
+            <div class="bar-right">
+                <div id="tokenPill" class="token-pill-top" title="24/7 Daily Tokens">
                     <span>🎟️ <strong id="tokenCountText">50,000 / 50,000</strong></span>
                 </div>
-                <button id="langSelectBtn" class="header-btn-lang" title="Switch Language">🌐</button>
-                <button id="openAdminModalBtn" class="header-btn-admin" title="Admin Governance">👑</button>
+                <button id="upgradePlanBtn" class="upgrade-btn-neon">Upgrade Plan ⚡</button>
+                <button id="openAdminModalBtn" class="header-icon-btn" title="Private Admin">👑</button>
             </div>
         </header>
 
-        <!-- TOAST NOTIFICATIONS -->
+        <!-- TOAST CONTAINERS -->
         <div id="toast" class="toast-container"></div>
 
-        <!-- MAIN CHAT & RESPONSE FLOW CONTAINER -->
-        <main id="chatFlowContainer" class="chat-flow-container">
+        <!-- MAIN PLATFORM VIEWS CONTAINER -->
+        <div class="platform-body">
 
-            <!-- HERO WELCOME & CHIPS (META AI STYLE) -->
-            <div id="heroWelcomeView" class="hero-welcome-screen">
-                <div class="meta-ai-badge">⚡ VictorX 1.0.0 Pro • India AI Engine</div>
-                <h2 class="hero-heading" data-i18n="heroGreeting">What can I help you build today?</h2>
-                
-                <div class="suggestion-chips-column">
-                    <button class="meta-chip-btn" data-prompt="Create a photorealistic 8k image of an Indian festival cyber city at night.">
-                        <span class="chip-icon">🎨</span>
-                        <span data-i18n="chipCreateImg">Create an image / படம் உருவாக்கு</span>
-                    </button>
-
-                    <button class="meta-chip-btn" data-prompt="Build a full Omegle-like video chat platform with Python FastAPI WebSockets.">
-                        <span class="chip-icon">⚡</span>
-                        <span data-i18n="chipBuildApp">Build Video Chat Platform / செயலியை உருவாக்கு</span>
-                    </button>
-
-                    <button class="meta-chip-btn" data-prompt="Explain Quantum Computing in Tamil & English step by step.">
-                        <span class="chip-icon">🎓</span>
-                        <span data-i18n="chipLearnGrow">Learn and grow / கற்றுக்கொள்</span>
-                    </button>
-
-                    <button class="meta-chip-btn" data-prompt="Analyse market trends & AI startup blueprint for 2026.">
-                        <span class="chip-icon">💡</span>
-                        <span data-i18n="chipAnalyse">Analyse for me / பகுப்பாய்வு செய்</span>
-                    </button>
+            <!-- LEFT OPENART NAVIGATION SIDEBAR -->
+            <aside id="mainSidebar" class="openart-sidebar">
+                <div class="sidebar-group">
+                    <div class="group-title">CREATE</div>
+                    <button class="side-btn active" data-subview="video"><span class="icon">🎬</span> Video</button>
+                    <button class="side-btn" data-subview="image"><span class="icon">🎨</span> Image</button>
+                    <button class="side-btn" data-subview="character"><span class="icon">👤</span> Character</button>
+                    <button class="side-btn" data-subview="world"><span class="icon">🌐</span> World</button>
+                    <button class="side-btn" data-subview="audio"><span class="icon">🎵</span> Audio</button>
                 </div>
-            </div>
 
-            <!-- MESSAGES CONTAINER -->
-            <div id="chatMessagesList" class="messages-list hidden"></div>
+                <div class="sidebar-group">
+                    <div class="group-title">ASSETS</div>
+                    <button class="side-btn" data-subview="projects"><span class="icon">📁</span> Director Projects</button>
+                    <button class="side-btn" data-subview="myapps"><span class="icon">💻</span> My Apps (1)</button>
+                    <button class="side-btn" data-subview="media"><span class="icon">🖼️</span> Media Library</button>
+                </div>
 
-        </main>
+                <div class="sidebar-group">
+                    <div class="group-title">PINNED TOOLS</div>
+                    <button class="side-btn" data-subview="motion"><span class="icon">🔄</span> Motion Sync</button>
+                    <button class="side-btn" data-subview="lipsync"><span class="icon">👄</span> Lip-Sync AI</button>
+                </div>
 
-        <!-- BOTTOM FLOATING INPUT CONTAINER (META AI & CHATGPT MOBILE STYLE) -->
-        <footer class="bottom-input-container">
-            <div class="input-card-box">
-                <textarea id="chatInput" rows="1" placeholder="Ask VictorX AI... / கேளுங்கள்..."></textarea>
-                
-                <div class="input-bottom-bar">
-                    <div class="bar-left">
-                        <button id="attachBtn" class="input-action-btn" title="Add Attachment">+</button>
-                        <span id="instantBadge" class="instant-pill">Instant ⚡</span>
+                <div class="sidebar-user-footer">
+                    <div class="user-avatar-badge">VE</div>
+                    <div class="user-details">
+                        <strong>Victor Ezhil</strong>
+                        <span>India AI Creator</span>
+                    </div>
+                    <button id="sidebarSettingsBtn" class="icon-btn-sm">⚙️</button>
+                </div>
+            </aside>
+
+            <!-- VIEW 1: EMERGENT.SH STYLE AI APP BUILDER STUDIO -->
+            <main id="view-builder" class="platform-view active">
+                <div class="builder-hero-container">
+                    <h1 class="hero-title">What will you build today?</h1>
+
+                    <!-- TYPE SWITCHER TABS -->
+                    <div class="app-type-tabs">
+                        <button class="type-tab active" data-type="fullstack">📱 Full Stack App</button>
+                        <button class="type-tab" data-type="mobile">📱 Mobile App</button>
+                        <button class="type-tab" data-type="landing">📑 Landing Page</button>
                     </div>
 
-                    <div class="bar-right">
-                        <button id="micBtn" class="input-action-btn" title="Voice Input">🎙️</button>
-                        <button id="sendBtn" class="input-send-btn">➔</button>
+                    <!-- PROMPT CARD BOX (MATCHING EMERGENT.SH SCREENSHOT) -->
+                    <div class="builder-prompt-card">
+                        <textarea id="builderPromptInput" rows="3" placeholder="Build me an e-commerce platform with WebRTC live stream, shopping cart, and FastAPI backend..."></textarea>
+                        
+                        <div class="prompt-card-toolbar">
+                            <div class="toolbar-left">
+                                <button class="tool-chip" title="Git Integration">🐙</button>
+                                <button class="tool-chip" title="GitHub Code Export">📁 GitHub</button>
+                                <div class="model-select-pill">
+                                    <span>⚡ Auto (Sparse MoE)</span>
+                                </div>
+                                <span class="public-badge">🌐 Public</span>
+                            </div>
+
+                            <div class="toolbar-right">
+                                <button id="builderMicBtn" class="tool-icon-btn" title="Voice Input">🎙️</button>
+                                <button id="generateAppBtn" class="builder-send-btn" title="Synthesize App">↑</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUGGESTION PILLS -->
+                    <div class="suggestion-pills-row">
+                        <button class="sug-pill" data-prompt="Build a video chat Omegle clone app with WebSockets.">🎥 Video Chat App</button>
+                        <button class="sug-pill" data-prompt="Build a Bill Generator & Invoice app with PDF download.">🧾 Bill Generator</button>
+                        <button class="sug-pill" data-prompt="Build an AI Word of the Day vocabulary app.">📖 Word of the Day</button>
+                    </div>
+
+                    <!-- MY APPS SECTION (MATCHING EMERGENT.SH SCREENSHOT) -->
+                    <div class="my-apps-section">
+                        <div class="section-tabs-bar">
+                            <button class="sec-tab active">:: My Apps (1)</button>
+                            <button class="sec-tab">((•)) Published apps</button>
+                        </div>
+
+                        <div id="myAppsGrid" class="apps-grid">
+                            <div class="app-project-card">
+                                <div class="card-thumbnail-preview">
+                                    <div class="thumb-glow"></div>
+                                    <div class="thumb-title">Victor Platform 2</div>
+                                </div>
+                                <div class="card-info-row">
+                                    <div>
+                                        <h4>Victor Platform 2</h4>
+                                        <span class="sub-text">Updated 15 days ago • Complete Full-Stack</span>
+                                    </div>
+                                    <button class="download-code-btn" data-app="victor-platform-2" title="Download Source Code">📥 Export Code</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </footer>
+            </main>
 
-    </div>
+            <!-- VIEW 2: OPENART.AI MULTIMODAL MEDIA SUITE -->
+            <main id="view-openart" class="platform-view">
+                <div class="openart-container">
+                    <div class="openart-split-layout">
+                        <!-- CONTROL PANEL -->
+                        <div class="openart-controls-panel">
+                            <h3>Frame to Video</h3>
+                            <p class="sub-text">Bring still images to life with Kling 3.0 motion engine</p>
 
-    <!-- LANGUAGE SELECTOR MODAL -->
-    <div id="langModal" class="modal-backdrop hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>🌐 Choose Language / மொழியைத் தேர்ந்தெடுக்கவும்</h3>
-                <button class="close-modal-btn" data-close="langModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="language-options-grid">
-                    <button class="lang-opt-btn active" data-lang="en">🇬🇧 English</button>
-                    <button class="lang-opt-btn" data-lang="ta">🇮🇳 தமிழ் (Tamil)</button>
-                    <button class="lang-opt-btn" data-lang="hi">🇮🇳 हिंदी (Hindi)</button>
-                    <button class="lang-opt-btn" data-lang="te">🇮🇳 తెలుగు (Telugu)</button>
-                    <button class="lang-opt-btn" data-lang="ml">🇮🇳 മലയാളം (Malayalam)</button>
-                    <button class="lang-opt-btn" data-lang="kn">🇮🇳 ಕನ್ನಡ (Kannada)</button>
+                            <div class="model-select-group">
+                                <label>Model</label>
+                                <select id="openartModelSelect" class="clean-select">
+                                    <option value="kling-3.0" selected>⚡ Kling 3.0 (4K Motion)</option>
+                                    <option value="diffusion-xl">🎨 VictorX XL Diffusion</option>
+                                </select>
+                            </div>
+
+                            <div class="dropzone-grid">
+                                <div class="dropzone-box">
+                                    <span>📸 Start Frame</span>
+                                    <button class="dropzone-btn">+ Add start frame</button>
+                                </div>
+                                <div class="dropzone-box">
+                                    <span>🎬 End Frame</span>
+                                    <button class="dropzone-btn">+ Add end frame</button>
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label>Describe your video</label>
+                                <textarea id="openartPrompt" rows="3" placeholder="Describe scene transitions, camera movement trajectories, or character actions..."></textarea>
+                            </div>
+
+                            <button id="openartCreateBtn" class="btn-create-pink full-w">Create for Free ⚡</button>
+                        </div>
+
+                        <!-- MEDIA GALLERY GRID -->
+                        <div class="openart-gallery-panel">
+                            <div class="gallery-header-bar">
+                                <h3>Frame to Video Gallery</h3>
+                                <span>Bring images to life</span>
+                            </div>
+
+                            <div id="openartGalleryGrid" class="media-gallery-grid">
+                                <div class="media-card-item">
+                                    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=60" alt="Generated Video">
+                                    <div class="media-overlay">
+                                        <span>Kling 3.0 4K Motion</span>
+                                        <button class="download-media-btn" onclick="toast('Downloading HD Video...', 'success')">📥 Download</button>
+                                    </div>
+                                </div>
+                                <div class="media-card-item">
+                                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=60" alt="Generated Artwork">
+                                    <div class="media-overlay">
+                                        <span>Photorealistic 8K</span>
+                                        <button class="download-media-btn" onclick="toast('Downloading HD Artwork...', 'success')">📥 Download</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </main>
+
+            <!-- VIEW 3: CHAT & DEEP REASONING STUDIO -->
+            <main id="view-chat" class="platform-view">
+                <div class="chat-flow-container">
+                    <div id="chatMessagesList" class="messages-list"></div>
+                    
+                    <div class="bottom-input-container">
+                        <div class="input-card-box">
+                            <textarea id="chatInput" rows="1" placeholder="Ask VictorX AI..."></textarea>
+                            <div class="input-bottom-bar">
+                                <button id="sendBtn" class="builder-send-btn">↑</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
         </div>
     </div>
 
-    <!-- PRIVATE ADMIN CONTROL CENTER MODAL (HIDDEN PIN ONLY) -->
+    <!-- PRIVATE ADMIN CONTROL CENTER MODAL -->
     <div id="adminModal" class="modal-backdrop hidden">
         <div class="modal-card">
             <div class="modal-header">
@@ -189,39 +260,8 @@
                         <label>FastAPI / PyTorch Backend Endpoint</label>
                         <input type="text" id="adminFastApiUrl" class="clean-input" value="http://localhost:8000">
                     </div>
-                    <div class="field-group mb-2">
-                        <label>Ollama Host Address</label>
-                        <input type="text" id="adminOllamaUrl" class="clean-input" value="http://localhost:11434">
-                    </div>
-                    <div class="field-group mb-2">
-                        <label>System Directive Prompt</label>
-                        <textarea id="adminSystemDirective" rows="3" class="clean-input">You are VictorX—India's premier AI assistant. You answer all questions with high intelligence, multi-language fluency, and instant full code generation.</textarea>
-                    </div>
-
-                    <div class="field-group mb-2">
-                        <label class="text-red">🚨 24/7 Safety & Violation Report Center</label>
-                        <div id="adminViolationLog" class="violation-log-box">
-                            <div><em>No banned users reported. System 100% Secure.</em></div>
-                        </div>
-                        <button id="adminUnbanAllBtn" class="btn btn-glass-sm mt-2">🔄 Reset Safety Strikes & Unban</button>
-                    </div>
-
-                    <button id="adminSaveSettingsBtn" class="btn btn-primary-gradient full-w mt-2">Save Private Settings</button>
+                    <button id="adminSaveSettingsBtn" class="btn-create-pink full-w mt-2">Save Settings</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 🚫 ACCOUNT BANNED MODAL -->
-    <div id="bannedModal" class="modal-backdrop hidden">
-        <div class="modal-card ban-card">
-            <div class="modal-header">
-                <h3 style="color: #ef4444; margin: 0 auto;">🚫 ACCOUNT BANNED & BLOCKED</h3>
-            </div>
-            <div class="modal-body" style="padding: 1.5rem 0; text-align: center;">
-                <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🚫</div>
-                <p style="font-weight: 700; font-size: 1.1rem; color: #f87171;">Your session has been 24/7 BLOCKED & BANNED.</p>
-                <p class="sub-text mt-2">System detected 3/3 Safety Violations for prohibited content (bomb/kill/blood/weapons). Contact Admin to unban.</p>
             </div>
         </div>
     </div>
