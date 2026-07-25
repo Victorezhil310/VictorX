@@ -351,15 +351,41 @@ function handleSendMessage() {
 }
 
 function generateSmartAiResponse(prompt, model, toolEnabled) {
-  const lower = prompt.toLowerCase();
-  if (lower.includes("market") || lower.includes("financial")) {
-    return `### 📊 10x Market Analysis Report (2026 AI SaaS Ecosystem)\n\n- **Market Size**: The global AI SaaS platform market reached **$185.4 Billion** in 2026, growing at a 38.2% CAGR.\n- **Core MoE Cost Efficiency**: Deploying sparse Mixture-of-Experts (MoE) reduces inference GPU infrastructure costs by **65%** compared to dense architectures.\n- **Key Growth Vectors**:\n  1. Autonomous Multi-Agent Code Generation\n  2. On-Device Edge LLMs (1B–3B quantized weights)\n  3. Zero-Leak Confidential Enterprise Memory`;
-  } else if (lower.includes("fastapi") || lower.includes("python")) {
-    return `### 🐍 High-Throughput FastAPI Video Server\n\nHere is your production-ready Python FastAPI architecture:\n\n\`\`\`python\nfrom fastapi import FastAPI, Depends, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp = FastAPI(title="VictorX Video Stream API", version="1.0.0")\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=["*"],\n    allow_methods=["*"],\n    allow_headers=["*"],\n)\n\n@app.get("/api/v1/stream/health")\nasync def health_check():\n    return {"status": "online", "gpu_vram": "4.2GB / 24GB", "moe_router": "active"}\n\`\`\``;
-  } else if (lower.includes("landing") || lower.includes("code")) {
-    return `### 🎨 VictorX Glassmorphism Landing Page\n\nSynthesized clean responsive structure with CSS custom properties and high-contrast dark palette.\nUse VictorX Code Studio to preview and download full code assets!`;
+  const lower = prompt.toLowerCase().trim();
+  
+  // 1. GREETINGS & CASUAL CONVERSATION (ChatGPT / Meta AI / Claude Persona)
+  if (/^(hi|hii|hello|hey|hii buddy|hey buddy|greetings|sup|yo|hi there|hello there)[\s!.]*$/i.test(lower)) {
+    const greetings = [
+      `Hey there! 👋 It's great to connect with you. I'm **VictorX**—your multi-modal AI assistant powered by sparse MoE, deep reasoning, and confidential local intelligence. How can I help you today?\n\nWhether you want to build code, create images & videos, analyze complex data, or just brainstorm ideas, I'm ready! What's on your mind?`,
+      `Hello! 😊 Welcome to VictorX 1.0.0. I'm here and fully ready to assist you. What would you like to build or explore today?`,
+      `Hey buddy! 👋 Good to see you. How can I assist you today? Feel free to ask me anything—from writing code and analyzing data to generating creative ideas or media!`
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
   }
-  return `### ⚡ VictorX 1.0.0 Smart Response\n\nI have analyzed your prompt with 10x smart precision.\n\n- **Key Takeaway**: All processing executed within encrypted local memory context.\n- **Recommendation**: Integrate sparse MoE routing and INT4 AWQ quantization for maximum latency optimization.\n- **Action Item**: Ready to execute tool calls or export generated code artifacts immediately.`;
+
+  // 2. IDENTITY & CAPABILITIES QUERIES
+  if (lower.includes("who are you") || lower.includes("what can you do") || lower.includes("what are your capabilities")) {
+    return `I am **VictorX 1.0.0**, an advanced multi-modal AI platform engineered for high-performance reasoning, zero-leak privacy, and full-stack synthesis.\n\n### ⚡ What I Can Do For You:\n\n1. 💬 **Chat & Deep Reasoning**: Answer complex questions, write essays, analyze logic, and solve math step-by-step.\n2. 🎨 **Image AI Studio**: Generate photorealistic, cyberpunk, anime, or 3D render diffusion artwork.\n3. 🎬 **Video AI Studio**: Synthesize dynamic text-to-video & image-to-video clips with camera motion controls.\n4. ⚡ **Code & App Builder**: Synthesize production-ready Flutter apps, Python FastAPI backends, and HTML/CSS web apps with live preview.\n5. 🐞 **AI Bug Fixer**: Diagnose error stack traces and supply automated patches.\n\nHow can I help you get started right now?`;
+  }
+
+  // 3. CODING & TECHNICAL PROMPTS
+  if (lower.includes("fastapi") || lower.includes("python") || lower.includes("code") || lower.includes("flutter") || lower.includes("script") || lower.includes("build") || lower.includes("write a")) {
+    if (lower.includes("fastapi") || lower.includes("python")) {
+      return `Here is a production-ready **Python FastAPI Server** with CORS support, JWT authentication, and async database hooks:\n\n\`\`\`python\nfrom fastapi import FastAPI, Depends, HTTPException, status\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom pydantic import BaseModel\nimport time\n\napp = FastAPI(\n    title="VictorX Production API",\n    version="1.0.0",\n    description="High-throughput async backend"\n)\n\n# Enable CORS for cross-platform clients\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=["*"],\n    allow_credentials=True,\n    allow_methods=["*"],\n    allow_headers=["*"],\n)\n\nclass PredictRequest(BaseModel):\n    prompt: str\n    max_tokens: int = 512\n\n@app.get("/health")\nasync def health_check():\n    return {"status": "online", "timestamp": time.time()}\n\n@app.post("/api/v1/predict")\nasync def run_inference(req: PredictRequest):\n    if not req.prompt:\n        raise HTTPException(status_code=400, detail="Prompt cannot be empty")\n    \n    return {\n        "status": "success",\n        "prompt": req.prompt,\n        "result": f"Synthesized response for: {req.prompt}",\n        "latency_ms": 14.2\n    }\n\nif __name__ == "__main__":\n    import uvicorn\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\`\n\n### 💡 Key Highlights:\n- **Async Architecture**: Engineered with Uvicorn for sub-15ms throughput.\n- **Pydantic Validation**: Automatic request payload validation & OpenAPI docs (`/docs`).\n- **Zero-Leak CORS**: Fully configured for secure web & Flutter client connections.`;
+    }
+
+    if (lower.includes("flutter") || lower.includes("dart")) {
+      return `Here is a complete, clean **Flutter Material 3 App Screen** with modern state management:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX Mobile',\n      debugShowCheckedModeBanner: false,\n      theme: ThemeData.dark().copyWith(\n        scaffoldBackgroundColor: const Color(0xFF090D16),\n        primaryColor: const Color(0xFF6366F1),\n      ),\n      home: const DashboardScreen(),\n    );\n  }\n}\n\nclass DashboardScreen extends StatefulWidget {\n  const DashboardScreen({super.key});\n\n  @override\n  State<DashboardScreen> createState() => _DashboardScreenState();\n}\n\nclass _DashboardScreenState extends State<DashboardScreen> {\n  int _counter = 0;\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      appBar: AppBar(\n        title: const Text('VictorX AI Dashboard'),\n        backgroundColor: const Color(0xFF0F172A),\n      ),\n      body: Center(\n        child: Column(\n          mainAxisAlignment: MainAxisAlignment.center,\n          children: [\n            const Text(\n              'AI Inference Requests Processed:',\n              style: TextStyle(fontSize: 16, color: Colors.grey),\n            ),\n            Text(\n              '\$_counter',\n              style: const TextStyle(fontSize: 48, fontWeight: FontWeight: FontWeight.bold, color: Color(0xFF6366F1)),\n            ),\n          ],\n        ),\n      ),\n      floatingActionButton: FloatingActionButton(\n        backgroundColor: const Color(0xFF6366F1),\n        onPressed: () => setState(() => _counter++),\n        child: const Icon(Icons.flash_on),\n      ),\n    );\n  }\n}\n\`\`\`\n\nTo run this, simply drop it into your Flutter \`lib/main.dart\` file and execute \`flutter run\`!`;
+    }
+  }
+
+  // 4. BUSINESS / MARKET / FINANCIAL ANALYSIS PROMPTS
+  if (lower.includes("market") || lower.includes("financial") || lower.includes("trend") || lower.includes("analysis") || lower.includes("business")) {
+    return `### 📊 2026 AI SaaS Market Analysis & Financial Projection\n\nHere is a comprehensive breakdown of the current market landscape:\n\n- **Global AI SaaS Market Valuation**: **$185.4 Billion** (CAGR of +38.2%).\n- **Compute Unit Economics**: Transitioning from dense models to **Sparse Top-2 MoE** architectures reduces inference GPU overhead by **65%**.\n- **Primary Growth Drivers**:\n  1. *Autonomous Agent Systems*: Multi-agent terminal tools replacing manual workflow steps.\n  2. *On-Device Edge Inference*: Quantized 1B–3B parameter LLMs operating locally on mobile/web.\n  3. *Zero-Leak Confidentiality*: Enterprise demand for encrypted local memory.\n\nLet me know if you would like me to model specific revenue forecasts or technical unit economics!`;
+  }
+
+  // 5. GENERAL KNOWLEDGE / DEFAULT CONVERSATIONAL RESPONSE (ChatGPT / Claude / Kimi style)
+  return `I've analyzed your input and here are the insights you need:\n\n### 💡 Key Summary\n- **Core Theme**: ${prompt.length > 50 ? prompt.substring(0, 50) + '...' : prompt}\n- **Processing Engine**: Handled via VictorX Sparse MoE Routing with zero-leak local encryption.\n\nWhether you want me to expand on this topic, write clean code for it, or synthesize media, just let me know how you'd like to proceed!`;
 }
 
 /* ==========================================================================
@@ -762,9 +788,46 @@ function escapeHtml(str) {
 }
 
 function formatMarkdown(str) {
-  return escapeHtml(str)
-    .replace(/### (.*?)\n/g, '<h3>$1</h3>')
+  if (!str) return "";
+  let html = str;
+
+  // Code blocks ```lang ... ```
+  html = html.replace(/```([a-z]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    return `<div class="msg-code-block">
+      <div class="code-block-header">
+        <span>${lang ? lang.toUpperCase() : 'CODE'}</span>
+        <button class="copy-code-inline" onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`')}\`); toast('Code copied!', 'success')">📋 Copy</button>
+      </div>
+      <pre><code class="language-${lang}">${escapeHtml(code.trim())}</code></pre>
+    </div>`;
+  });
+
+  // Inline formatting
+  html = escapeHtmlExceptTags(html)
+    .replace(/### (.*?)\n/g, '<h3 class="msg-h3">$1</h3>')
+    .replace(/## (.*?)\n/g, '<h2 class="msg-h2">$1</h2>')
+    .replace(/# (.*?)\n/g, '<h1 class="msg-h1">$1</h1>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code class="msg-inline-code">$1</code>')
     .replace(/\n/g, '<br>');
+
+  return html;
+}
+
+function escapeHtmlExceptTags(str) {
+  // Protect pre-generated HTML code blocks
+  const codeBlocks = [];
+  str = str.replace(/<div class="msg-code-block">[\s\S]*?<\/div>/g, (match) => {
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  });
+
+  str = escapeHtml(str);
+
+  codeBlocks.forEach((block, idx) => {
+    str = str.replace(`__CODE_BLOCK_${idx}__`, block);
+  });
+
+  return str;
 }
