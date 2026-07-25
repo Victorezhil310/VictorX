@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initLanguageSystem();
   initModals();
   initChatStudio();
-  populateSampleRecentHistory();
+  renderRealDrawerHistory();
   checkBackendHealth();
 });
 
@@ -232,28 +232,28 @@ function initSidebarDrawer() {
   }
 }
 
-function populateSampleRecentHistory() {
+function renderRealDrawerHistory() {
   const container = document.getElementById("drawerChatHistoryList");
   if (!container) return;
 
-  const sampleTitles = [
-    "Building VictorX AI",
-    "VictorMe App Blueprint",
-    "Simple Admin Panel",
-    "Mining app reality check",
-    "Watching ads for income in India",
-    "Building VICTORLIVE platform",
-    "VictorAI Studio Architecture",
-    "Designing VictorMedia AI OS"
-  ];
-
   container.innerHTML = "";
-  sampleTitles.forEach(t => {
+
+  // Render ONLY REAL user chat sessions saved in state.chats
+  const validChats = state.chats.filter(c => c.messages && c.messages.length > 0);
+
+  if (validChats.length === 0) {
+    container.innerHTML = `<div class="history-drawer-item dim" style="opacity: 0.6; font-style: italic;">No recent chats</div>`;
+    return;
+  }
+
+  validChats.forEach(c => {
     const item = document.createElement("div");
-    item.className = "history-drawer-item";
-    item.innerText = t;
+    item.className = `history-drawer-item ${c.id === state.currentChatId ? 'active' : ''}`;
+    item.innerText = c.title || "Chat Session";
     item.addEventListener("click", () => {
-      createNewChatSession(t);
+      state.currentChatId = c.id;
+      renderCurrentChatMessages();
+      renderRealDrawerHistory();
       const drawer = document.getElementById("sidebarDrawer");
       if (drawer) drawer.classList.remove("open");
     });
@@ -422,6 +422,7 @@ function createNewChatSession(title = "New Session") {
   state.currentChatId = newChat.id;
   saveState();
   renderCurrentChatMessages();
+  renderRealDrawerHistory();
 }
 
 function renderCurrentChatMessages() {
@@ -473,6 +474,11 @@ async function handleSendMessage() {
 
   const currentChat = state.chats.find(c => c.id === state.currentChatId);
   if (!currentChat) return;
+
+  if (currentChat.messages.length === 0) {
+    currentChat.title = prompt.substring(0, 30) + (prompt.length > 30 ? "..." : "");
+    renderRealDrawerHistory();
+  }
 
   currentChat.messages.push({
     role: "user",
