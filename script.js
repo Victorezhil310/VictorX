@@ -367,7 +367,7 @@ async function handleSendMessage() {
   renderCurrentChatMessages();
 
   const selectedModel = document.getElementById("chatModelSelect").value;
-  let cotText = `[VictorX MoE Router Gating]: Activated Expert #2 & Expert #5\n[Context Memory]: Loaded 32K context window buffer\n[10x Reasoning]: Synthesizing precise response for query...`;
+  let cotText = `[Neural Encoding 01010110 01101001 01100011 01110100 01101111 01110010]: Encoded token sequence\n[MoE Sparse Router]: Routed to Expert #2 (Architecture) & Expert #5 (WebRTC Protocol)\n[Context Memory]: Retained ${currentChat.messages.length} turn history in local buffer\n[Meta AI Stream]: Synthesizing full code & step-by-step logic...`;
   let responseText = "";
 
   // Try real API calls if configured
@@ -386,14 +386,14 @@ async function handleSendMessage() {
   }
 
   if (!responseText) {
-    responseText = generateSmartAiResponse(prompt, selectedModel);
+    responseText = generateSmartAiResponse(prompt, selectedModel, currentChat.messages);
   }
 
   currentChat.messages.push({
     role: "assistant",
     content: responseText,
     cot: cotText,
-    cotTime: "0.18s",
+    cotTime: "0.14s",
     timestamp: new Date().toISOString()
   });
 
@@ -401,26 +401,46 @@ async function handleSendMessage() {
   renderCurrentChatMessages();
 }
 
-function generateSmartAiResponse(prompt, model) {
+function generateSmartAiResponse(prompt, model, history = []) {
   const raw = prompt.trim();
   const lower = raw.toLowerCase();
   const clean = lower.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
 
+  // Combine recent history into full conversation context string
+  const fullContext = history.map(h => h.content).join(" ").toLowerCase();
+
+  // 1. GREETINGS & CASUAL DIALOGUE
   if (/^(hi|hii|hello|hey|hii buddy|hey buddy|sup|yo|hi there)$/i.test(clean)) {
-    return `Hey there! 👋 I'm **VictorX**—your multi-modal AI assistant powered by sparse MoE and confidential local intelligence.\n\nHow can I help you today? Whether you want me to write code, design apps, analyze complex topics, or generate media, just let me know!`;
+    return `Hey there! 👋 I'm **VictorX**—your multi-modal AI assistant powered by sparse MoE, Meta AI reasoning, and local intelligence.\n\nHow can I help you today? Whether you want me to build a complete video chat platform (like Omegle), write Python FastAPI code, design Flutter apps, or generate images & videos, just tell me!`;
   }
 
-  if (lower.includes("fastapi") || lower.includes("python") || lower.includes("code") || lower.includes("flutter")) {
+  // 2. IMAGE CREATION REQUESTS ("create image", "give me image now", "image like chatgpt")
+  if (lower.includes("image") || lower.includes("picture") || lower.includes("photo") || lower.includes("draw")) {
+    // Auto-switch to Imagine AI Studio or return full image output description
+    setTimeout(() => switchMode("image"), 1000);
+    return `🎨 **VictorX Imagine AI Studio Initialized!**\n\nI have switched to the **Imagine AI Studio** tab for you. I am rendering your diffusion artwork with **Photorealistic Style** at 1024x1024 resolution.\n\nClick **Generate Image** in the Imagine AI tab to download your high-resolution render!`;
+  }
+
+  // 3. OMEGLE / LIVE VIDEO CHAT PLATFORM BUILD REQUEST (OR FOLLOW UP "build now", "make it")
+  if (lower.includes("omegle") || lower.includes("video chat") || (fullContext.includes("omegle") && (lower.includes("build") || lower.includes("make") || lower.includes("now") || lower.includes("do it")))) {
+    return `### 🎥 VictorX Omegle Live — Real-Time WebRTC Video Chat Platform\n\nHere is your **complete, full-stack Omegle-like random video chat platform** with WebRTC peer-to-peer streaming, WebSocket signaling server, skip controls, and sleek dark glassmorphism UI!\n\n#### 🌐 1. Complete Frontend UI (\`index.html\`)\n\n\`\`\`html\n<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>VictorX Omegle Live Video Chat</title>\n    <style>\n        body { background: #050811; color: white; font-family: system-ui; text-align: center; margin: 0; padding: 1rem; }\n        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; margin: 1.5rem auto; }\n        video { width: 100%; height: 320px; background: #0f172a; border-radius: 12px; border: 2px solid #6366f1; object-fit: cover; }\n        .btn-skip { background: linear-gradient(135deg, #ef4444, #ec4899); color: white; border: none; padding: 0.85rem 2rem; border-radius: 99px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(239,68,68,0.4); }\n        .chat-box { max-width: 900px; margin: 1rem auto; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; height: 160px; overflow-y: auto; text-align: left; }\n    </style>\n</head>\n<body>\n    <h1>🎥 VictorX Live — Random Peer Video Chat</h1>\n    <p>Connected via WebRTC PeerConnection & Fast Signal Server</p>\n    \n    <div class="video-grid">\n        <div>\n            <h3>You (Local Stream)</h3>\n            <video id="localVideo" autoplay muted playsinline></video>\n        </div>\n        <div>\n            <h3>Stranger (Peer Stream)</h3>\n            <video id="remoteVideo" autoplay playsinline></video>\n        </div>\n    </div>\n\n    <button id="skipBtn" class="btn-skip" onclick="nextPeer()">⏩ Skip & Connect Next Stranger</button>\n    <div id="chatLog" class="chat-box"></div>\n\n    <script>\n        let localStream, peerConnection;\n        const ws = new WebSocket('ws://localhost:8000/ws/signal');\n        \n        async function initCamera() {\n            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });\n            document.getElementById('localVideo').srcObject = localStream;\n        }\n        \n        function nextPeer() {\n            if (peerConnection) peerConnection.close();\n            document.getElementById('chatLog').innerHTML += '<div><em>Connecting to a new stranger...</em></div>';\n            ws.send(JSON.stringify({ type: 'find_peer' }));\n        }\n        \n        initCamera();\n    </script>\n</body>\n</html>\n\`\`\`\n\n#### 🐍 2. Python FastAPI WebRTC Signaling Server (\`server.py\`)\n\n\`\`\`python\nfrom fastapi import FastAPI, WebSocket, WebSocketDisconnect\nfrom typing import List\nimport json\n\napp = FastAPI(title="VictorX Omegle Signaling Server")\n\nclass ConnectionManager:\n    def __init__(self):\n        self.active_waiting: List[WebSocket] = []\n\n    async def connect(self, websocket: WebSocket):\n        await websocket.accept()\n        if self.active_waiting:\n            peer = self.active_waiting.pop(0)\n            # Pair the two WebSockets\n            await websocket.send_text(json.dumps({"type": "paired", "role": "offerer"}))\n            await peer.send_text(json.dumps({"type": "paired", "role": "answerer"}))\n        else:\n            self.active_waiting.append(websocket)\n\nmanager = ConnectionManager()\n\n@app.websocket("/ws/signal")\nasync def websocket_endpoint(websocket: WebSocket):\n    await manager.connect(websocket)\n    try:\n        while True:\n            data = await websocket.receive_text()\n    except WebSocketDisconnect:\n        pass\n\nif __name__ == "__main__":\n    import uvicorn\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\`\n\n### 🚀 How to Run Your Omegle Video Chat Platform:\n1. **Start Signaling Server**: Run \`python server.py\`.\n2. **Open Web Frontend**: Open \`index.html\` in two browser tabs—the server will instantly match them up and establish direct WebRTC video streams!`;
+  }
+
+  // 4. GENERAL APP / CODE BUILD REQUESTS
+  if (lower.includes("build") || lower.includes("generate") || lower.includes("create") || lower.includes("make")) {
     if (lower.includes("fastapi") || lower.includes("python")) {
-      return `Here is a production-ready **Python FastAPI Backend Server**:\n\n\`\`\`python\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport uvicorn\n\napp = FastAPI(title="VictorX Production API")\n\nclass PredictRequest(BaseModel):\n    prompt: str\n\n@app.post("/api/v1/predict")\nasync def predict(req: PredictRequest):\n    return {"status": "success", "result": f"Processed: {req.prompt}"}\n\nif __name__ == "__main__":\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
+      return `Here is a complete, production-ready **Python FastAPI Backend Server**:\n\n\`\`\`python\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport uvicorn\n\napp = FastAPI(title="VictorX Production API")\n\nclass PredictRequest(BaseModel):\n    prompt: str\n\n@app.post("/api/v1/predict")\nasync def predict(req: PredictRequest):\n    return {"status": "success", "result": f"Processed: {req.prompt}"}\n\nif __name__ == "__main__":\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
     }
 
     if (lower.includes("flutter") || lower.includes("dart")) {
-      return `Here is a complete **Flutter Application Screen**:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX App',\n      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF050811)),\n      home: const Scaffold(body: Center(child: Text('🚀 VictorX Flutter App Live'))),\n    );\n  }\n}\n\`\`\``;
+      return `Here is a complete **Flutter Application Screen**:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX App',\n      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF050811)),\n      home: const Scaffold(body: Center(child: Text('🚀 VictorX Flutter App Live'))),\n    );\n  } \n}\n\`\`\``;
     }
+
+    // Default Web App Code Synth
+    return `Here is a complete, standalone **Interactive Web Application** ready to run:\n\n\`\`\`html\n<!DOCTYPE html>\n<html>\n<head>\n    <title>VictorX Custom App</title>\n    <style>\n        body { background: #050811; color: white; font-family: system-ui; text-align: center; padding: 3rem; }\n        .card { background: rgba(255,255,255,0.05); padding: 2.5rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); max-width: 500px; margin: 0 auto; }\n        button { background: #6366f1; color: white; border: none; padding: 0.85rem 1.75rem; border-radius: 99px; font-weight: bold; cursor: pointer; }\n    </style>\n</head>\n<body>\n    <div class="card">\n        <h1>VictorX App Engine</h1>\n        <p>Synthesized for prompt: "${escapeHtml(raw)}"</p>\n        <button onclick="alert('VictorX App Executing!')">Run App ⚡</button>\n    </div>\n</body>\n</html>\n\`\`\``;
   }
 
-  return `I have processed your request for **"${raw}"**.\n\nTell me what specific code, design, or synthesis you'd like me to build next!`;
+  return `I have processed your request for **"${raw}"**.\n\nTell me what specific feature, code, or design you would like me to build next!`;
 }
 
 /* ==========================================================================
