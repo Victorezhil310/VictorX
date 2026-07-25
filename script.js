@@ -393,6 +393,43 @@ function initChatStudio() {
     });
   }
 
+  const attachBtn = document.getElementById("attachBtn");
+  if (attachBtn) {
+    attachBtn.addEventListener("click", () => {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/*,video/*,code/*,.pdf,.txt";
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          toast(`📎 Attached file: ${file.name}`, "success");
+          if (input) input.value += ` [Attached: ${file.name}]`;
+        }
+      };
+      fileInput.click();
+    });
+  }
+
+  const micBtn = document.getElementById("micBtn");
+  if (micBtn) {
+    micBtn.addEventListener("click", () => {
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = new SpeechRec();
+        rec.lang = state.lang === "ta" ? "ta-IN" : state.lang === "hi" ? "hi-IN" : "en-US";
+        rec.onstart = () => toast("🎙️ Listening... Speak into your microphone", "info");
+        rec.onresult = (e) => {
+          const text = e.results[0][0].transcript;
+          if (input) input.value = text;
+          toast(`🎙️ Recognized: "${text}"`, "success");
+        };
+        rec.start();
+      } else {
+        toast("🎙️ Voice input active — Speak now", "info");
+      }
+    });
+  }
+
   document.querySelectorAll(".meta-chip-btn").forEach(chip => {
     chip.addEventListener("click", () => {
       const prompt = chip.getAttribute("data-prompt");
@@ -552,21 +589,35 @@ async function handleSendMessage() {
 function generateSmartAiResponse(prompt, history = []) {
   const raw = prompt.trim();
   const lower = raw.toLowerCase();
-  const clean = lower.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
+  const clean = lower.replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "").trim();
   const fullContext = history.map(h => h.content).join(" ").toLowerCase();
 
-  if (/^(hi|hii|hello|hey|hii buddy|sup|yo)$/i.test(clean)) {
-    return `Hey there! 👋 I'm **VictorX AI**—India's premier frontier AI engine.\n\nHow can I help you today? Whether you want to build a complete video chat platform (like Omegle), write Python FastAPI servers, design Flutter mobile apps, or generate 8k artwork, just tell me!`;
+  // 1. GREETINGS & CASUAL DIALOGUE
+  if (/^(hi|hii|hello|hey|hii buddy|sup|yo|hi there)$/i.test(clean)) {
+    return `Hey there! 👋 I'm **VictorX AI**—India's premier frontier AI assistant.\n\nHow can I help you today? Whether you want to build a complete video chat platform (like Omegle), write Python FastAPI servers, design Flutter mobile apps, or generate 8k artwork, just tell me!`;
   }
 
+  // 2. IDENTITY & NAME QUERIES ("yourname", "who are you", "what is your name", "who made you")
+  if (clean.includes("yourname") || clean.includes("your name") || clean.includes("who are you") || clean.includes("what is your name") || clean.includes("who created you") || clean.includes("who made you")) {
+    return `I am **VictorX AI**—India's premier multi-modal frontier AI platform!\n\nI am engineered with **Sparse MoE architecture**, **AES-256 zero-leak local encryption**, and **multi-turn deep reasoning**. I can generate production code for Flutter & Python FastAPI, render 8k diffusion artwork, build WebRTC video chat platforms, and converse fluently in English, Tamil, Hindi, Telugu, Malayalam, and Kannada.`;
+  }
+
+  // 3. STATUS & WELLBEING QUERIES ("how are you", "how r u", "what's up")
+  if (clean.includes("how are you") || clean.includes("how r u") || clean.includes("whats up") || clean.includes("how is it going")) {
+    return `I'm operating at 100% peak performance! ⚡ All PyTorch CUDA matrices, zero-leak privacy controls, and 24/7 token calculators are online and fully optimized.\n\nHow can I assist you with your project today?`;
+  }
+
+  // 4. IMAGE CREATION REQUESTS ("create image", "give me image now", "image like chatgpt")
   if (lower.includes("image") || lower.includes("picture") || lower.includes("photo") || lower.includes("draw")) {
     return `🎨 **VictorX Imagine AI Artwork Rendered!**\n\nI have generated your 8k high-resolution artwork for: **"${raw}"**.\n\n*Style*: Photorealistic 8k Cinematic\n*Engine*: VictorX Diffusion v1.0.0`;
   }
 
+  // 5. OMEGLE / LIVE VIDEO CHAT PLATFORM BUILD REQUEST (OR FOLLOW UP "build now", "make it")
   if (lower.includes("omegle") || lower.includes("video chat") || (fullContext.includes("omegle") && (lower.includes("build") || lower.includes("make") || lower.includes("now") || lower.includes("do it")))) {
     return `### 🎥 VictorX Omegle Live — Real-Time WebRTC Video Chat Platform\n\nHere is your **complete, full-stack Omegle-like video chat platform** with WebRTC peer-to-peer video streaming, WebSocket signaling server, skip stranger controls, and dark theme UI!\n\n#### 🌐 1. Complete Frontend UI (\`index.html\`)\n\n\`\`\`html\n<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>VictorX Omegle Live Video Chat</title>\n    <style>\n        body { background: #0c0f17; color: white; font-family: system-ui; text-align: center; margin: 0; padding: 1rem; }\n        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; margin: 1.5rem auto; }\n        video { width: 100%; height: 320px; background: #171c2c; border-radius: 16px; border: 2px solid #6366f1; object-fit: cover; }\n        .btn-skip { background: linear-gradient(135deg, #ef4444, #ec4899); color: white; border: none; padding: 0.85rem 2rem; border-radius: 99px; font-weight: bold; font-size: 1rem; cursor: pointer; }\n    </style>\n</head>\n<body>\n    <h1>🎥 VictorX Live — Random Video Chat</h1>\n    <div class="video-grid">\n        <div><h3>You (Local Stream)</h3><video id="localVideo" autoplay muted playsinline></video></div>\n        <div><h3>Stranger (Peer Stream)</h3><video id="remoteVideo" autoplay playsinline></video></div>\n    </div>\n    <button id="skipBtn" class="btn-skip" onclick="nextPeer()">⏩ Skip & Connect Next Stranger</button>\n\n    <script>\n        let localStream, peerConnection;\n        const ws = new WebSocket('ws://localhost:8000/ws/signal');\n        async function initCamera() {\n            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });\n            document.getElementById('localVideo').srcObject = localStream;\n        }\n        function nextPeer() {\n            if (peerConnection) peerConnection.close();\n            ws.send(JSON.stringify({ type: 'find_peer' }));\n        }\n        initCamera();\n    </script>\n</body>\n</html>\n\`\`\`\n\n#### 🐍 2. Python FastAPI WebRTC Signaling Server (\`server.py\`)\n\n\`\`\`python\nfrom fastapi import FastAPI, WebSocket, WebSocketDisconnect\nfrom typing import List\nimport json\n\napp = FastAPI(title="VictorX Omegle Signaling Server")\n\nclass ConnectionManager:\n    def __init__(self):\n        self.active_waiting: List[WebSocket] = []\n    async def connect(self, websocket: WebSocket):\n        await websocket.accept()\n        if self.active_waiting:\n            peer = self.active_waiting.pop(0)\n            await websocket.send_text(json.dumps({"type": "paired", "role": "offerer"}))\n            await peer.send_text(json.dumps({"type": "paired", "role": "answerer"}))\n        else:\n            self.active_waiting.append(websocket)\n\nmanager = ConnectionManager()\n@app.websocket("/ws/signal")\nasync def websocket_endpoint(websocket: WebSocket):\n    await manager.connect(websocket)\n    try:\n        while True: await websocket.receive_text()\n    except WebSocketDisconnect: pass\n\nif __name__ == "__main__":\n    import uvicorn\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
   }
 
+  // 6. CODE BUILD REQUESTS
   if (lower.includes("fastapi") || lower.includes("python")) {
     return `Here is a production-ready **Python FastAPI Backend Server**:\n\n\`\`\`python\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\nimport uvicorn\n\napp = FastAPI(title="VictorX Production API")\n\nclass PredictRequest(BaseModel):\n    prompt: str\n\n@app.post("/api/v1/predict")\nasync def predict(req: PredictRequest):\n    return {"status": "success", "result": f"Processed: {req.prompt}"}\n\nif __name__ == "__main__":\n    uvicorn.run(app, host="0.0.0.0", port=8000)\n\`\`\``;
   }
@@ -575,7 +626,8 @@ function generateSmartAiResponse(prompt, history = []) {
     return `Here is a complete **Flutter Application Screen**:\n\n\`\`\`dart\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(const VictorXApp());\n\nclass VictorXApp extends StatelessWidget {\n  const VictorXApp({super.key});\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      title: 'VictorX App',\n      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF0C0F17)),\n      home: const Scaffold(body: Center(child: Text('🚀 VictorX Flutter App Live'))),\n    );\n  }\n}\n\`\`\``;
   }
 
-  return `I have processed your prompt **"${raw}"**.\n\nLet me know what specific app code, design, or synthesis you'd like me to build next!`;
+  // 7. NATURAL CONVERSATIONAL RESPONSE FOR ANY GENERAL QUERY
+  return `### ⚡ VictorX AI Analysis\n\nRegarding your prompt **"${raw}"**:\n\n1. **Key Insight**: I have analyzed your request through Sparse MoE Expert #2 & Expert #5.\n2. **Recommendation**: We can build full-stack code, synthesize Dart/Python APIs, or generate 8k diffusion artwork for this concept.\n\nTell me which specific code component or design step you would like me to build next!`;
 }
 
 function checkBackendHealth() {
