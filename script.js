@@ -131,12 +131,39 @@ function initNavigation() {
     });
   });
 
+  // Bind ALL Left Sidebar Buttons
+  const sideBtns = document.querySelectorAll(".side-btn");
+  sideBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      sideBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const subview = btn.getAttribute("data-subview");
+      handleSidebarNavigation(subview);
+    });
+  });
+
   const toggleBtn = document.getElementById("toggleSidebarBtn");
   const sidebar = document.getElementById("mainSidebar");
   if (toggleBtn && sidebar) {
     toggleBtn.addEventListener("click", () => {
-      sidebar.style.display = sidebar.style.display === "none" ? "flex" : "none";
+      sidebar.style.display = (sidebar.style.display === "none" || !sidebar.style.display) ? "flex" : "none";
     });
+  }
+}
+
+function handleSidebarNavigation(subview) {
+  if (["video", "image", "character", "world", "audio", "media"].includes(subview)) {
+    switchView("openart");
+    toast(`🎨 Switched to OpenArt ${subview.toUpperCase()} Suite!`, "success");
+  } else if (["projects", "myapps"].includes(subview)) {
+    switchView("builder");
+    const appsSection = document.querySelector(".my-apps-section");
+    if (appsSection) appsSection.scrollIntoView({ behavior: "smooth" });
+    toast("📱 Switched to My Apps Builder Grid!", "success");
+  } else if (["motion", "lipsync"].includes(subview)) {
+    switchView("openart");
+    toast(`✨ Activated ${subview.toUpperCase()} AI Tool!`, "info");
   }
 }
 
@@ -214,7 +241,7 @@ function synthesizeFullAppProject(promptText) {
             <span class="sub-text">Just now • Full-Stack Code</span>
         </div>
         <div style="display:flex; align-items:center; gap:0.4rem; position:relative;">
-            <button class="card-options-btn" onclick="toggleCardOptionsMenu('${newAppId}', event)">⋮</button>
+            <button class="card-options-btn" onclick="toggleCardOptionsMenu('${newAppId}', event)">⋮ Options</button>
             <div id="menu_${newAppId}" class="context-menu-dropdown hidden">
                 <button class="menu-opt-item" onclick="renameProjectCard('${newAppId}')">✏️ Rename</button>
                 <button class="menu-opt-item" onclick="downloadSourceCodePackage('${newAppId}')">📥 Export Code</button>
