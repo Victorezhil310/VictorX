@@ -374,13 +374,15 @@ body {
 
 .app-project-card {
   background: var(--bg-card); border: 1px solid var(--border-color);
-  border-radius: var(--radius-md); overflow: hidden; display: flex;
-  flex-direction: column;
+  border-radius: var(--radius-md); overflow: visible; display: flex;
+  flex-direction: column; position: relative; z-index: 1;
 }
 
 .card-thumbnail-preview {
   height: 140px; background: #0e1424; position: relative;
   display: flex; align-items: center; justify-content: center;
+  border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .thumb-glow {
@@ -399,23 +401,23 @@ body {
 }
 
 .card-options-btn {
-  background: rgba(99, 102, 241, 0.25); border: 1px solid rgba(99, 102, 241, 0.5);
-  color: #ffffff; font-size: 1.3rem; font-weight: bold; cursor: pointer;
-  padding: 0.3rem 0.8rem; border-radius: var(--radius-pill);
-  display: flex; align-items: center; gap: 0.3rem;
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, #6366f1, #a855f7); border: none;
+  color: #ffffff; font-size: 0.85rem; font-weight: 800; cursor: pointer;
+  padding: 0.45rem 1rem; border-radius: var(--radius-pill);
+  display: flex; align-items: center; gap: 0.4rem;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
   z-index: 10;
 }
 
 .card-options-btn:hover {
-  background: rgba(99, 102, 241, 0.5); color: #ffffff;
+  background: linear-gradient(135deg, #4f46e5, #9333ea); color: #ffffff;
 }
 
 .context-menu-dropdown {
-  position: absolute; top: 3rem; right: 0.5rem;
-  background: #0f172a; border: 1px solid var(--primary);
-  border-radius: var(--radius-md); box-shadow: 0 15px 40px rgba(0,0,0,0.95);
-  display: flex; flex-direction: column; z-index: 1000; min-width: 160px; overflow: hidden;
+  position: absolute; top: 3.2rem; right: 0.5rem;
+  background: #0f172a; border: 2px solid var(--primary);
+  border-radius: var(--radius-md); box-shadow: 0 25px 60px rgba(0,0,0,0.95);
+  display: flex; flex-direction: column; z-index: 9999; min-width: 170px; overflow: hidden;
 }
 
 .menu-opt-item {

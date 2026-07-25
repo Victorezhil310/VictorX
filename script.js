@@ -243,9 +243,10 @@ function synthesizeFullAppProject(promptText) {
         <div style="display:flex; align-items:center; gap:0.4rem; position:relative;">
             <button class="card-options-btn" onclick="toggleCardOptionsMenu('${newAppId}', event)">⋮ Options</button>
             <div id="menu_${newAppId}" class="context-menu-dropdown hidden">
-                <button class="menu-opt-item" onclick="renameProjectCard('${newAppId}')">✏️ Rename</button>
-                <button class="menu-opt-item" onclick="downloadSourceCodePackage('${newAppId}')">📥 Export Code</button>
-                <button class="menu-opt-item danger" onclick="deleteProjectCard('${newAppId}')">🗑️ Delete</button>
+                <button class="menu-opt-item" onclick="renameProjectCard('${newAppId}')">✏️ Rename Project</button>
+                <button class="menu-opt-item" onclick="downloadSourceCodePackage('${newAppId}')">📥 Export Source Code</button>
+                <button class="menu-opt-item" onclick="navigator.clipboard.writeText('https://victor-x.vercel.app'); toast('Project URL copied!', 'success')">📋 Copy Project Link</button>
+                <button class="menu-opt-item danger" onclick="deleteProjectCard('${newAppId}')">🗑️ Delete Project</button>
             </div>
         </div>
     </div>
