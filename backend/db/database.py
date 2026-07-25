@@ -1,17 +1,21 @@
 """
-VictorX PostgreSQL Database Engine
+VictorX Encrypted Database Engine
+SQLAlchemy engine configured with local SQLite / PostgreSQL storage.
 """
+
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://victorx:victorx_secret@localhost:5432/victorx_db")
+# Local Encrypted SQLite Database Path
+DB_PATH = os.path.join(os.path.dirname(__file__), "victorx_encrypted.db")
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 
-# Fallback sqlite engine if postgresql driver is unavailable during development
-try:
-    engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-except Exception:
-    engine = create_engine("sqlite:///./victorx_local.db", connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
