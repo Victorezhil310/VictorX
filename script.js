@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initPermissionsModal();
   initApiKeysModal();
+  initAdminModal();
   initChatStudio();
   initImageStudio();
   initVideoStudio();
@@ -173,6 +174,49 @@ function initApiKeysModal() {
       modal.classList.add("hidden");
       toast("API keys saved!", "success");
       checkBackendHealth();
+    });
+  }
+}
+
+function initAdminModal() {
+  const btn = document.getElementById("openAdminModalBtn");
+  const modal = document.getElementById("adminModal");
+  const verifyBtn = document.getElementById("verifyAdminPinBtn");
+  const pinInput = document.getElementById("adminPinInput");
+  const pinGate = document.getElementById("adminPinGate");
+  const controlsPanel = document.getElementById("adminControlsPanel");
+  const saveAdminBtn = document.getElementById("adminSaveSettingsBtn");
+
+  if (btn && modal) {
+    btn.addEventListener("click", () => modal.classList.remove("hidden"));
+    modal.querySelectorAll('[data-close="adminModal"]').forEach(b => {
+      b.addEventListener("click", () => modal.classList.add("hidden"));
+    });
+  }
+
+  if (verifyBtn && pinInput) {
+    verifyBtn.addEventListener("click", () => {
+      const entered = pinInput.value.trim();
+      // Verify against master hash or default PIN (20032004)
+      if (entered === "20032004" || btoa(entered) === "MjAwMzIwMDQ=") {
+        state.adminAuthenticated = true;
+        pinGate.classList.add("hidden");
+        controlsPanel.classList.remove("hidden");
+        toast("👑 Platform Owner Admin Access Unlocked!", "success");
+      } else {
+        toast("Invalid Admin PIN", "error");
+      }
+    });
+  }
+
+  if (saveAdminBtn) {
+    saveAdminBtn.addEventListener("click", () => {
+      const title = document.getElementById("adminBrandTitle").value;
+      const directive = document.getElementById("adminSystemDirective").value;
+      
+      document.querySelector(".brand-name").innerText = title;
+      modal.classList.add("hidden");
+      toast("Master Platform Directives Saved!", "success");
     });
   }
 }
