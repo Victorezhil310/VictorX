@@ -177,13 +177,13 @@ function initModals() {
   if (verifyAdminBtn && pinInput) {
     verifyAdminBtn.addEventListener("click", () => {
       const entered = pinInput.value.trim();
-      if (entered === "20032004" || btoa(entered) === "MjAwMzIwMDQ=") {
+      if (btoa(entered) === "MjAwMzIwMDQ=") {
         state.adminAuthenticated = true;
         pinGate.classList.add("hidden");
         controlsPanel.classList.remove("hidden");
         toast("👑 Admin Control Unlocked!", "success");
       } else {
-        toast("Invalid Admin PIN", "error");
+        toast("Invalid Security PIN", "error");
       }
     });
   }
