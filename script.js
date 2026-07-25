@@ -16,6 +16,7 @@ let state = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  purgeStaleBoilerplate();
   initParticleCanvas();
   initModeSwitcher();
   initModals();
@@ -27,6 +28,20 @@ document.addEventListener("DOMContentLoaded", () => {
   initGpuDashboard();
   checkBackendHealth();
 });
+
+function purgeStaleBoilerplate() {
+  if (state.chats && state.chats.length > 0) {
+    state.chats.forEach(chat => {
+      if (chat.messages) {
+        chat.messages = chat.messages.filter(m => 
+          !m.content.includes("I have processed your request for") &&
+          !m.content.includes("Key Takeaway")
+        );
+      }
+    });
+    saveState();
+  }
+}
 
 function saveState() {
   if (state.permissions.localStorage) {
@@ -228,6 +243,14 @@ function initChatStudio() {
         e.preventDefault();
         handleSendMessage();
       }
+    });
+  }
+
+  const newSessionBtn = document.getElementById("newChatSessionBtn");
+  if (newSessionBtn) {
+    newSessionBtn.addEventListener("click", () => {
+      createNewChatSession("New 10x Session");
+      toast("➕ New Session Created!", "success");
     });
   }
 
