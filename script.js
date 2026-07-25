@@ -190,34 +190,79 @@ function initAppBuilderStudio() {
   });
 }
 
-function synthesizeFullAppProject(prompt) {
-  toast(`🚀 Synthesizing Full-Stack App: "${prompt.substring(0, 30)}..."`, "info");
+function synthesizeFullAppProject(promptText) {
+  toast(`🚀 Synthesizing Full-Stack App: "${promptText.substring(0, 30)}..."`, "info");
 
   const appsGrid = document.getElementById("myAppsGrid");
   if (!appsGrid) return;
 
-  const appTitle = prompt.substring(0, 24) + "...";
+  const appTitle = promptText.substring(0, 24) + "...";
   const newAppId = "app_" + Date.now();
 
   const card = document.createElement("div");
   card.className = "app-project-card";
+  card.id = newAppId;
+  
   card.innerHTML = `
     <div class="card-thumbnail-preview">
         <div class="thumb-glow"></div>
-        <div class="thumb-title">${escapeHtml(appTitle)}</div>
+        <div class="thumb-title app-title-text">${escapeHtml(appTitle)}</div>
     </div>
     <div class="card-info-row">
         <div>
-            <h4>${escapeHtml(appTitle)}</h4>
-            <span class="sub-text">Just now • Complete Full-Stack Code</span>
+            <h4 class="app-title-heading">${escapeHtml(appTitle)}</h4>
+            <span class="sub-text">Just now • Full-Stack Code</span>
         </div>
-        <button class="download-code-btn" data-app="${newAppId}" onclick="downloadSourceCodePackage('${newAppId}')">📥 Export Code</button>
+        <div style="display:flex; align-items:center; gap:0.4rem; position:relative;">
+            <button class="card-options-btn" onclick="toggleCardOptionsMenu('${newAppId}', event)">⋮</button>
+            <div id="menu_${newAppId}" class="context-menu-dropdown hidden">
+                <button class="menu-opt-item" onclick="renameProjectCard('${newAppId}')">✏️ Rename</button>
+                <button class="menu-opt-item" onclick="downloadSourceCodePackage('${newAppId}')">📥 Export Code</button>
+                <button class="menu-opt-item danger" onclick="deleteProjectCard('${newAppId}')">🗑️ Delete</button>
+            </div>
+        </div>
     </div>
   `;
 
   appsGrid.prepend(card);
   toast(`✔ Full-Stack Project '${appTitle}' Synthesized!`, "success");
 }
+
+function toggleCardOptionsMenu(appId, event) {
+  if (event) event.stopPropagation();
+  document.querySelectorAll(".context-menu-dropdown").forEach(m => {
+    if (m.id !== `menu_${appId}`) m.classList.add("hidden");
+  });
+  const targetMenu = document.getElementById(`menu_${appId}`);
+  if (targetMenu) targetMenu.classList.toggle("hidden");
+}
+
+function renameProjectCard(appId) {
+  const card = document.getElementById(appId);
+  if (!card) return;
+  const currentTitleEl = card.querySelector(".app-title-heading");
+  const thumbTitleEl = card.querySelector(".app-title-text");
+  const oldTitle = currentTitleEl ? currentTitleEl.innerText : "Project";
+  
+  const newTitle = prompt("Rename Project:", oldTitle);
+  if (newTitle && newTitle.trim()) {
+    if (currentTitleEl) currentTitleEl.innerText = newTitle.trim();
+    if (thumbTitleEl) thumbTitleEl.innerText = newTitle.trim();
+    toast(`✏️ Project renamed to "${newTitle.trim()}"!`, "success");
+  }
+}
+
+function deleteProjectCard(appId) {
+  const card = document.getElementById(appId);
+  if (card && confirm("Are you sure you want to delete this project?")) {
+    card.remove();
+    toast("🗑️ Project deleted successfully!", "success");
+  }
+}
+
+document.addEventListener("click", () => {
+  document.querySelectorAll(".context-menu-dropdown").forEach(m => m.classList.add("hidden"));
+});
 
 function downloadSourceCodePackage(appName) {
   toast(`📥 Packaging ${appName} source files (.html, .py, .dart)...`, "info");

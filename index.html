@@ -138,17 +138,24 @@
                         </div>
 
                         <div id="myAppsGrid" class="apps-grid">
-                            <div class="app-project-card">
+                            <div class="app-project-card" id="app_default_victor_platform">
                                 <div class="card-thumbnail-preview">
                                     <div class="thumb-glow"></div>
-                                    <div class="thumb-title">Victor Platform 2</div>
+                                    <div class="thumb-title app-title-text">Victor Platform 2</div>
                                 </div>
                                 <div class="card-info-row">
                                     <div>
-                                        <h4>Victor Platform 2</h4>
-                                        <span class="sub-text">Updated 15 days ago • Complete Full-Stack</span>
+                                        <h4 class="app-title-heading">Victor Platform 2</h4>
+                                        <span class="sub-text">Updated 15 days ago • Full-Stack</span>
                                     </div>
-                                    <button class="download-code-btn" data-app="victor-platform-2" title="Download Source Code">📥 Export Code</button>
+                                    <div style="display:flex; align-items:center; gap:0.4rem; position:relative;">
+                                        <button class="card-options-btn" onclick="toggleCardOptionsMenu('app_default_victor_platform', event)">⋮</button>
+                                        <div id="menu_app_default_victor_platform" class="context-menu-dropdown hidden">
+                                            <button class="menu-opt-item" onclick="renameProjectCard('app_default_victor_platform')">✏️ Rename</button>
+                                            <button class="menu-opt-item" onclick="downloadSourceCodePackage('victor-platform-2')">📥 Export Code</button>
+                                            <button class="menu-opt-item danger" onclick="deleteProjectCard('app_default_victor_platform')">🗑️ Delete</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

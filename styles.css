@@ -339,13 +339,32 @@ body {
 
 .card-info-row {
   padding: 1rem; display: flex; align-items: center; justify-content: space-between;
+  position: relative;
 }
 
-.download-code-btn {
-  background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4);
-  color: #a5b4fc; padding: 0.4rem 0.85rem; border-radius: var(--radius-sm);
-  font-size: 0.78rem; font-weight: 600; cursor: pointer;
+.card-options-btn {
+  background: transparent; border: none; color: var(--text-muted);
+  font-size: 1.2rem; cursor: pointer; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm);
 }
+
+.card-options-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+.context-menu-dropdown {
+  position: absolute; top: 2.5rem; right: 1rem;
+  background: #111728; border: 1px solid var(--border-color);
+  border-radius: var(--radius-md); box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  display: flex; flex-direction: column; z-index: 100; min-width: 140px; overflow: hidden;
+}
+
+.menu-opt-item {
+  background: transparent; border: none; color: var(--text-main);
+  padding: 0.6rem 1rem; text-align: left; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
+}
+
+.menu-opt-item:hover { background: rgba(255,255,255,0.08); }
+.menu-opt-item.danger { color: #f87171; }
+.menu-opt-item.danger:hover { background: rgba(239, 68, 68, 0.15); }
 
 /* 2. OPENART.AI MULTIMODAL MEDIA SUITE */
 .openart-container { max-width: 1300px; margin: 0 auto; }
