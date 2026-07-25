@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  victorx-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://victorx:victorx_secret@postgres:5432/victorx_db
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: victorx
+      POSTGRES_PASSWORD: victorx_secret
+      POSTGRES_DB: victorx_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

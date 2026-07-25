@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: victorx-gpu-cluster-config
+data:
+  QUANTIZATION_MODE: "int4_awq"
+  FLASH_ATTENTION: "true"
+  MOE_NUM_EXPERTS: "8"
+  TOP_K_GATING: "2"

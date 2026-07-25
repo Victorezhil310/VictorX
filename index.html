@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9747982919206794"
-     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9747982919206794" crossorigin="anonymous"></script>
     <meta name="google-adsense-account" content="ca-pub-9747982919206794">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="google9b3c772b30ea79bb.html">
-    <title>VictorX — Open-Source AI Model Hub, Spaces & Playground</title>
+    <title>VictorX 1.0.0 — Next-Gen Multi-Modal AI Platform & Model Engine</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9747982919206794" crossorigin="anonymous"></script>
 </head>
@@ -21,510 +20,692 @@
         <div class="nav-container">
             <div class="nav-left">
                 <a href="#" class="brand">
-                    <svg class="brand-logo" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="#2563eb"/>
+                    <svg class="brand-logo" width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 22h5l5-10 5 10h5L12 2z" fill="url(#brandGrad)"/>
+                        <defs>
+                            <linearGradient id="brandGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#6366F1"/>
+                                <stop offset="0.5" stop-color="#A855F7"/>
+                                <stop offset="1" stop-color="#EC4899"/>
+                            </linearGradient>
+                        </defs>
                     </svg>
-                    <span class="brand-name">VictorX</span>
+                    <div class="brand-titles">
+                        <span class="brand-name">VictorX</span>
+                        <span class="brand-version">v1.0.0 Pro</span>
+                    </div>
                 </a>
                 
                 <div class="search-bar-wrap">
                     <span class="search-icon">🔍</span>
-                    <input type="text" id="searchInput" placeholder="Search 150+ models, datasets, spaces...">
+                    <input type="text" id="searchInput" placeholder="Search models, AI tools, generated media...">
                     <span class="search-shortcut">⌘K</span>
                 </div>
             </div>
 
+            <!-- MAIN STUDIO NAV TABS -->
             <nav class="nav-links">
-                <a href="#models" class="nav-link active">📦 Models</a>
-                <a href="#integrations" class="nav-link">🔌 Integrations</a>
-                <a href="#ollama-docs" class="nav-link">🦙 Ollama API</a>
-                <a href="#spaces" class="nav-link">🚀 Spaces</a>
-                <a href="#workbench" class="nav-link">⚡ API Workbench</a>
-                <a href="#dock" class="nav-link">⚓ My Dock</a>
+                <a href="#chat-studio" class="nav-tab active" data-target="chat-studio">💬 Chat AI</a>
+                <a href="#image-studio" class="nav-tab" data-target="image-studio">🎨 Image AI</a>
+                <a href="#video-studio" class="nav-tab" data-target="video-studio">🎬 Video AI</a>
+                <a href="#code-studio" class="nav-tab" data-target="code-studio">⚡ Code AI</a>
+                <a href="#gpu-dashboard" class="nav-tab" data-target="gpu-dashboard">⚙️ Optimization</a>
+                <a href="#models-dock" class="nav-tab" data-target="models-dock">📦 Model Dock</a>
             </nav>
 
             <div class="nav-right">
-                <div id="ollamaStatusBadge" class="ollama-status-pill offline" title="Ollama Server Status">
+                <div id="ollamaStatusBadge" class="ollama-status-pill offline" title="Ollama & FastAPI Backend Status">
                     <span class="status-dot"></span>
-                    <span class="status-text">Ollama Checking...</span>
+                    <span class="status-text">FastAPI / Ollama</span>
                 </div>
-                <button id="openApiKeysBtn" class="btn btn-ghost" title="API Key Manager">🔑 Keys</button>
-                <button id="openUpiModalBtn" class="btn btn-ghost">❤️ Support</button>
-                <button id="authBtn" class="btn btn-primary">Sign In</button>
-                <button id="adminPinBtn" class="hidden-pin-trigger" title="Admin Control Panel">🛡️</button>
+                <button id="openPermissionsBtn" class="btn btn-ghost-pill" title="Security & Device Permissions">🛡️ Privacy & Security</button>
+                <button id="openApiKeysBtn" class="btn btn-ghost-pill" title="API Key Manager">🔑 Keys</button>
+                <button id="authBtn" class="btn btn-primary-gradient">Sign In</button>
             </div>
         </div>
     </header>
 
-    <!-- HERO BANNER -->
-    <section class="hero-banner">
-        <div class="wrap">
-            <div class="hero-text-box">
-                <span class="badge yellow-badge">🔥 THE AI COMMUNITY PLATFORM & OLLAMA HUB</span>
-                <h1>Build, Pull & Run Open-Source LLMs Locally</h1>
-                <p>Discover 150+ open-weights foundation models, connect directly with your local <code>http://localhost:11434</code> Ollama server, pull real weight layers, and integrate with coding agents & editors.</p>
-                
-                <!-- Quick Pull Input Bar -->
-                <div class="quick-pull-box">
-                    <input type="text" id="quickPullInput" placeholder="Enter Ollama model tag (e.g. gemma4, llama3.3, deepseek-r1, phi4, qwen2.5-coder)...">
-                    <button id="quickPullBtn" class="btn btn-primary">📥 Pull Model via Ollama</button>
-                    <button id="syncOllamaBtn" class="btn btn-secondary" title="Sync models from http://localhost:11434">🔄 Sync Local Ollama</button>
-                </div>
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast" class="toast-container"></div>
 
-                <div class="hero-stats-row">
-                    <div class="h-stat"><strong>150+</strong> <span>Models Indexed</span></div>
-                    <div class="h-stat"><strong id="ollamaModelCount">--</strong> <span>Ollama Local Models</span></div>
-                    <div class="h-stat"><strong id="statInstalled">6</strong> <span>Weights Docked</span></div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- MAIN PLATFORM VIEWS CONTAINER -->
+    <main class="main-workspace">
 
-    <!-- MAIN CONTENT AREA -->
-    <main class="wrap main-content">
-
-        <!-- FILTER & SORT CONTROLS -->
-        <section class="controls-bar">
-            <div class="filter-chips-wrap" id="portChips">
-                <button class="chip active" data-port="all">All Ecosystems</button>
-                <button class="chip" data-port="huggingface">Hugging Face</button>
-                <button class="chip" data-port="meta">Meta Open Weights</button>
-                <button class="chip" data-port="deepseek">DeepSeek Reasoning</button>
-                <button class="chip" data-port="mistral">Mistral Series</button>
-                <button class="chip" data-port="google">Google Gemma</button>
-                <button class="chip" data-port="qwen">Alibaba Qwen</button>
-            </div>
-
-            <div class="sort-wrap">
-                <select id="sortSelect" class="select-dropdown">
-                    <option value="most_hauled">Most Hauled (Downloads)</option>
-                    <option value="newest">Recently Updated</option>
-                    <option value="name_asc">Name A-Z</option>
-                </select>
-            </div>
-        </section>
-
-        <!-- 1. MODEL HUB GRID -->
-        <section class="section-block" id="models">
-            <div class="block-title">
-                <h2>📦 Open Foundation Models & Local Ollama Registry</h2>
-                <span class="count-tag" id="resultCount">12 Models</span>
-            </div>
-
-            <div class="model-grid" id="modelGrid"></div>
-            <div id="emptyState" class="empty-state hidden"><p>No models matching search filter.</p></div>
-        </section>
-
-        <!-- 2. OLLAMA INTEGRATIONS -->
-        <section class="section-block" id="integrations">
-            <div class="block-title">
-                <h2>🔌 Ecosystem Integrations & Coding Agents</h2>
-                <span class="count-tag">Use Ollama from CLI, Agents & Editors</span>
-            </div>
-
-            <p class="section-subtitle" style="margin-bottom:16px; color:var(--text-secondary); font-size:13px;">
-                Run <code>ollama launch &lt;agent&gt;</code> or connect your local Ollama instance directly to coding agents, assistants, and IDE extensions.
-            </p>
-
-            <div class="integrations-grid">
-                <!-- Claude Code Card -->
-                <div class="integration-card">
-                    <div class="card-badge">Code in Terminal</div>
-                    <div class="card-icon-wrap">
-                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/claude-code.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=edd8f01fa1844a0eca0a9e00be74a8a3" alt="Claude Code" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/terminal/terminal.png'">
+        <!-- 1. VICTORX CHAT STUDIO SECTION -->
+        <section id="chat-studio" class="studio-section active">
+            <div class="chat-layout">
+                <!-- CHAT SIDEBAR -->
+                <aside class="chat-sidebar">
+                    <button id="newChatBtn" class="btn btn-primary-full">
+                        <span>➕ New 10x Smart Session</span>
+                    </button>
+                    <div class="sidebar-block">
+                        <label class="sidebar-label">Active Model Engine</label>
+                        <select id="chatModelSelect" class="studio-select">
+                            <option value="victorx-3b-moe" selected>VictorX 3B MoE (8x3B Sparse Router)</option>
+                            <option value="victorx-1b-fast">VictorX 1B Ultra-Fast (Mobile/Edge)</option>
+                            <option value="victorx-reasoning">VictorX Reasoning Engine (10x CoT)</option>
+                            <option value="deepseek-r1">DeepSeek R1 (External Provider)</option>
+                            <option value="llama-3.3-70b">Llama 3.3 70B (Instruct)</option>
+                            <option value="ollama-local">Local Ollama Model</option>
+                        </select>
                     </div>
-                    <h3>Claude Code</h3>
-                    <p class="int-desc">Terminal coding agent with tools, vision, web search, and long context.</p>
-                    <div class="int-footer">
-                        <code>ollama launch claude-code</code>
-                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="claude-code" data-title="Claude Code Integration">Setup Guide</button>
-                    </div>
-                </div>
 
-                <!-- OpenCode Card -->
-                <div class="integration-card">
-                    <div class="card-badge">Code in Terminal</div>
-                    <div class="card-icon-wrap">
-                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/opencode.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=ffa7d783e8ddf476a376ebbedaa064ae" alt="OpenCode" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/code/code.png'">
+                    <div class="sidebar-block">
+                        <div class="sidebar-toggle-row">
+                            <span>Direct 10x Results Mode</span>
+                            <label class="switch">
+                                <input type="checkbox" id="hideCoTToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <p class="sidebar-desc">Hide raw thinking logs and present instant, refined, high-precision results.</p>
                     </div>
-                    <h3>OpenCode</h3>
-                    <p class="int-desc">Open-source coding agent that edits, runs, and iterates on code.</p>
-                    <div class="int-footer">
-                        <code>ollama launch opencode</code>
-                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="opencode" data-title="OpenCode Integration">Setup Guide</button>
-                    </div>
-                </div>
 
-                <!-- OpenClaw Card -->
-                <div class="integration-card">
-                    <div class="card-badge">Connect Assistant</div>
-                    <div class="card-icon-wrap">
-                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/openclaw.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=41b25b9a809d087e9e55b1b7bdb76cae" alt="OpenClaw" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/bot/bot.png'">
-                    </div>
-                    <h3>OpenClaw</h3>
-                    <p class="int-desc">Personal assistant for messaging apps and everyday tasks.</p>
-                    <div class="int-footer">
-                        <code>ollama launch openclaw</code>
-                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="openclaw" data-title="OpenClaw Integration">Setup Guide</button>
-                    </div>
-                </div>
-
-                <!-- Hermes Agent Card -->
-                <div class="integration-card">
-                    <div class="card-badge">Connect Assistant</div>
-                    <div class="card-icon-wrap">
-                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/hermes-agent.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=23dcf989a34d894a97bdb847c3831057" alt="Hermes Agent" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/ai/ai.png'">
-                    </div>
-                    <h3>Hermes Agent</h3>
-                    <p class="int-desc">Open-source agent with self-improving skills, memory, and messaging.</p>
-                    <div class="int-footer">
-                        <code>ollama launch hermes</code>
-                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="hermes" data-title="Hermes Agent Integration">Setup Guide</button>
-                    </div>
-                </div>
-
-                <!-- VS Code Card -->
-                <div class="integration-card">
-                    <div class="card-badge">Work in Editor</div>
-                    <div class="card-icon-wrap">
-                        <img src="https://mintcdn.com/ollama-9269c548/VdS6E00liu8o_Gkj/images/launch-icons/vscode.svg?fit=max&auto=format&n=VdS6E00liu8o_Gkj&q=85&s=a2ba239e0b0f44900813a438537a1c98" alt="VS Code" class="int-icon" onerror="this.src='https://raw.githubusercontent.com/github/explore/main/topics/visual-studio-code/visual-studio-code.png'">
-                    </div>
-                    <h3>VS Code</h3>
-                    <p class="int-desc">Use Ollama models directly inside VS Code Chat & GitHub Copilot.</p>
-                    <div class="int-footer">
-                        <code>ollama launch vscode</code>
-                        <button class="btn btn-secondary btn-sm open-int-modal" data-agent="vscode" data-title="VS Code Integration">Setup Guide</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. OLLAMA DOCUMENTATION & CHEATSHEET -->
-        <section class="section-block" id="ollama-docs">
-            <div class="block-title">
-                <h2>🦙 Ollama API Documentation & Quickstart Index</h2>
-                <span class="count-tag">Local Base URL: http://localhost:11434/api</span>
-            </div>
-
-            <div class="docs-container-box">
-                <div class="docs-grid">
-                    <div class="docs-card">
-                        <h4>⚡ API Base URLs</h4>
-                        <div class="code-snippet-box">
-                            <span class="code-label">Local Server (Default):</span>
-                            <code>http://localhost:11434/api</code>
-                            <span class="code-label" style="margin-top:8px;">Cloud Models (ollama.com):</span>
-                            <code>https://ollama.com/api</code>
+                    <div class="sidebar-block">
+                        <div class="sidebar-toggle-row">
+                            <span>Tool Calling Agent</span>
+                            <label class="switch">
+                                <input type="checkbox" id="toolCallingToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="tool-tags-list">
+                            <span class="tool-tag">🌐 Web Search</span>
+                            <span class="tool-tag">🐍 Python Exec</span>
+                            <span class="tool-tag">🧮 Math Engine</span>
+                            <span class="tool-tag">💾 Memory Store</span>
                         </div>
                     </div>
 
-                    <div class="docs-card">
-                        <h4>📦 Official Libraries</h4>
-                        <ul class="docs-list">
-                            <li><a href="https://github.com/ollama/ollama-python" target="_blank" rel="noopener">🐍 Python SDK (ollama-python)</a></li>
-                            <li><a href="https://github.com/ollama/ollama-js" target="_blank" rel="noopener">🟨 JavaScript SDK (ollama-js)</a></li>
-                            <li><a href="https://docs.ollama.com/llms.txt" target="_blank" rel="noopener">📄 Full Ollama Docs Index (llms.txt)</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="docs-example-box" style="margin-top:16px;">
-                    <div class="docs-example-header">
-                        <span>Terminal Example Request (Generate Completion)</span>
-                        <button class="btn btn-ghost copy-btn" onclick="navigator.clipboard.writeText('curl http://localhost:11434/api/generate -d \'{\n  \"model\": \"gemma4\",\n  \"prompt\": \"Why is the sky blue?\"\n}\''); toast('Copied cURL command!', 'success');">📋 Copy</button>
-                    </div>
-                    <pre><code class="language-shell">curl http://localhost:11434/api/generate -d '{
-  "model": "gemma4",
-  "prompt": "Why is the sky blue?"
-}'</code></pre>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2. SPACES & APPS -->
-        <section class="section-block" id="spaces">
-            <div class="block-title">
-                <h2>🚀 Featured Spaces & Demo Apps</h2>
-            </div>
-            <div class="spaces-grid">
-                <div class="space-card">
-                    <div class="space-header">
-                        <span class="space-icon">💬</span>
-                        <div>
-                            <h3>Universal LLM Playground</h3>
-                            <p class="space-author">by VictorX Core</p>
-                        </div>
-                    </div>
-                    <p class="space-desc">Interactive multi-model chat interface with temperature, top-p, and streaming controls.</p>
-                    <button class="btn btn-secondary w-full" onclick="openPlayground('llama3.3-70b')">⚡ Launch Space</button>
-                </div>
-
-                <div class="space-card">
-                    <div class="space-header">
-                        <span class="space-icon">🔍</span>
-                        <div>
-                            <h3>RAG Knowledge Base Search</h3>
-                            <p class="space-author">by VictorX Community</p>
-                        </div>
-                    </div>
-                    <p class="space-desc">Upload PDFs and query document embeddings using vector search pipeline.</p>
-                    <button class="btn btn-secondary w-full" onclick="toast('RAG Space launching...', 'info')">⚡ Launch Space</button>
-                </div>
-
-                <div class="space-card">
-                    <div class="space-header">
-                        <span class="space-icon">💻</span>
-                        <div>
-                            <h3>Code Generator Studio</h3>
-                            <p class="space-author">by VictorX Open</p>
-                        </div>
-                    </div>
-                    <p class="space-desc">Synthesize Python, Rust, and TypeScript code snippets with benchmark evaluation.</p>
-                    <button class="btn btn-secondary w-full" onclick="toast('Code Studio launching...', 'info')">⚡ Launch Space</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. API TESTING WORKBENCH STUDIO -->
-        <section class="section-block" id="workbench">
-            <div class="block-title">
-                <h2>⚡ API Workbench & Inference Studio</h2>
-            </div>
-
-            <div class="workbench-box">
-                <div class="req-row">
-                    <select id="apiMethod" class="select-dropdown method-select">
-                        <option value="POST">POST</option>
-                        <option value="GET">GET</option>
-                        <option value="PUT">PUT</option>
-                        <option value="DELETE">DELETE</option>
-                    </select>
-                    <input type="text" id="apiEndpointInput" class="url-input" value="https://openrouter.ai/api/v1/chat/completions">
-                    <button id="apiSendBtn" class="btn btn-primary">⚡ Send Request</button>
-                    <button id="apiSaveBtn" class="btn btn-secondary">💾 Save</button>
-                </div>
-
-                <div class="split-workbench">
-                    <div class="workbench-pane">
-                        <div class="tab-header">
-                            <button class="tab-btn active" data-tab="body">Body (JSON)</button>
-                            <button class="tab-btn" data-tab="headers">Headers</button>
-                            <button class="tab-btn" data-tab="params">Params</button>
-                            <button class="tab-btn" data-tab="code">Code Snippets</button>
-                        </div>
-                        <div id="tabBody" class="tab-pane">
-                            <textarea id="apiRequestBody" class="code-editor">{
-  "model": "meta-llama/llama-3.3-70b-instruct",
-  "messages": [
-    {"role": "user", "content": "Explain quantum computing in 2 sentences."}
-  ]
-}</textarea>
-                        </div>
-                        <div id="tabHeaders" class="tab-pane hidden">
-                            <textarea id="apiHeadersInput" class="code-editor">{
-  "Content-Type": "application/json",
-  "Authorization": "Bearer YOUR_API_KEY"
-}</textarea>
-                        </div>
-                        <div id="tabParams" class="tab-pane hidden">
-                            <textarea id="apiParamsInput" class="code-editor">{
-  "temperature": 0.7,
-  "max_tokens": 150
-}</textarea>
-                        </div>
-                        <div id="tabCode" class="tab-pane hidden">
-                            <pre><code id="generatedCodeSnippet"></code></pre>
+                    <div class="sidebar-block">
+                        <label class="sidebar-label">Context Memory Window</label>
+                        <div class="range-wrap">
+                            <input type="range" id="contextMemoryRange" min="4096" max="131072" step="4096" value="32768">
+                            <span id="contextMemoryVal">32K Tokens</span>
                         </div>
                     </div>
 
-                    <div class="workbench-pane">
-                        <div class="status-strip">
-                            <span id="apiResponseStatus" class="status-badge green">200 OK</span>
-                            <span id="apiResponseTime" class="status-badge">0 ms</span>
-                            <span id="apiResponseSize" class="status-badge">0 B</span>
+                    <!-- CHAT HISTORY LIST -->
+                    <div class="chat-history-container">
+                        <label class="sidebar-label">Saved Sessions (Encrypted & Zero-Leak)</label>
+                        <div id="chatHistoryList" class="history-list">
+                            <!-- Populated dynamically via JS -->
                         </div>
-                        <div class="response-viewer">
-                            <pre><code id="apiResponseViewer">// Response payload will render here</code></pre>
+                    </div>
+                </aside>
+
+                <!-- MAIN CHAT VIEW -->
+                <div class="chat-main">
+                    <header class="chat-header">
+                        <div class="chat-header-info">
+                            <h2 id="currentChatTitle">10x Smart Analysis Session</h2>
+                            <span class="chat-sec-badge">🔒 End-to-End Encrypted Storage</span>
+                        </div>
+                        <div class="chat-header-actions">
+                            <button id="clearChatBtn" class="btn btn-outline-sm">🧹 Clear View</button>
+                            <button id="exportChatBtn" class="btn btn-outline-sm">📥 Export Session</button>
+                        </div>
+                    </header>
+
+                    <div id="chatMessages" class="chat-messages-scroll">
+                        <div class="welcome-chat-card">
+                            <div class="welcome-icon">⚡</div>
+                            <h3>Welcome to VictorX Chat 1.0.0</h3>
+                            <p>Powered by sparse Mixture-of-Experts (MoE) & 10x Smart Reasoning Engine with native privacy protection.</p>
+                            <div class="prompt-suggestions">
+                                <button class="suggestion-chip" data-prompt="Analyze market trends for AI SaaS models in 2026 with financial breakdowns.">📊 Market Analysis</button>
+                                <button class="suggestion-chip" data-prompt="Write a complete Python FastAPI server for high-throughput video streaming with JWT auth.">🐍 Python FastAPI Backend</button>
+                                <button class="suggestion-chip" data-prompt="Create a high-converting landing page HTML/CSS structure with dark glassmorphism.">🎨 Landing Page Web Code</button>
+                                <button class="suggestion-chip" data-prompt="Explain Quantum Computing fundamentals with zero jargon and concrete analogies.">⚛️ Quantum Physics</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-wrapper">
+                        <div class="chat-input-bar">
+                            <textarea id="chatInput" rows="1" placeholder="Ask VictorX anything... (Shift+Enter for new line)"></textarea>
+                            <div class="chat-input-tools">
+                                <button id="attachFileBtn" class="chat-tool-btn" title="Attach Document / Code">📎</button>
+                                <button id="voiceInputBtn" class="chat-tool-btn" title="Voice Input">🎙️</button>
+                                <button id="sendChatBtn" class="btn btn-primary-gradient send-btn">
+                                    <span>Send ⚡</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="input-footer-note">
+                            <span>🔒 Confidential & Hidden Storage — Data strictly stays on your local environment.</span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 4. MY DOCKED WEIGHTS -->
-        <section class="section-block" id="dock">
-            <div class="block-title">
-                <h2>⚓ My Docked Weights</h2>
-                <span id="installedCountPill" class="count-tag">6 Models</span>
+
+        <!-- 2. VICTORX IMAGE STUDIO SECTION -->
+        <section id="image-studio" class="studio-section">
+            <div class="studio-container">
+                <div class="studio-header">
+                    <h2>🎨 VictorX Image AI Studio</h2>
+                    <p>Next-Gen Diffusion Model for Text-to-Image, Inpainting, and 4x Super-Resolution Upscaling</p>
+                </div>
+
+                <div class="studio-grid">
+                    <!-- LEFT CONTROLS -->
+                    <div class="studio-controls-panel">
+                        <div class="control-group">
+                            <label class="control-label">Prompt Generator</label>
+                            <textarea id="imgPrompt" rows="3" placeholder="A futuristic cyberpunk city with neon lights, glass skyscrapers, raining atmosphere, hyperrealistic 8k resolution..."></textarea>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">Negative Prompt</label>
+                            <input type="text" id="imgNegativePrompt" value="blurry, distorted, low quality, bad anatomy, artifacts, text watermark">
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-group half">
+                                <label class="control-label">Style Preset</label>
+                                <select id="imgStyle" class="studio-select">
+                                    <option value="photorealistic" selected>📸 Photorealistic</option>
+                                    <option value="cyberpunk">🌃 Cyberpunk / Sci-Fi</option>
+                                    <option value="anime">🌸 Anime & Manga</option>
+                                    <option value="3d-render">🎮 3D Unreal Engine 5</option>
+                                    <option value="oil-painting">🎨 Cinematic Art</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group half">
+                                <label class="control-label">Aspect Ratio</label>
+                                <select id="imgAspectRatio" class="studio-select">
+                                    <option value="1:1" selected>1:1 Square (1024x1024)</option>
+                                    <option value="16:9">16:9 Landscape (1344x768)</option>
+                                    <option value="9:16">9:16 Portrait (768x1344)</option>
+                                    <option value="4:3">4:3 Desktop (1152x864)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-group half">
+                                <label class="control-label">Sampling Steps: <span id="imgStepsVal">30</span></label>
+                                <input type="range" id="imgSteps" min="15" max="60" value="30">
+                            </div>
+                            <div class="control-group half">
+                                <label class="control-label">CFG Scale: <span id="imgCfgVal">7.5</span></label>
+                                <input type="range" id="imgCfg" min="1" max="20" step="0.5" value="7.5">
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="sidebar-toggle-row">
+                                <span>4x Super-Resolution Upscale</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="upscaleToggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button id="generateImgBtn" class="btn btn-primary-gradient btn-large">
+                            <span>✨ Generate High-Res Image</span>
+                        </button>
+                    </div>
+
+                    <!-- RIGHT PREVIEW CANVAS & GALLERY -->
+                    <div class="studio-preview-panel">
+                        <div class="canvas-box" id="imageCanvasBox">
+                            <div class="canvas-placeholder" id="imgPlaceholder">
+                                <span class="placeholder-icon">🎨</span>
+                                <h3>Canvas Ready</h3>
+                                <p>Enter prompt and click Generate to produce state-of-the-art diffusion art.</p>
+                            </div>
+                            <div class="image-output-wrap hidden" id="imgOutputWrap">
+                                <canvas id="imgDisplayCanvas" width="800" height="800"></canvas>
+                                <div class="canvas-overlay-actions">
+                                    <button id="downloadImgBtn" class="btn btn-glass">📥 Download HD</button>
+                                    <button id="upscaleActionBtn" class="btn btn-glass">⚡ 4x Upscale</button>
+                                    <button id="copyPromptBtn" class="btn btn-glass">📋 Copy Prompt</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GALLERY SNAPSHOTS -->
+                        <div class="gallery-section">
+                            <h4>Recent Generation Gallery</h4>
+                            <div id="imageGallery" class="image-gallery-grid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="model-grid" id="installedGrid"></div>
-            <div id="emptyDockState" class="empty-state hidden"><p>Your dock is empty.</p></div>
+        </section>
+
+
+        <!-- 3. VICTORX VIDEO STUDIO SECTION -->
+        <section id="video-studio" class="studio-section">
+            <div class="studio-container">
+                <div class="studio-header">
+                    <h2>🎬 VictorX Video AI Studio</h2>
+                    <p>Text-to-Video & Image-to-Video Synthesis with Precise Dynamic Camera Control</p>
+                </div>
+
+                <div class="studio-grid">
+                    <!-- LEFT CONTROLS -->
+                    <div class="studio-controls-panel">
+                        <div class="control-group">
+                            <label class="control-label">Video Prompt</label>
+                            <textarea id="videoPrompt" rows="3" placeholder="Cinematic drone flight through snow-capped mountains at sunset, camera panning smoothly, hyperrealistic 4K motion..."></textarea>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-group half">
+                                <label class="control-label">Generation Mode</label>
+                                <select id="videoMode" class="studio-select">
+                                    <option value="text2video" selected>Text-to-Video</option>
+                                    <option value="image2video">Image-to-Video</option>
+                                </select>
+                            </div>
+                            <div class="control-group half">
+                                <label class="control-label">Camera Motion</label>
+                                <select id="cameraMotion" class="studio-select">
+                                    <option value="pan-left">⬅️ Pan Left</option>
+                                    <option value="pan-right">➡️ Pan Right</option>
+                                    <option value="zoom-in" selected>🔍 Zoom In</option>
+                                    <option value="zoom-out">🔍 Zoom Out</option>
+                                    <option value="orbit">🔄 Orbit 360°</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-group half">
+                                <label class="control-label">Frame Rate (FPS)</label>
+                                <select id="videoFps" class="studio-select">
+                                    <option value="24">24 FPS (Cinematic)</option>
+                                    <option value="30" selected>30 FPS (Smooth)</option>
+                                    <option value="60">60 FPS (Ultra Fluid)</option>
+                                </select>
+                            </div>
+                            <div class="control-group half">
+                                <label class="control-label">Duration: <span id="videoDurationVal">4s</span></label>
+                                <input type="range" id="videoDuration" min="2" max="10" step="1" value="4">
+                            </div>
+                        </div>
+
+                        <button id="generateVideoBtn" class="btn btn-primary-gradient btn-large">
+                            <span>🎥 Render AI Video</span>
+                        </button>
+                    </div>
+
+                    <!-- RIGHT VIDEO PLAYER -->
+                    <div class="studio-preview-panel">
+                        <div class="canvas-box" id="videoPlayerBox">
+                            <div class="canvas-placeholder" id="videoPlaceholder">
+                                <span class="placeholder-icon">🎬</span>
+                                <h3>Video Player Ready</h3>
+                                <p>Render text-to-video or image motion sequences directly in high definition.</p>
+                            </div>
+                            <div class="video-output-wrap hidden" id="videoOutputWrap">
+                                <div class="synthetic-video-screen" id="syntheticVideoScreen">
+                                    <div class="video-animation-layer" id="videoAnimLayer"></div>
+                                    <div class="video-overlay-badge">VictorX Video Engine v1.0</div>
+                                </div>
+                                <div class="video-controls-bar">
+                                    <button id="playPauseVideoBtn" class="btn btn-glass-sm">▶ Play</button>
+                                    <div class="video-progress-bar">
+                                        <div class="progress-fill" id="videoProgressFill"></div>
+                                    </div>
+                                    <span id="videoTimeDisplay" class="video-time">0:00 / 0:04</span>
+                                    <button id="downloadVideoBtn" class="btn btn-glass-sm">📥 Download MP4</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="gallery-section">
+                            <h4>Rendered Video Clips</h4>
+                            <div id="videoGallery" class="video-gallery-grid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 4. VICTORX CODE STUDIO SECTION -->
+        <section id="code-studio" class="studio-section">
+            <div class="studio-container">
+                <div class="studio-header">
+                    <h2>⚡ VictorX Code & App AI Generator</h2>
+                    <p>Instant Full-Stack Web, Python Backend, and Flutter Mobile App Code Synthesis & Live Debugger</p>
+                </div>
+
+                <div class="studio-grid-code">
+                    <!-- LEFT SIDEBAR CONTROL -->
+                    <div class="code-controls-panel">
+                        <div class="control-group">
+                            <label class="control-label">Target Stack</label>
+                            <select id="codeStackSelect" class="studio-select">
+                                <option value="flutter" selected>📱 Flutter Mobile App (Dart)</option>
+                                <option value="fastapi">🐍 Python FastAPI Backend</option>
+                                <option value="web-html">🌐 HTML5 / Glassmorphism Web App</option>
+                                <option value="react">⚛️ React / Next.js Component</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">App Requirement / Prompt</label>
+                            <textarea id="codePrompt" rows="4" placeholder="Build a complete Flutter E-commerce Product Dashboard with cart management, sleek dark mode theme, and backend API service integration..."></textarea>
+                        </div>
+
+                        <button id="generateCodeBtn" class="btn btn-primary-gradient btn-full">
+                            <span>🚀 Synthesize Complete Code App</span>
+                        </button>
+
+                        <hr class="panel-divider">
+
+                        <!-- BUG FIXER ENGINE -->
+                        <div class="control-group">
+                            <label class="control-label">🐞 AI Bug Fixer & Optimizer</label>
+                            <textarea id="bugFixInput" rows="3" placeholder="Paste runtime error stack trace or buggy code snippet here..."></textarea>
+                            <button id="fixBugBtn" class="btn btn-secondary-full mt-2">
+                                <span>🔧 Fix Bug & Auto-Patch</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT CODE EDITOR & PREVIEW -->
+                    <div class="code-viewer-panel">
+                        <div class="code-header-bar">
+                            <div class="code-tabs">
+                                <button class="code-tab active" data-tab="editor">💻 Code Editor</button>
+                                <button class="code-tab" data-tab="preview">👁️ Live Preview</button>
+                            </div>
+                            <div class="code-header-actions">
+                                <button id="copyCodeBtn" class="btn btn-outline-sm">📋 Copy Code</button>
+                                <button id="downloadCodeBtn" class="btn btn-outline-sm">📥 Download File</button>
+                            </div>
+                        </div>
+
+                        <div class="code-content-body">
+                            <!-- CODE EDITOR TAB -->
+                            <div id="codeEditorTab" class="code-tab-content active">
+                                <pre><code id="codeDisplayArea" class="language-dart">// VictorX AI App Synthesizer Ready
+// Select target stack and click Synthesize to generate production-ready application code.</code></pre>
+                            </div>
+
+                            <!-- LIVE PREVIEW TAB -->
+                            <div id="codePreviewTab" class="code-tab-content">
+                                <iframe id="codePreviewIframe" class="preview-iframe" title="Live Preview Render"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 5. GPU & OPTIMIZATION DASHBOARD SECTION -->
+        <section id="gpu-dashboard" class="studio-section">
+            <div class="studio-container">
+                <div class="studio-header">
+                    <h2>⚙️ GPU Cluster Telemetry & Inference Optimization</h2>
+                    <p>Real-Time MoE Routing, INT4/INT8 Quantization, KV Cache Management, and VRAM Optimization</p>
+                </div>
+
+                <div class="gpu-metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">📟</div>
+                        <div class="metric-info">
+                            <span class="metric-label">GPU Memory (VRAM)</span>
+                            <h3 id="vramMeterVal">4.2 GB / 24.0 GB</h3>
+                            <div class="meter-bar"><div class="meter-fill" id="vramMeterFill" style="width: 18%;"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">⚡</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Inference Throughput</span>
+                            <h3 id="throughputVal">148.5 tok/sec</h3>
+                            <span class="metric-sub text-green">▲ FlashAttention-2 Enabled</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">🧠</div>
+                        <div class="metric-info">
+                            <span class="metric-label">Active MoE Experts</span>
+                            <h3 id="moeExpertsVal">2 / 8 Active</h3>
+                            <span class="metric-sub text-purple">Sparse Top-2 Gating</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">💾</div>
+                        <div class="metric-info">
+                            <span class="metric-label">KV Cache Utilization</span>
+                            <h3 id="kvCacheVal">12.4%</h3>
+                            <div class="meter-bar"><div class="meter-fill bg-purple" style="width: 12.4%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="opt-controls-grid mt-4">
+                    <div class="opt-panel">
+                        <h3>Model Quantization Mode</h3>
+                        <div class="radio-group-vertical">
+                            <label class="radio-card">
+                                <input type="radio" name="quantMode" value="int4" checked>
+                                <div class="radio-body">
+                                    <strong>INT4 AWQ / GPTQ (Recommended)</strong>
+                                    <p>75% reduction in GPU VRAM with negligible loss in reasoning accuracy.</p>
+                                </div>
+                            </label>
+
+                            <label class="radio-card">
+                                <input type="radio" name="quantMode" value="int8">
+                                <div class="radio-body">
+                                    <strong>INT8 SmoothQuant</strong>
+                                    <p>50% reduction in memory footprint, optimal for multi-user web serving.</p>
+                                </div>
+                            </label>
+
+                            <label class="radio-card">
+                                <input type="radio" name="quantMode" value="fp16">
+                                <div class="radio-body">
+                                    <strong>FP16 Half Precision</strong>
+                                    <p>Full baseline precision for maximum numerical fidelity during fine-tuning.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="opt-panel">
+                        <h3>Acceleration Engines</h3>
+                        <div class="sidebar-toggle-row mb-3">
+                            <div>
+                                <strong>Flash Attention 2 / 3</strong>
+                                <p class="sub-text">O(N) memory complexity attention kernels.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="flashAttnToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="sidebar-toggle-row mb-3">
+                            <div>
+                                <strong>LoRA Adapter Layer Loading</strong>
+                                <p class="sub-text">Dynamic low-rank adaptation weights injection.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="loraToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="sidebar-toggle-row">
+                            <div>
+                                <strong>Speculative Decoding (1B Drafter)</strong>
+                                <p class="sub-text">Accelerate 3B/70B model token generation by 2.5x.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="speculativeToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 6. MODEL DOCK & REGISTRY SECTION -->
+        <section id="models-dock" class="studio-section">
+            <div class="studio-container">
+                <!-- HERO BANNER -->
+                <section class="hero-banner">
+                    <div class="hero-text-box">
+                        <span class="badge yellow-badge">🔥 THE AI COMMUNITY PLATFORM & OLLAMA HUB</span>
+                        <h1>Build, Pull & Run Open-Source LLMs Locally</h1>
+                        <p>Discover 150+ open-weights foundation models, connect directly with your local <code>http://localhost:11434</code> Ollama server, pull real weight layers, and integrate with coding agents & editors.</p>
+                        
+                        <div class="quick-pull-box">
+                            <input type="text" id="quickPullInput" placeholder="Enter Ollama model tag (e.g. gemma4, llama3.3, deepseek-r1, phi4, qwen2.5-coder)...">
+                            <button id="quickPullBtn" class="btn btn-primary">📥 Pull Model via Ollama</button>
+                            <button id="syncOllamaBtn" class="btn btn-secondary" title="Sync models from http://localhost:11434">🔄 Sync Local Ollama</button>
+                        </div>
+
+                        <div class="hero-stats-row">
+                            <div class="h-stat"><strong>150+</strong> <span>Models Indexed</span></div>
+                            <div class="h-stat"><strong id="ollamaModelCount">--</strong> <span>Ollama Local Models</span></div>
+                            <div class="h-stat"><strong id="statInstalled">6</strong> <span>Weights Docked</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="controls-bar">
+                    <div class="filter-chips-wrap" id="portChips">
+                        <button class="chip active" data-port="all">All Ecosystems</button>
+                        <button class="chip" data-port="huggingface">Hugging Face</button>
+                        <button class="chip" data-port="meta">Meta Open Weights</button>
+                        <button class="chip" data-port="deepseek">DeepSeek Reasoning</button>
+                        <button class="chip" data-port="mistral">Mistral Series</button>
+                        <button class="chip" data-port="google">Google Gemma</button>
+                        <button class="chip" data-port="qwen">Alibaba Qwen</button>
+                    </div>
+
+                    <div class="sort-wrap">
+                        <select id="sortSelect" class="select-dropdown">
+                            <option value="most_hauled">Most Hauled (Downloads)</option>
+                            <option value="newest">Recently Added</option>
+                            <option value="smallest">Smallest Size</option>
+                            <option value="name">Model Name</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- MODEL CARDS GRID -->
+                <div id="modelsGrid" class="models-grid"></div>
+            </div>
         </section>
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="wrap footer-content">
-            <p>&copy; 2026 VictorX Platform. All rights reserved. Open-Source Model Registry & API Workbench.</p>
-        </div>
-    </footer>
 
-    <!-- TOAST -->
-    <div id="toast" class="toast"></div>
-
-    <!-- MODALS -->
-
-    <!-- Admin PIN Modal -->
-    <div class="pin-overlay" id="adminPinOverlay">
+    <!-- SECURITY & PRIVACY PERMISSIONS MODAL -->
+    <div id="permissionsModal" class="modal-backdrop hidden">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Admin Security Access</h3>
-                <button class="btn-close">&times;</button>
+                <h3>🛡️ Privacy & Device Permissions Center</h3>
+                <button class="close-modal-btn" data-close="permissionsModal">&times;</button>
             </div>
             <div class="modal-body">
-                <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">Enter 8-digit Security PIN</p>
-                <div class="pin-input-group" id="pinInputGroup">
-                    <input type="password" class="pin-digit" maxlength="1">
-                    <input type="password" class="pin-digit" maxlength="1">
-                    <input type="password" class="pin-digit" maxlength="1">
-                    <input type="password" class="pin-digit" maxlength="1">
-                    <input type="password" class="pin-digit" maxlength="1">
-                    <input type="password" class="pin-digit" maxlength="1">
-                    <input type="password" class="pin-digit" maxlength="1">
-                    <input type="password" class="pin-digit" maxlength="1">
-                </div>
-                <div id="pinError" class="badge red hidden" style="margin-bottom:12px;">Access Denied. Incorrect PIN.</div>
-                <div style="display:flex; gap:8px;">
-                    <button id="pinCancelBtn" class="btn btn-secondary style-flex-1">Cancel</button>
-                    <button id="pinVerifyBtn" class="btn btn-primary style-flex-1">Verify</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin Dashboard Modal -->
-    <div class="modal-overlay" id="adminDashboardOverlay">
-        <div class="modal-card" style="max-width:650px;">
-            <div class="modal-header">
-                <h3>VictorX Admin Control Center</h3>
-                <button class="btn-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;">
-                    <div class="space-card text-center"><strong style="font-size:18px;">1</strong><div style="font-size:11px;">Users</div></div>
-                    <div class="space-card text-center"><strong style="font-size:18px;">1</strong><div style="font-size:11px;">Sessions</div></div>
-                    <div class="space-card text-center"><strong style="font-size:18px;">12</strong><div style="font-size:11px;">Pulled</div></div>
-                    <div class="space-card text-center"><strong style="font-size:18px;">₹0</strong><div style="font-size:11px;">Revenue</div></div>
-                </div>
-                <table style="width:100%; font-size:12px; text-align:left;">
-                    <thead><tr><th>Parameter</th><th>Status</th></tr></thead>
-                    <tbody>
-                        <tr><td>Local Database</td><td>SAVED (db/data.json)</td></tr>
-                        <tr><td>Security Status</td><td>ADMIN VERIFIED ACTIVE</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- API Keys Modal -->
-    <div class="modal-overlay" id="apiKeysModalOverlay">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>API Key Manager</h3>
-                <button class="btn-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="apiKeysForm">
-                    <div class="form-group"><label>OpenRouter Key</label><input type="password" id="keyOpenRouter" class="input-field" placeholder="sk-or-v1-..."></div>
-                    <div class="form-group"><label>OpenAI Key</label><input type="password" id="keyOpenAI" class="input-field" placeholder="sk-..."></div>
-                    <div class="form-group"><label>Gemini API Key</label><input type="password" id="keyGemini" class="input-field" placeholder="AIza..."></div>
-                    <div class="form-group"><label>Hugging Face API Token</label><input type="password" id="keyHuggingFace" class="input-field" placeholder="hf_..."></div>
-                    <div class="form-group"><label>Ollama URL</label><input type="text" id="urlOllama" class="input-field" value="http://localhost:11434"></div>
-                    <div style="display:flex; gap:8px; margin-top:12px;">
-                        <button type="button" id="clearApiKeysBtn" class="btn btn-secondary style-flex-1">Clear</button>
-                        <button type="button" id="saveApiKeysBtn" class="btn btn-primary style-flex-1">Save Keys</button>
+                <p>VictorX is engineered with zero-leak architecture. All user sessions, generated code, and media assets remain encrypted on your device.</p>
+                
+                <div class="permission-item">
+                    <div class="perm-info">
+                        <strong>💾 Persistent Device Storage</strong>
+                        <p>Allow VictorX to store encrypted chat logs, code files, and custom prompt presets in browser storage.</p>
                     </div>
-                </form>
+                    <label class="switch">
+                        <input type="checkbox" id="permLocalStorage" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="permission-item">
+                    <div class="perm-info">
+                        <strong>🔒 Confidential Mode (Zero Analytics)</strong>
+                        <p>Disable all external telemetry and tracking requests completely.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="permConfidential" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="permission-item">
+                    <div class="perm-info">
+                        <strong>⚡ Hardware GPU Acceleration</strong>
+                        <p>Enable WebGL / WebGPU acceleration for local tensor rendering and canvas processing.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="permGpu" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="permission-item">
+                    <div class="perm-info">
+                        <strong>🔑 Private Encryption Key</strong>
+                        <input type="password" id="userEncryptionKey" class="studio-input mt-2" placeholder="Enter private master key to encrypt storage...">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary-full" data-close="permissionsModal">Save & Allow Permissions</button>
             </div>
         </div>
     </div>
 
-    <!-- Pull Modal -->
-    <div class="modal-overlay" id="pullModalOverlay">
+
+    <!-- API KEYS MODAL -->
+    <div id="apiKeysModal" class="modal-backdrop hidden">
         <div class="modal-card">
             <div class="modal-header">
-                <h3 id="pullModalTitle">Pulling Model Weights</h3>
-                <button class="btn-close">&times;</button>
+                <h3>🔑 API Keys & Local Endpoint Manager</h3>
+                <button class="close-modal-btn" data-close="apiKeysModal">&times;</button>
             </div>
             <div class="modal-body">
-                <p id="pullModalDesc" style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;"></p>
-                <div style="width:100%; background:var(--bg-dark); height:6px; border-radius:3px; overflow:hidden; margin-bottom:12px;">
-                    <div id="pullProgressBar" style="background:var(--accent); height:100%; width:0%; transition:width 0.2s;"></div>
+                <div class="control-group">
+                    <label class="control-label">FastAPI Backend Endpoint</label>
+                    <input type="text" id="keyFastApi" class="studio-input" value="http://localhost:8000">
                 </div>
-                <div id="pullLayers" style="font-family:var(--font-mono); font-size:11px; background:#080c14; padding:10px; border-radius:4px; max-height:100px; overflow-y:auto; margin-bottom:12px;"></div>
-                <button id="pullConfirmBtn" class="btn btn-primary w-full">Start Pull</button>
+                <div class="control-group">
+                    <label class="control-label">Ollama Host Address</label>
+                    <input type="text" id="keyOllama" class="studio-input" value="http://localhost:11434">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">OpenRouter API Key</label>
+                    <input type="password" id="keyOpenRouter" class="studio-input" placeholder="sk-or-v1-...">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">OpenAI API Key</label>
+                    <input type="password" id="keyOpenAi" class="studio-input" placeholder="sk-proj-...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveApiKeysBtn" class="btn btn-primary-full">Save Key Settings</button>
             </div>
         </div>
     </div>
 
-    <!-- Playground Modal -->
-    <div class="modal-overlay" id="playgroundModalOverlay">
-        <div class="modal-card" style="max-width:680px; height:75vh; display:flex; flex-direction:column;">
-            <div class="modal-header">
-                <h3>AI Playground Chat</h3>
-                <select id="pgModelSelect" class="select-dropdown" style="height:32px; padding:0 8px; font-size:12px;"></select>
-                <button class="btn-close">&times;</button>
-            </div>
-            <div class="modal-body" style="flex:1; display:flex; flex-direction:column;">
-                <div id="pgHistory" style="flex:1; background:#080c14; border:1px solid var(--border); border-radius:6px; padding:12px; overflow-y:auto; margin-bottom:12px;"></div>
-                <form id="pgForm" style="display:flex; gap:8px;">
-                    <input type="text" id="pgInput" placeholder="Type a prompt..." class="input-field style-flex-1">
-                    <button type="submit" class="btn btn-primary">Send</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- UPI Support Modal -->
-    <div class="modal-overlay" id="upiModalOverlay">
-        <div class="modal-card text-center">
-            <div class="modal-header">
-                <h3>❤️ Support Developer</h3>
-                <button class="btn-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="color:var(--text-secondary); margin-bottom:12px;">UPI ID: <strong>arasu9629hf@okhdfcbank</strong></p>
-                <div style="background:#fff; padding:16px; border-radius:8px; display:inline-block; margin-bottom:12px;">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20Support&cu=INR" alt="UPI QR Code" width="160" height="160">
-                </div>
-                <button id="confirmSupportBtn" class="btn btn-primary w-full">I've Supported</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Integration Setup Modal -->
-    <div class="modal-overlay" id="integrationModalOverlay">
-        <div class="modal-card" style="max-width:550px;">
-            <div class="modal-header">
-                <h3 id="intModalTitle">Agent Integration</h3>
-                <button class="btn-close">&times;</button>
-            </div>
-            <div class="modal-body" id="intModalBody">
-                <p style="color:var(--text-secondary); font-size:13px; margin-bottom:12px;" id="intModalDesc"></p>
-                <div class="code-snippet-box" style="margin-bottom:14px;">
-                    <span class="code-label">Terminal Quick Launch:</span>
-                    <code id="intModalCmd">ollama launch agent</code>
-                </div>
-                <div id="intModalDetails" style="font-size:12px; color:var(--text-secondary); line-height:1.6;"></div>
-                <div style="margin-top:16px; display:flex; justify-end:flex-end;">
-                    <button class="btn btn-primary w-full" onclick="closeModal('integrationModalOverlay')">Got it</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- MAIN JAVASCRIPT LOGIC ENGINE -->
     <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victorx-backend-deployment
+  labels:
+    app: victorx-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: victorx-backend
+  template:
+    metadata:
+      labels:
+        app: victorx-backend
+    spec:
+      containers:
+      - name: victorx-backend
+        image: victorx/backend:1.0.0
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            memory: "16Gi"
+            cpu: "8"
+          requests:
+            nvidia.com/gpu: 1
+            memory: "8Gi"
+            cpu: "4"
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://victorx:victorx_secret@postgres-service:5432/victorx_db"

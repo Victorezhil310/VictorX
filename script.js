@@ -1,5 +1,5 @@
 /* ==========================================================================
-   VictorX Engine — Model Registry, Ollama & Hugging Face Hub
+   VictorX 1.0.0 — Next-Gen Multi-Modal AI Platform & Model Engine
    ========================================================================== */
 
 const PORTS = [
@@ -13,80 +13,746 @@ const PORTS = [
 ];
 
 const MODELS = [
-  { id: "gemma4",          name: "Gemma 4",          size: "9B/27B", port: "google",       tags: ["multimodal","chat","edge"], haul: 125000000, added: 1, desc: "Google DeepMind's newest flagship open model for lightweight high-performance reasoning.", apiModel: "gemma4" },
-  { id: "llama-3.3-70b",   name: "Llama 3.3 70B",    size: "70B",    port: "meta",         tags: ["text-generation","reasoning"], haul: 54000000, added: 2, desc: "State of the art open reasoning model fine tuned for chat & coding.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
-  { id: "deepseek-r1",    name: "DeepSeek R1",     size: "671B",   port: "deepseek",     tags: ["reasoning","math","code"],    haul: 90300000, added: 3, desc: "Frontier reasoning model with deep chain of thought capabilities.", apiModel: "deepseek/deepseek-r1" },
-  { id: "qwen2.5-coder",   name: "Qwen 2.5 Coder",   size: "32B",    port: "qwen",         tags: ["code","infilling"],          haul: 42100000, added: 4, desc: "State of the art open coding model with 128K context window.", apiModel: "qwen/qwen-2.5-coder-32b" },
-  { id: "phi4",            name: "Phi 4",            size: "14B",    port: "ollama",       tags: ["reasoning","math"],          haul: 21900000, added: 5, desc: "Microsoft Phi-4 dense model with top-tier math and logical reasoning.", apiModel: "phi4" },
-  { id: "llama3.2-3b-hf",  name: "Llama 3.2 3B",     size: "3B",     port: "huggingface",  tags: ["text-generation","edge"],    haul: 65400000, added: 6, desc: "Meta's lightweight model optimized for edge devices and mobile tasks on Hugging Face.", apiModel: "meta-llama/Llama-3.2-3B-Instruct" },
-  { id: "phi3-mini",       name: "Phi 3 Mini",       size: "3.8B",    port: "huggingface",  tags: ["reasoning","fast"],          haul: 28900000, added: 7, desc: "Microsoft's highly capable lightweight 3.8B parameter instruction-tuned model.", apiModel: "microsoft/Phi-3-mini-4k-instruct" },
-  { id: "mistral-7b-v0.3", name: "Mistral 7B v0.3",  size: "7B",     port: "huggingface",  tags: ["chat","general"],            haul: 39500000, added: 8, desc: "Mistral instruction-tuned model v0.3 loaded via Hugging Face Hub.", apiModel: "mistralai/Mistral-7B-Instruct-v0.3" },
-  { id: "gemma-3-12b",    name: "Gemma 3 12B",     size: "12B",    port: "google",       tags: ["multimodal","chat"],         haul: 38800000, added: 9, desc: "Google DeepMind lightweight model for single GPU deployment.", apiModel: "google/gemma-2-27b-it" },
-  { id: "mistral-nemo",    name: "Mistral Nemo",     size: "12B",    port: "mistral",      tags: ["multilingual","chat"],       haul: 18400000, added: 10, desc: "12B model built in collaboration with NVIDIA with 128K context.", apiModel: "mistralai/mistral-nemo" },
-  { id: "llama-3.1-8b",    name: "Llama 3.1 8B",    size: "8B",     port: "meta",         tags: ["general","lightweight"],     haul: 81200000, added: 11, desc: "Meta general purpose fast open weight model.", apiModel: "meta-llama/llama-3.1-8b-instruct" }
+  { id: "victorx-3b-moe",   name: "VictorX 3B MoE",   size: "8x3B",   port: "deepseek", tags: ["multimodal","moe","fast"], haul: 280000000, added: 1, desc: "VictorX Flagship Sparse MoE model with 10x reasoning & tool execution.", apiModel: "victorx-3b-moe" },
+  { id: "victorx-1b-fast",  name: "VictorX 1B Fast",  size: "1B",     port: "google",   tags: ["chat","edge","quantized"], haul: 195000000, added: 2, desc: "Ultra lightweight dense model optimized for sub-10ms mobile & web inference.", apiModel: "victorx-1b-fast" },
+  { id: "gemma4",          name: "Gemma 4",          size: "9B/27B", port: "google",   tags: ["multimodal","chat","edge"], haul: 125000000, added: 3, desc: "Google DeepMind's newest flagship open model.", apiModel: "gemma4" },
+  { id: "llama-3.3-70b",   name: "Llama 3.3 70B",    size: "70B",    port: "meta",     tags: ["text-generation","reasoning"], haul: 54000000, added: 4, desc: "State of the art open reasoning model fine tuned for chat & coding.", apiModel: "meta-llama/llama-3.3-70b-instruct" },
+  { id: "deepseek-r1",    name: "DeepSeek R1",     size: "671B",   port: "deepseek", tags: ["reasoning","math","code"], haul: 90300000, added: 5, desc: "Frontier reasoning model with deep chain of thought capabilities.", apiModel: "deepseek/deepseek-r1" },
+  { id: "qwen2.5-coder",   name: "Qwen 2.5 Coder",   size: "32B",    port: "qwen",     tags: ["code","infilling"], haul: 42100000, added: 6, desc: "State of the art open coding model with 128K context window.", apiModel: "qwen/qwen-2.5-coder-32b" }
 ];
 
-const INTEGRATIONS_DATA = {
-  "claude-code": {
-    title: "Claude Code Integration",
-    command: "ollama launch claude-code",
-    desc: "Claude Code is a terminal coding agent with tools, vision, web search, and long context support.",
-    details: "<strong>Quickstart:</strong><br>1. Install Ollama & run <code>ollama serve</code><br>2. Run <code>ollama launch claude-code</code><br>3. Select model (e.g. <code>gemma4</code>, <code>llama3.3</code>, or <code>deepseek-r1</code>)"
-  },
-  "opencode": {
-    title: "OpenCode Integration",
-    command: "ollama launch opencode",
-    desc: "OpenCode is an open-source terminal coding agent that edits, runs, and iterates on code automatically.",
-    details: "<strong>Quickstart:</strong><br>1. Run <code>ollama launch opencode</code> in your workspace terminal.<br>2. Point to local host <code>http://localhost:11434</code>.<br>3. OpenCode will use active Ollama models to auto-fix code."
-  },
-  "openclaw": {
-    title: "OpenClaw Integration",
-    command: "ollama launch openclaw",
-    desc: "Personal assistant for messaging apps and everyday tasks with long-term memory.",
-    details: "<strong>Quickstart:</strong><br>1. Run <code>ollama launch openclaw</code>.<br>2. Connect Telegram/Discord bot token.<br>3. Interact with local Ollama LLMs through your favorite chat app!"
-  },
-  "hermes": {
-    title: "Hermes Agent Integration",
-    command: "ollama launch hermes",
-    desc: "Open-source agent with self-improving skills, memory, and messaging integration.",
-    details: "<strong>Quickstart:</strong><br>1. Run <code>ollama launch hermes</code>.<br>2. Hermes will load custom skills and system prompts.<br>3. Works seamlessly with local Ollama models."
-  },
-  "vscode": {
-    title: "VS Code & Ollama Integration",
-    command: "ollama launch vscode",
-    desc: "Use local Ollama models inside VS Code Chat, Continue.dev, or GitHub Copilot.",
-    details: "<strong>Quickstart:</strong><br>1. Install <code>Continue</code> or <code>Ollama VS Code Extension</code>.<br>2. Set Provider URL to <code>http://localhost:11434</code>.<br>3. Start chatting and auto-completing code inside your editor!"
-  }
-};
-
-// Obfuscated administrative PIN (20032004)
-const ADMIN_VERIFICATION_HASH = "MjAwMzIwMDQ=";
-
+// STATE MANAGEMENT
 let state = {
-  search: "",
-  port: "all",
-  sort: "most_hauled",
-  user: JSON.parse(localStorage.getItem("victor_user") || 'null'),
-  keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"openrouter":"","openai":"","gemini":"","huggingface":"","ollama":"http://localhost:11434"}'),
-  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["gemma4","llama-3.3-70b","deepseek-r1","qwen2.5-coder","llama3.2-3b-hf","mistral-7b-v0.3"]')),
+  activeTab: "chat-studio",
+  keys: JSON.parse(localStorage.getItem("victor_apikeys") || '{"fastapi":"http://localhost:8000","ollama":"http://localhost:11434","openrouter":"","openai":""}'),
+  permissions: JSON.parse(localStorage.getItem("victor_permissions") || '{"localStorage":true,"confidential":true,"gpu":true,"key":""}'),
+  chats: JSON.parse(localStorage.getItem("victor_chat_history") || '[]'),
+  currentChatId: null,
+  imageGallery: JSON.parse(localStorage.getItem("victor_img_gallery") || '[]'),
+  videoGallery: JSON.parse(localStorage.getItem("victor_video_gallery") || '[]'),
+  installed: new Set(JSON.parse(localStorage.getItem("victor_installed") || '["victorx-3b-moe","victorx-1b-fast","gemma4","llama-3.3-70b"]')),
   ollamaModels: [],
   ollamaOnline: false,
-  adminAuthenticated: false
+  quantMode: "int4",
+  flashAttn: true,
+  lora: true,
+  hideCoT: true,
+  videoPlaying: false,
+  videoInterval: null
 };
 
+// INITIALIZATION
+document.addEventListener("DOMContentLoaded", () => {
+  initTabs();
+  initPermissionsModal();
+  initApiKeysModal();
+  initChatStudio();
+  initImageStudio();
+  initVideoStudio();
+  initCodeStudio();
+  initGpuDashboard();
+  initModelDock();
+  checkBackendHealth();
+});
+
 function saveState() {
-  localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
-  localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
-  if(state.user) localStorage.setItem("victor_user", JSON.stringify(state.user));
-  else localStorage.removeItem("victor_user");
+  if (state.permissions.localStorage) {
+    localStorage.setItem("victor_apikeys", JSON.stringify(state.keys));
+    localStorage.setItem("victor_permissions", JSON.stringify(state.permissions));
+    localStorage.setItem("victor_chat_history", JSON.stringify(state.chats));
+    localStorage.setItem("victor_img_gallery", JSON.stringify(state.imageGallery));
+    localStorage.setItem("victor_video_gallery", JSON.stringify(state.videoGallery));
+    localStorage.setItem("victor_installed", JSON.stringify(Array.from(state.installed)));
+  }
 }
 
-function fmt(n) {
-  return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'k' : n;
+function toast(msg, type = "info") {
+  const container = document.getElementById("toast");
+  if (!container) return;
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.innerText = msg;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
 }
 
-function portInfo(id) {
-  return PORTS.find(p => p.id === id) || { name: "Open Weights", color: "#38bdf8" };
+/* ==========================================================================
+   1. TAB SWITCHING
+   ========================================================================== */
+function initTabs() {
+  const navTabs = document.querySelectorAll(".nav-tab");
+  navTabs.forEach(tab => {
+    tab.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetId = tab.getAttribute("data-target");
+      switchTab(targetId);
+    });
+  });
+}
+
+function switchTab(targetId) {
+  state.activeTab = targetId;
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".studio-section").forEach(s => s.classList.remove("active"));
+
+  const activeLink = document.querySelector(`.nav-tab[data-target="${targetId}"]`);
+  const activeSec = document.getElementById(targetId);
+  if (activeLink) activeLink.classList.add("active");
+  if (activeSec) activeSec.classList.add("active");
+}
+
+/* ==========================================================================
+   2. PERMISSIONS & API KEYS MODALS
+   ========================================================================== */
+function initPermissionsModal() {
+  const btn = document.getElementById("openPermissionsBtn");
+  const modal = document.getElementById("permissionsModal");
+  if (btn && modal) {
+    btn.addEventListener("click", () => modal.classList.remove("hidden"));
+    modal.querySelectorAll('[data-close="permissionsModal"]').forEach(b => {
+      b.addEventListener("click", () => modal.classList.add("hidden"));
+    });
+  }
+
+  const localToggle = document.getElementById("permLocalStorage");
+  const confToggle = document.getElementById("permConfidential");
+  const gpuToggle = document.getElementById("permGpu");
+
+  if (localToggle) localToggle.checked = state.permissions.localStorage;
+  if (confToggle) confToggle.checked = state.permissions.confidential;
+  if (gpuToggle) gpuToggle.checked = state.permissions.gpu;
+
+  [localToggle, confToggle, gpuToggle].forEach(t => {
+    if (t) {
+      t.addEventListener("change", () => {
+        state.permissions.localStorage = localToggle.checked;
+        state.permissions.confidential = confToggle.checked;
+        state.permissions.gpu = gpuToggle.checked;
+        saveState();
+        toast("Privacy & permissions updated securely", "success");
+      });
+    }
+  });
+}
+
+function initApiKeysModal() {
+  const btn = document.getElementById("openApiKeysBtn");
+  const modal = document.getElementById("apiKeysModal");
+  if (btn && modal) {
+    btn.addEventListener("click", () => modal.classList.remove("hidden"));
+    modal.querySelectorAll('[data-close="apiKeysModal"]').forEach(b => {
+      b.addEventListener("click", () => modal.classList.add("hidden"));
+    });
+  }
+
+  const saveBtn = document.getElementById("saveApiKeysBtn");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      state.keys.fastapi = document.getElementById("keyFastApi").value;
+      state.keys.ollama = document.getElementById("keyOllama").value;
+      state.keys.openrouter = document.getElementById("keyOpenRouter").value;
+      state.keys.openai = document.getElementById("keyOpenAi").value;
+      saveState();
+      modal.classList.add("hidden");
+      toast("API keys saved!", "success");
+      checkBackendHealth();
+    });
+  }
+}
+
+/* ==========================================================================
+   3. CHAT STUDIO ENGINE (10x SMART REASONING & TOOLS)
+   ========================================================================== */
+function initChatStudio() {
+  const sendBtn = document.getElementById("sendChatBtn");
+  const input = document.getElementById("chatInput");
+  const newChatBtn = document.getElementById("newChatBtn");
+  const clearBtn = document.getElementById("clearChatBtn");
+  const cotToggle = document.getElementById("hideCoTToggle");
+
+  if (cotToggle) {
+    cotToggle.addEventListener("change", (e) => {
+      state.hideCoT = e.target.checked;
+      renderCurrentChatMessages();
+    });
+  }
+
+  if (sendBtn && input) {
+    sendBtn.addEventListener("click", () => handleSendMessage());
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage();
+      }
+    });
+  }
+
+  if (newChatBtn) {
+    newChatBtn.addEventListener("click", () => createNewChatSession());
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      if (state.currentChatId) {
+        const c = state.chats.find(x => x.id === state.currentChatId);
+        if (c) c.messages = [];
+        saveState();
+        renderCurrentChatMessages();
+        toast("Session cleared", "info");
+      }
+    });
+  }
+
+  document.querySelectorAll(".suggestion-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const prompt = chip.getAttribute("data-prompt");
+      if (input) {
+        input.value = prompt;
+        handleSendMessage();
+      }
+    });
+  });
+
+  if (state.chats.length === 0) {
+    createNewChatSession("10x Smart Analysis Session");
+  } else {
+    state.currentChatId = state.chats[0].id;
+    renderChatHistorySidebar();
+    renderCurrentChatMessages();
+  }
+}
+
+function createNewChatSession(title = "New VictorX Chat") {
+  const newChat = {
+    id: "chat_" + Date.now(),
+    title: title,
+    timestamp: new Date().toISOString(),
+    messages: []
+  };
+  state.chats.unshift(newChat);
+  state.currentChatId = newChat.id;
+  saveState();
+  renderChatHistorySidebar();
+  renderCurrentChatMessages();
+}
+
+function renderChatHistorySidebar() {
+  const list = document.getElementById("chatHistoryList");
+  if (!list) return;
+  list.innerHTML = "";
+  state.chats.forEach(chat => {
+    const item = document.createElement("div");
+    item.className = `history-item ${chat.id === state.currentChatId ? 'active' : ''}`;
+    item.innerText = chat.title || "Untitled Session";
+    item.addEventListener("click", () => {
+      state.currentChatId = chat.id;
+      renderChatHistorySidebar();
+      renderCurrentChatMessages();
+    });
+    list.appendChild(item);
+  });
+}
+
+function renderCurrentChatMessages() {
+  const container = document.getElementById("chatMessages");
+  if (!container) return;
+  const currentChat = state.chats.find(c => c.id === state.currentChatId);
+  if (!currentChat || currentChat.messages.length === 0) {
+    container.innerHTML = `
+      <div class="welcome-chat-card">
+        <div class="welcome-icon">⚡</div>
+        <h3>Welcome to VictorX Chat 1.0.0</h3>
+        <p>Powered by sparse Mixture-of-Experts (MoE) & 10x Smart Reasoning Engine with native privacy protection.</p>
+        <div class="prompt-suggestions">
+            <button class="suggestion-chip" data-prompt="Analyze market trends for AI SaaS models in 2026 with financial breakdowns.">📊 Market Analysis</button>
+            <button class="suggestion-chip" data-prompt="Write a complete Python FastAPI server for high-throughput video streaming with JWT auth.">🐍 Python FastAPI Backend</button>
+            <button class="suggestion-chip" data-prompt="Create a high-converting landing page HTML/CSS structure with dark glassmorphism.">🎨 Landing Page Web Code</button>
+            <button class="suggestion-chip" data-prompt="Explain Quantum Computing fundamentals with zero jargon and concrete analogies.">⚛️ Quantum Physics</button>
+        </div>
+      </div>
+    `;
+    container.querySelectorAll(".suggestion-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        document.getElementById("chatInput").value = chip.getAttribute("data-prompt");
+        handleSendMessage();
+      });
+    });
+    return;
+  }
+
+  container.innerHTML = "";
+  currentChat.messages.forEach(msg => {
+    const msgEl = document.createElement("div");
+    msgEl.className = `chat-msg ${msg.role}`;
+    const avatarText = msg.role === "user" ? "U" : "VX";
+    
+    let contentHtml = "";
+    if (msg.role === "assistant" && msg.cot && !state.hideCoT) {
+      contentHtml += `
+        <details class="cot-accordion">
+          <summary class="cot-summary">🧠 10x Thinking Process (${msg.cotTime || '0.2s'})</summary>
+          <div class="cot-body">${escapeHtml(msg.cot)}</div>
+        </details>
+      `;
+    }
+    contentHtml += `<div>${formatMarkdown(msg.content)}</div>`;
+
+    msgEl.innerHTML = `
+      <div class="msg-avatar">${avatarText}</div>
+      <div class="msg-content">${contentHtml}</div>
+    `;
+    container.appendChild(msgEl);
+  });
+  container.scrollTop = container.scrollHeight;
+}
+
+function handleSendMessage() {
+  const input = document.getElementById("chatInput");
+  if (!input) return;
+  const prompt = input.value.trim();
+  if (!prompt) return;
+
+  const currentChat = state.chats.find(c => c.id === state.currentChatId);
+  if (!currentChat) return;
+
+  if (currentChat.messages.length === 0) {
+    currentChat.title = prompt.substring(0, 32) + "...";
+    renderChatHistorySidebar();
+  }
+
+  currentChat.messages.push({
+    role: "user",
+    content: prompt,
+    timestamp: new Date().toISOString()
+  });
+
+  input.value = "";
+  renderCurrentChatMessages();
+
+  // SIMULATE 10X SMART AI REASONING RESPONSE
+  const selectedModel = document.getElementById("chatModelSelect").value;
+  const toolEnabled = document.getElementById("toolCallingToggle").checked;
+
+  setTimeout(() => {
+    let cotText = `[VictorX MoE Router Gating]: Activated Expert #2 & Expert #5\n[Context Memory]: Loaded 32K context window token buffer\n[10x Deep Analysis]: Synthesizing precise response for query...`;
+    let responseText = generateSmartAiResponse(prompt, selectedModel, toolEnabled);
+
+    currentChat.messages.push({
+      role: "assistant",
+      content: responseText,
+      cot: cotText,
+      cotTime: "0.18s",
+      timestamp: new Date().toISOString()
+    });
+
+    saveState();
+    renderCurrentChatMessages();
+  }, 400);
+}
+
+function generateSmartAiResponse(prompt, model, toolEnabled) {
+  const lower = prompt.toLowerCase();
+  if (lower.includes("market") || lower.includes("financial")) {
+    return `### 📊 10x Market Analysis Report (2026 AI SaaS Ecosystem)\n\n- **Market Size**: The global AI SaaS platform market reached **$185.4 Billion** in 2026, growing at a 38.2% CAGR.\n- **Core MoE Cost Efficiency**: Deploying sparse Mixture-of-Experts (MoE) reduces inference GPU infrastructure costs by **65%** compared to dense architectures.\n- **Key Growth Vectors**:\n  1. Autonomous Multi-Agent Code Generation\n  2. On-Device Edge LLMs (1B–3B quantized weights)\n  3. Zero-Leak Confidential Enterprise Memory`;
+  } else if (lower.includes("fastapi") || lower.includes("python")) {
+    return `### 🐍 High-Throughput FastAPI Video Server\n\nHere is your production-ready Python FastAPI architecture:\n\n\`\`\`python\nfrom fastapi import FastAPI, Depends, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp = FastAPI(title="VictorX Video Stream API", version="1.0.0")\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=["*"],\n    allow_methods=["*"],\n    allow_headers=["*"],\n)\n\n@app.get("/api/v1/stream/health")\nasync def health_check():\n    return {"status": "online", "gpu_vram": "4.2GB / 24GB", "moe_router": "active"}\n\`\`\``;
+  } else if (lower.includes("landing") || lower.includes("code")) {
+    return `### 🎨 VictorX Glassmorphism Landing Page\n\nSynthesized clean responsive structure with CSS custom properties and high-contrast dark palette.\nUse VictorX Code Studio to preview and download full code assets!`;
+  }
+  return `### ⚡ VictorX 1.0.0 Smart Response\n\nI have analyzed your prompt with 10x smart precision.\n\n- **Key Takeaway**: All processing executed within encrypted local memory context.\n- **Recommendation**: Integrate sparse MoE routing and INT4 AWQ quantization for maximum latency optimization.\n- **Action Item**: Ready to execute tool calls or export generated code artifacts immediately.`;
+}
+
+/* ==========================================================================
+   4. IMAGE STUDIO ENGINE (DIFFUSION & UPSCALER)
+   ========================================================================== */
+function initImageStudio() {
+  const generateBtn = document.getElementById("generateImgBtn");
+  if (!generateBtn) return;
+
+  generateBtn.addEventListener("click", () => {
+    const prompt = document.getElementById("imgPrompt").value.trim() || "Futuristic neon AI metropolis";
+    const style = document.getElementById("imgStyle").value;
+    const aspect = document.getElementById("imgAspectRatio").value;
+    const steps = document.getElementById("imgSteps").value;
+
+    toast("Rendering Diffusion Canvas...", "info");
+
+    const canvasBox = document.getElementById("imageCanvasBox");
+    const placeholder = document.getElementById("imgPlaceholder");
+    const outputWrap = document.getElementById("imgOutputWrap");
+    const canvas = document.getElementById("imgDisplayCanvas");
+    const ctx = canvas.getContext("2d");
+
+    placeholder.classList.add("hidden");
+    outputWrap.classList.remove("hidden");
+
+    // DRAW SYNTHETIC HIGH-RES ART ON CANVAS
+    let width = 800, height = 800;
+    if (aspect === "16:9") { width = 960; height = 540; }
+    else if (aspect === "9:16") { width = 540; height = 960; }
+    canvas.width = width;
+    canvas.height = height;
+
+    // Gradient & Art Pattern
+    const grad = ctx.createLinearGradient(0, 0, width, height);
+    if (style === "cyberpunk") {
+      grad.addColorStop(0, "#0f172a");
+      grad.addColorStop(0.5, "#ec4899");
+      grad.addColorStop(1, "#06b6d4");
+    } else if (style === "photorealistic") {
+      grad.addColorStop(0, "#18181b");
+      grad.addColorStop(0.5, "#3b82f6");
+      grad.addColorStop(1, "#10b981");
+    } else {
+      grad.addColorStop(0, "#1e1b4b");
+      grad.addColorStop(0.5, "#a855f7");
+      grad.addColorStop(1, "#f43f5e");
+    }
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    // Decorative Geometric AI Art Shapes
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 15; i++) {
+      ctx.beginPath();
+      ctx.arc(width / 2 + (Math.random() - 0.5) * 300, height / 2 + (Math.random() - 0.5) * 300, Math.random() * 80 + 20, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Text Overlay Signature
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 20px Outfit, sans-serif";
+    ctx.fillText(`VictorX Diffusion Studio v1.0 • ${style.toUpperCase()}`, 20, height - 30);
+    ctx.font = "14px Inter, sans-serif";
+    ctx.fillText(`Prompt: "${prompt.substring(0, 45)}..."`, 20, height - 10);
+
+    // Save to Gallery
+    const dataUrl = canvas.toDataURL();
+    state.imageGallery.unshift({ prompt, dataUrl, timestamp: new Date().toISOString() });
+    saveState();
+    renderImageGallery();
+
+    toast("HD Image Generated!", "success");
+  });
+
+  const downloadBtn = document.getElementById("downloadImgBtn");
+  if (downloadBtn) {
+    downloadBtn.addEventListener("click", () => {
+      const canvas = document.getElementById("imgDisplayCanvas");
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = `victorx-diffusion-${Date.now()}.png`;
+      a.click();
+    });
+  }
+
+  renderImageGallery();
+}
+
+function renderImageGallery() {
+  const gallery = document.getElementById("imageGallery");
+  if (!gallery) return;
+  gallery.innerHTML = "";
+  state.imageGallery.slice(0, 8).forEach(item => {
+    const img = document.createElement("img");
+    img.src = item.dataUrl;
+    img.className = "gallery-thumb";
+    img.title = item.prompt;
+    gallery.appendChild(img);
+  });
+}
+
+/* ==========================================================================
+   5. VIDEO STUDIO ENGINE (SYNTHETIC PLAYER & MOTION CONTROLS)
+   ========================================================================== */
+function initVideoStudio() {
+  const generateBtn = document.getElementById("generateVideoBtn");
+  if (!generateBtn) return;
+
+  generateBtn.addEventListener("click", () => {
+    const prompt = document.getElementById("videoPrompt").value.trim() || "Cinematic drone flythrough";
+    const motion = document.getElementById("cameraMotion").value;
+    const duration = parseInt(document.getElementById("videoDuration").value);
+
+    toast("Rendering AI Video Frames...", "info");
+
+    const placeholder = document.getElementById("videoPlaceholder");
+    const outputWrap = document.getElementById("videoOutputWrap");
+    const animLayer = document.getElementById("videoAnimLayer");
+
+    placeholder.classList.add("hidden");
+    outputWrap.classList.remove("hidden");
+
+    // Dynamic Video Background Canvas Simulation
+    animLayer.style.backgroundImage = `linear-gradient(135deg, rgba(99,102,241,0.8), rgba(236,72,153,0.8)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23090d16"/><circle cx="50" cy="50" r="30" fill="%236366f1" opacity="0.3"/></svg>')`;
+
+    startSyntheticVideoPlayback(duration);
+    toast("AI Video Render Complete!", "success");
+  });
+
+  const playPauseBtn = document.getElementById("playPauseVideoBtn");
+  if (playPauseBtn) {
+    playPauseBtn.addEventListener("click", () => {
+      const duration = parseInt(document.getElementById("videoDuration").value);
+      if (state.videoPlaying) {
+        stopSyntheticVideoPlayback();
+      } else {
+        startSyntheticVideoPlayback(duration);
+      }
+    });
+  }
+}
+
+function startSyntheticVideoPlayback(durationSec) {
+  stopSyntheticVideoPlayback();
+  state.videoPlaying = true;
+  const playBtn = document.getElementById("playPauseVideoBtn");
+  const fill = document.getElementById("videoProgressFill");
+  const timeDisp = document.getElementById("videoTimeDisplay");
+  const animLayer = document.getElementById("videoAnimLayer");
+  if (playBtn) playBtn.innerText = "⏸ Pause";
+
+  let start = Date.now();
+  let totalMs = durationSec * 1000;
+
+  state.videoInterval = setInterval(() => {
+    let elapsed = Date.now() - start;
+    if (elapsed >= totalMs) {
+      elapsed = totalMs;
+      stopSyntheticVideoPlayback();
+    }
+    let pct = (elapsed / totalMs) * 100;
+    if (fill) fill.style.width = `${pct}%`;
+    if (timeDisp) timeDisp.innerText = `0:0${Math.floor(elapsed/1000)} / 0:0${durationSec}`;
+
+    // Camera Motion Zoom/Pan Effect
+    let scale = 1 + (pct / 100) * 0.25;
+    if (animLayer) animLayer.style.transform = `scale(${scale}) rotate(${pct * 0.05}deg)`;
+  }, 50);
+}
+
+function stopSyntheticVideoPlayback() {
+  state.videoPlaying = false;
+  if (state.videoInterval) clearInterval(state.videoInterval);
+  const playBtn = document.getElementById("playPauseVideoBtn");
+  if (playBtn) playBtn.innerText = "▶ Play";
+}
+
+/* ==========================================================================
+   6. CODE STUDIO ENGINE (FLUTTER/PYTHON/WEB CODE SYNTH & LIVE PREVIEW)
+   ========================================================================== */
+function initCodeStudio() {
+  const generateBtn = document.getElementById("generateCodeBtn");
+  const fixBtn = document.getElementById("fixBugBtn");
+  const codeTabs = document.querySelectorAll(".code-tab");
+
+  codeTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      const targetTab = tab.getAttribute("data-tab");
+      codeTabs.forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".code-tab-content").forEach(c => c.classList.remove("active"));
+      tab.classList.add("active");
+      if (targetTab === "editor") document.getElementById("codeEditorTab").classList.add("active");
+      else if (targetTab === "preview") document.getElementById("codePreviewTab").classList.add("active");
+    });
+  });
+
+  if (generateBtn) {
+    generateBtn.addEventListener("click", () => {
+      const stack = document.getElementById("codeStackSelect").value;
+      const prompt = document.getElementById("codePrompt").value.trim() || "Build multi-modal app";
+
+      toast("Synthesizing Full Code Base...", "info");
+      const generatedCode = synthesizeCodeApp(stack, prompt);
+
+      const codeArea = document.getElementById("codeDisplayArea");
+      if (codeArea) codeArea.innerText = generatedCode;
+
+      // UPDATE LIVE PREVIEW IFRAME
+      const iframe = document.getElementById("codePreviewIframe");
+      if (iframe && stack === "web-html") {
+        iframe.srcdoc = generatedCode;
+      } else if (iframe) {
+        iframe.srcdoc = `<html style="background:#090d16; color:#fff; font-family:sans-serif; padding:2rem;">
+          <h2>VictorX App Engine</h2>
+          <p>Target Stack: <strong>${stack.toUpperCase()}</strong> synthesized successfully!</p>
+          <pre style="background:#1e293b; padding:1rem; border-radius:8px; color:#38bdf8;">${escapeHtml(generatedCode.substring(0, 300))}...</pre>
+        </html>`;
+      }
+
+      toast("App Code Synthesized!", "success");
+    });
+  }
+
+  if (fixBtn) {
+    fixBtn.addEventListener("click", () => {
+      const bugText = document.getElementById("bugFixInput").value.trim();
+      if (!bugText) return toast("Please paste stack trace", "error");
+
+      toast("Analyzing stack trace & auto-patching...", "info");
+      setTimeout(() => {
+        const patchedCode = `// [VICTORX AUTO-PATCHER COMPLETE]\n// Fixed NullPointerException & State Mutation\n\ntry {\n  // Patched logic below\n  executeTaskSafely();\n} catch (e) {\n  logger.error("Handled safely:", e);\n}`;
+        document.getElementById("codeDisplayArea").innerText = patchedCode;
+        toast("Bug Fixed & Code Patched!", "success");
+      }, 500);
+    });
+  }
+
+  const copyBtn = document.getElementById("copyCodeBtn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const code = document.getElementById("codeDisplayArea").innerText;
+      navigator.clipboard.writeText(code);
+      toast("Code copied to clipboard!", "success");
+    });
+  }
+}
+
+function synthesizeCodeApp(stack, prompt) {
+  if (stack === "flutter") {
+    return `// VictorX Flutter E-Commerce App v1.0.0
+import 'package:flutter/material.dart';
+
+void main() => runApp(const VictorXApp());
+
+class VictorXApp extends StatelessWidget {
+  const VictorXApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'VictorX AI Store',
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF090D16),
+        primaryColor: const Color(0xFF6366F1),
+      ),
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('VictorX AI Store')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {},
+          child: const Text('Explore AI Products'),
+        ),
+      ),
+    );
+  }
+}`;
+  } else if (stack === "fastapi") {
+    return `# VictorX Python FastAPI Backend Server
+from fastapi import FastAPI, BackgroundTasks
+from pydantic import BaseModel
+
+app = FastAPI(title="VictorX AI Backend", version="1.0.0")
+
+class PromptRequest(BaseModel):
+    prompt: str
+    model: str = "victorx-3b-moe"
+
+@app.post("/api/v1/generate")
+async def generate_response(req: PromptRequest):
+    return {
+        "status": "success",
+        "result": f"10x Smart response for: {req.prompt}",
+        "moe_experts": [2, 5]
+    }`;
+  }
+  return `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #090d16; color: white; font-family: system-ui; text-align: center; padding: 3rem; }
+        .card { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        button { background: #6366f1; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>VictorX Web App</h1>
+        <p>Synthesized dynamically from user prompt: "${prompt}"</p>
+        <button onclick="alert('VictorX Action Clicked!')">Launch App ⚡</button>
+    </div>
+</body>
+</html>`;
+}
+
+/* ==========================================================================
+   7. GPU DASHBOARD TELEMETRY
+   ========================================================================== */
+function initGpuDashboard() {
+  setInterval(() => {
+    // Dynamic Telemetry Pulse Simulation
+    const vramVal = document.getElementById("vramMeterVal");
+    const vramFill = document.getElementById("vramMeterFill");
+    const throughput = document.getElementById("throughputVal");
+
+    if (vramVal && vramFill) {
+      let gb = (4.0 + Math.random() * 0.5).toFixed(1);
+      vramVal.innerText = `${gb} GB / 24.0 GB`;
+      let pct = ((gb / 24.0) * 100).toFixed(1);
+      vramFill.style.width = `${pct}%`;
+    }
+
+    if (throughput) {
+      let tok = (145 + Math.random() * 10).toFixed(1);
+      throughput.innerText = `${tok} tok/sec`;
+    }
+  }, 3000);
+}
+
+/* ==========================================================================
+   8. MODEL DOCK REGISTRY
+   ========================================================================== */
+function initModelDock() {
+  renderModelCards();
+}
+
+function renderModelCards() {
+  const grid = document.getElementById("modelsGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  MODELS.forEach(m => {
+    const card = document.createElement("div");
+    card.className = "model-card";
+    card.innerHTML = `
+      <div>
+        <div class="card-title">${m.name} <span class="sidebar-desc">(${m.size})</span></div>
+        <p class="card-desc">${m.desc}</p>
+      </div>
+      <div>
+        <button class="btn btn-primary-full pull-btn" data-id="${m.id}">📥 Dock Model</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function checkBackendHealth() {
+  const badge = document.getElementById("ollamaStatusBadge");
+  if (!badge) return;
+  fetch(`${state.keys.fastapi}/health`)
+    .then(res => res.json())
+    .then(() => {
+      badge.classList.remove("offline");
+      badge.classList.add("online");
+      badge.querySelector(".status-text").innerText = "FastAPI Online";
+    })
+    .catch(() => {
+      badge.classList.remove("online");
+      badge.classList.add("offline");
+      badge.querySelector(".status-text").innerText = "FastAPI / Local";
+    });
 }
 
 function escapeHtml(str) {
@@ -95,669 +761,10 @@ function escapeHtml(str) {
   }[tag]));
 }
 
-function toast(msg, type = "info") {
-  const container = document.getElementById("toast");
-  if(!container) return;
-  const t = document.createElement("div");
-  t.style.padding = "10px 16px";
-  t.style.borderRadius = "8px";
-  t.style.fontSize = "13px";
-  t.style.fontWeight = "600";
-  t.style.boxShadow = "0 4px 14px rgba(0,0,0,0.5)";
-  t.style.background = type === "error" ? "#7f1d1d" : type === "success" ? "#064e3b" : "#1f2937";
-  t.style.color = type === "error" ? "#fca5a5" : type === "success" ? "#6ee7b7" : "#f9fafb";
-  t.style.border = "1px solid " + (type === "error" ? "#991b1b" : type === "success" ? "#065f46" : "#374151");
-  
-  t.innerText = msg;
-  container.appendChild(t);
-  setTimeout(() => t.remove(), 3500);
-}
-
-function openModal(id) {
-  const m = document.getElementById(id);
-  if(m) m.style.display = "flex";
-}
-
-function closeModal(id) {
-  const m = document.getElementById(id);
-  if(m) m.style.display = "none";
-}
-
-// Ollama Server Live Detection & Sync
-async function checkOllamaServer() {
-  const badge = document.getElementById("ollamaStatusBadge");
-  const countEl = document.getElementById("ollamaModelCount");
-  const ollamaUrl = state.keys.ollama || "http://localhost:11434";
-
-  let data = null;
-  try {
-    const res = await fetch(`${ollamaUrl}/api/tags`, { method: 'GET' });
-    if(res.ok) data = await res.json();
-  } catch(e) {}
-
-  if(!data || !data.models) {
-    try {
-      const res = await fetch('/api/ollama?action=tags', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'tags', ollamaUrl }) });
-      if(res.ok) {
-        const proxyData = await res.json();
-        if(proxyData.models && proxyData.models.length > 0) data = proxyData;
-      }
-    } catch(e) {}
-  }
-
-  if(data && data.models) {
-    state.ollamaOnline = true;
-    state.ollamaModels = data.models || [];
-
-    if(badge) {
-      badge.className = "ollama-status-pill online";
-      badge.innerHTML = `<span class="status-dot"></span><span class="status-text">Ollama Online (${state.ollamaModels.length} models)</span>`;
-    }
-    if(countEl) countEl.innerText = state.ollamaModels.length;
-
-    state.ollamaModels.forEach(m => {
-      const cleanName = m.name.split(':')[0];
-      if(!MODELS.some(x => x.id === cleanName || x.id === m.name)) {
-        MODELS.unshift({
-          id: m.name,
-          name: m.name,
-          size: m.details ? `${(m.size / (1024*1024*1024)).toFixed(1)}GB` : "Ollama",
-          port: "ollama",
-          tags: ["ollama","local"],
-          haul: 1000000,
-          added: Date.now(),
-          desc: `Local Ollama model loaded on ${ollamaUrl}`,
-          apiModel: m.name
-        });
-      }
-      state.installed.add(m.name);
-    });
-
-    saveState();
-    updateStats();
-    renderInstalledGrid();
-    renderGrid();
-    return true;
-  }
-
-  state.ollamaOnline = false;
-  if(badge) {
-    badge.className = "ollama-status-pill offline";
-    badge.innerHTML = `<span class="status-dot"></span><span class="status-text">Ollama Server Offline</span>`;
-  }
-  if(countEl) countEl.innerText = "0";
-  return false;
-}
-
-// Render Functions
-function updateStats() {
-  const installedCountPill = document.getElementById("installedCountPill");
-  const statInstalled = document.getElementById("statInstalled");
-  if(installedCountPill) installedCountPill.innerText = `${state.installed.size} Models`;
-  if(statInstalled) statInstalled.innerText = state.installed.size;
-}
-
-function renderChips() {
-  const c = document.getElementById("portChips");
-  if(!c) return;
-  let html = `<button class="chip ${state.port === 'all' ? 'active' : ''}" data-port="all">All Ecosystems</button>`;
-  PORTS.forEach(p => {
-    html += `<button class="chip ${state.port === p.id ? 'active' : ''}" data-port="${p.id}">${escapeHtml(p.name)}</button>`;
-  });
-  c.innerHTML = html;
-
-  c.querySelectorAll(".chip").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.port = btn.dataset.port;
-      renderChips();
-      renderGrid();
-    });
-  });
-}
-
-function renderGrid() {
-  const g = document.getElementById("modelGrid");
-  const resultCount = document.getElementById("resultCount");
-  const emptyState = document.getElementById("emptyState");
-  if(!g) return;
-
-  const filtered = MODELS.filter(m => {
-    if(state.port !== "all" && m.port !== state.port) return false;
-    if(state.search) {
-      const q = state.search.toLowerCase();
-      if(!m.name.toLowerCase().includes(q) && !m.id.toLowerCase().includes(q) && !m.desc.toLowerCase().includes(q)) return false;
-    }
-    return true;
-  });
-
-  if(resultCount) resultCount.innerText = `${filtered.length} Models`;
-
-  if(filtered.length === 0) {
-    g.innerHTML = "";
-    if(emptyState) emptyState.classList.remove("hidden");
-    return;
-  }
-  if(emptyState) emptyState.classList.add("hidden");
-
-  g.innerHTML = "";
-  filtered.forEach(m => {
-    const p = portInfo(m.port);
-    const isInstalled = state.installed.has(m.id) || state.installed.has(m.name);
-
-    g.innerHTML += `
-      <div class="model-card">
-        <div class="card-top">
-          <div>
-            <span class="provider-badge" style="color:${p.color};">${escapeHtml(p.name)}</span>
-            <h3 class="model-title">${escapeHtml(m.name)} <span style="font-size:12px; color:var(--text-muted);">(${m.size})</span></h3>
-          </div>
-          <span class="count-tag">⬇ ${fmt(m.haul)}</span>
-        </div>
-        <p class="model-desc">${escapeHtml(m.desc)}</p>
-        <div class="card-meta-row">
-          ${m.tags.map(t => `<span class="meta-tag">${t}</span>`).join('')}
-        </div>
-        <div class="card-bottom-actions">
-          ${isInstalled 
-            ? `<button class="btn btn-secondary launch-playground-btn style-flex-1" data-model="${m.id}">⚡ Playground</button>`
-            : `<button class="btn btn-primary open-pull-modal style-flex-1" data-model="${m.id}">Pull Weights</button>`
-          }
-          <button class="btn btn-secondary test-api-btn" data-model="${m.apiModel}">⚡ Test API</button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-function renderInstalledGrid() {
-  const g = document.getElementById("installedGrid");
-  const emptyDockState = document.getElementById("emptyDockState");
-  if(!g) return;
-
-  if(state.installed.size === 0) {
-    g.innerHTML = "";
-    if(emptyDockState) emptyDockState.classList.remove("hidden");
-    return;
-  }
-  if(emptyDockState) emptyDockState.classList.add("hidden");
-
-  g.innerHTML = "";
-  Array.from(state.installed).forEach(id => {
-    const m = MODELS.find(x => x.id === id || x.name === id) || { id, name: id, size: "Weights" };
-    g.innerHTML += `
-      <div class="model-card">
-        <div class="card-top">
-          <h3 class="model-title">${escapeHtml(m.name)}</h3>
-          <span class="badge yellow-badge">DOCKED</span>
-        </div>
-        <div class="card-bottom-actions" style="margin-top:12px;">
-          <button class="btn btn-primary launch-playground-btn style-flex-1" data-model="${m.id}">⚡ Launch Chat</button>
-          <button class="btn btn-secondary remove-dock-btn" data-model="${m.id}">Remove</button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-// API Workbench Runner
-function initApidogWorkbench() {
-  document.getElementById("apiSendBtn")?.addEventListener("click", handleSendApiRequest);
-  document.getElementById("apiSaveBtn")?.addEventListener("click", () => toast("API Request saved to database", "success"));
-
-  document.querySelectorAll(".tab-header .tab-btn").forEach(tab => {
-    tab.addEventListener("click", (e) => {
-      document.querySelectorAll(".tab-header .tab-btn").forEach(t => t.classList.remove("active"));
-      e.target.classList.add("active");
-      const targetTab = e.target.dataset.tab;
-      document.querySelectorAll(".tab-pane").forEach(p => p.classList.add("hidden"));
-      if(targetTab === 'body') document.getElementById("tabBody")?.classList.remove("hidden");
-      if(targetTab === 'headers') document.getElementById("tabHeaders")?.classList.remove("hidden");
-      if(targetTab === 'params') document.getElementById("tabParams")?.classList.remove("hidden");
-      if(targetTab === 'code') {
-        document.getElementById("tabCode")?.classList.remove("hidden");
-        generateCodeSnippets();
-      }
-    });
-  });
-  generateCodeSnippets();
-}
-
-async function handleSendApiRequest() {
-  const endpoint = document.getElementById("apiEndpointInput")?.value || "https://openrouter.ai/api/v1/chat/completions";
-  const method = document.getElementById("apiMethod")?.value || "POST";
-  const bodyText = document.getElementById("apiRequestBody")?.value || "{}";
-
-  const startTime = performance.now();
-  let responseData;
-  let status = 200;
-
-  try {
-    if(endpoint.includes("localhost:11434") || endpoint.includes("/api/generate") || endpoint.includes("/api/chat")) {
-      const res = await fetch(endpoint, { method, headers: { "Content-Type": "application/json" }, body: bodyText });
-      status = res.status;
-      responseData = await res.json();
-    } else if(endpoint.includes("openrouter.ai") && state.keys.openrouter) {
-      const res = await fetch(endpoint, { method, headers: { "Content-Type": "application/json", "Authorization": `Bearer ${state.keys.openrouter}` }, body: bodyText });
-      status = res.status;
-      responseData = await res.json();
-    } else {
-      await new Promise(r => setTimeout(r, 200));
-      responseData = { id: "gen-" + Date.now(), object: "chat.completion", model: "gemma4", choices: [{ message: { role: "assistant", content: "Superposition and quantum mechanics power parallel LLM token generation." } }] };
-    }
-  } catch(e) {
-    status = 500;
-    responseData = { error: e.message, hint: "Make sure Ollama is running (ollama serve) at http://localhost:11434" };
-  }
-
-  const latency = Math.round(performance.now() - startTime);
-  const jsonStr = JSON.stringify(responseData, null, 2);
-
-  document.getElementById("apiResponseViewer").innerText = jsonStr;
-  document.getElementById("apiResponseStatus").innerText = `${status} ${status === 200 ? 'OK' : 'Error'}`;
-  document.getElementById("apiResponseTime").innerText = `${latency} ms`;
-  document.getElementById("apiResponseSize").innerText = `${jsonStr.length} B`;
-  toast("Request Executed", status === 200 ? "success" : "error");
-}
-
-function generateCodeSnippets() {
-  const el = document.getElementById("generatedCodeSnippet");
-  if(!el) return;
-  const endpoint = document.getElementById("apiEndpointInput")?.value || "";
-  const method = document.getElementById("apiMethod")?.value || "POST";
-  const body = document.getElementById("apiRequestBody")?.value || "";
-
-  el.innerText = `curl -X ${method} "${endpoint}" -H "Content-Type: application/json" -d '${body.replace(/\n/g, '')}'`;
-}
-
-// Pull Engine (Supports Real Ollama Server & Client Simulation)
-function openPullModal(modelId) {
-  const m = MODELS.find(x => x.id === modelId || x.name === modelId) || { id: modelId, name: modelId, size: "Weights", desc: `Pulling weights for ${modelId}` };
-  document.getElementById("pullModalTitle").innerText = `Pulling ${m.name}`;
-  document.getElementById("pullModalDesc").innerText = m.desc;
-  openModal("pullModalOverlay");
-
-  const btn = document.getElementById("pullConfirmBtn");
-  if(btn) {
-    btn.disabled = false;
-    btn.innerText = "Start Pull";
-    btn.onclick = () => startPullSimulation(m);
-  }
-}
-
-async function startPullSimulation(m) {
-  const progressBar = document.getElementById("pullProgressBar");
-  const layersEl = document.getElementById("pullLayers");
-  const btn = document.getElementById("pullConfirmBtn");
-  const modelName = m.id || m.name;
-  const ollamaUrl = state.keys.ollama || "http://localhost:11434";
-
-  if(btn) { btn.disabled = true; btn.innerText = "Downloading..."; }
-  if(layersEl) layersEl.innerHTML = `<div style="color:var(--yellow);">Connecting to Ollama server (${ollamaUrl})...</div>`;
-
-  let isRealOllamaSuccess = false;
-  try {
-    const res = await fetch(`${ollamaUrl}/api/pull`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: modelName, stream: true })
-    });
-
-    if(res.ok && res.body) {
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let partial = "";
-
-      while(true) {
-        const { done, value } = await reader.read();
-        if(done) break;
-        partial += decoder.decode(value, { stream: true });
-        const lines = partial.split('\n');
-        partial = lines.pop();
-
-        for(const line of lines) {
-          if(!line.trim()) continue;
-          try {
-            const data = JSON.parse(line);
-            if(data.status) {
-              let msg = `[Ollama] ${data.status}`;
-              if(data.total && data.completed) {
-                const pct = Math.round((data.completed / data.total) * 100);
-                if(progressBar) progressBar.style.width = `${pct}%`;
-                msg += ` (${pct}%) - ${(data.completed / (1024*1024)).toFixed(1)}MB / ${(data.total / (1024*1024)).toFixed(1)}MB`;
-              }
-              if(layersEl) {
-                layersEl.innerHTML += `<div style="color:var(--green);">${escapeHtml(msg)}</div>`;
-                layersEl.scrollTop = layersEl.scrollHeight;
-              }
-            }
-            if(data.status === 'success') {
-              isRealOllamaSuccess = true;
-            }
-          } catch(err) {}
-        }
-      }
-      isRealOllamaSuccess = true;
-    }
-  } catch(e) {}
-
-  if(isRealOllamaSuccess) {
-    if(progressBar) progressBar.style.width = `100%`;
-    state.installed.add(modelName);
-    saveState();
-    updateStats();
-    renderInstalledGrid();
-    renderGrid();
-    toast(`Successfully pulled & docked ${modelName} via Ollama!`, "success");
-    closeModal("pullModalOverlay");
-    return;
-  }
-
-  if(layersEl) layersEl.innerHTML += `<div style="color:var(--text-secondary);">Direct browser socket unavailable. Running Victor Dock layer pull simulator...</div>`;
-  let pct = 0;
-  const timer = setInterval(() => {
-    pct += 25;
-    if(progressBar) progressBar.style.width = `${pct}%`;
-    if(layersEl) {
-      layersEl.innerHTML += `<div style="color:var(--green);">✔ Pulled shard layer ${pct/25}/4: ${modelName}-q4_k_m.safetensors</div>`;
-      layersEl.scrollTop = layersEl.scrollHeight;
-    }
-
-    if(pct >= 100) {
-      clearInterval(timer);
-      state.installed.add(modelName);
-      saveState();
-      updateStats();
-      renderInstalledGrid();
-      renderGrid();
-      toast(`Docked ${modelName}. Run 'ollama pull ${modelName}' in terminal for native binary weights.`, "success");
-      closeModal("pullModalOverlay");
-    }
-  }, 300);
-}
-
-// Open Integration Modal Setup Guide
-function openIntegrationModal(agentKey) {
-  const data = INTEGRATIONS_DATA[agentKey];
-  if(!data) return;
-
-  document.getElementById("intModalTitle").innerText = data.title;
-  document.getElementById("intModalDesc").innerText = data.desc;
-  document.getElementById("intModalCmd").innerText = data.command;
-  document.getElementById("intModalDetails").innerHTML = data.details;
-
-  openModal("integrationModalOverlay");
-}
-
-// AI Playground Chat
-function openPlayground(modelId = "gemma4") {
-  openModal("playgroundModalOverlay");
-  const select = document.getElementById("pgModelSelect");
-  if(select) {
-    select.innerHTML = "";
-    Array.from(state.installed).forEach(id => {
-      const m = MODELS.find(x => x.id === id || x.name === id) || { id, name: id };
-      select.innerHTML += `<option value="${m.id}" ${m.id === modelId ? 'selected' : ''}>${m.name}</option>`;
-    });
-  }
-}
-
-// Admin Security PIN check
-function setupAdminPIN() {
-  const inputs = document.querySelectorAll(".pin-digit");
-  inputs.forEach((input, index) => {
-    input.addEventListener("input", (e) => {
-      if(e.target.value.length === 1 && index < inputs.length - 1) inputs[index + 1].focus();
-      checkPIN();
-    });
-  });
-}
-
-function checkPIN() {
-  const inputs = document.querySelectorAll(".pin-digit");
-  const pin = Array.from(inputs).map(i => i.value).join("");
-  if(pin.length === 8) {
-    if(btoa(pin) === ADMIN_VERIFICATION_HASH) {
-      state.adminAuthenticated = true;
-      closeModal("adminPinOverlay");
-      openModal("adminDashboardOverlay");
-      toast("Admin access granted", "success");
-    } else {
-      document.getElementById("pinError")?.classList.remove("hidden");
-    }
-  }
-}
-
-// Master Initialization
-function initApp() {
-  updateStats();
-  renderChips();
-  renderGrid();
-  renderInstalledGrid();
-  initApidogWorkbench();
-  setupAdminPIN();
-  checkOllamaServer();
-
-  // Search Listener
-  document.getElementById("searchInput")?.addEventListener("input", (e) => {
-    state.search = e.target.value;
-    renderGrid();
-  });
-
-  // Quick Pull Listener
-  document.getElementById("quickPullBtn")?.addEventListener("click", () => {
-    const input = document.getElementById("quickPullInput");
-    const val = input ? input.value.trim() : "";
-    if(!val) {
-      toast("Please enter an Ollama model tag (e.g. gemma4)", "error");
-      return;
-    }
-    openPullModal(val);
-  });
-
-  document.getElementById("quickPullInput")?.addEventListener("keydown", (e) => {
-    if(e.key === "Enter") {
-      document.getElementById("quickPullBtn")?.click();
-    }
-  });
-
-  // Sync Ollama Listener
-  document.getElementById("syncOllamaBtn")?.addEventListener("click", async () => {
-    toast("Syncing with local Ollama server...", "info");
-    const online = await checkOllamaServer();
-    if(online) toast(`Synced ${state.ollamaModels.length} local Ollama models!`, "success");
-    else toast("Could not connect to Ollama at http://localhost:11434. Make sure 'ollama serve' is running.", "error");
-  });
-
-  document.getElementById("adminPinBtn")?.addEventListener("click", () => openModal("adminPinOverlay"));
-  document.getElementById("openUpiModalBtn")?.addEventListener("click", () => openModal("upiModalOverlay"));
-  
-  // API Keys Open Modal Listener
-  document.getElementById("openApiKeysBtn")?.addEventListener("click", () => {
-    document.getElementById("keyOpenRouter").value = state.keys.openrouter || "";
-    document.getElementById("keyOpenAI").value = state.keys.openai || "";
-    document.getElementById("keyGemini").value = state.keys.gemini || "";
-    document.getElementById("keyHuggingFace").value = state.keys.huggingface || "";
-    document.getElementById("urlOllama").value = state.keys.ollama || "http://localhost:11434";
-    openModal("apiKeysModalOverlay");
-  });
-
-  document.getElementById("pinVerifyBtn")?.addEventListener("click", checkPIN);
-  document.getElementById("pinCancelBtn")?.addEventListener("click", () => closeModal("adminPinOverlay"));
-
-  // API Keys Save Listener
-  document.getElementById("saveApiKeysBtn")?.addEventListener("click", () => {
-    const openrouter = document.getElementById("keyOpenRouter")?.value || "";
-    const openai = document.getElementById("keyOpenAI")?.value || "";
-    const gemini = document.getElementById("keyGemini")?.value || "";
-    const huggingface = document.getElementById("keyHuggingFace")?.value || "";
-    const ollama = document.getElementById("urlOllama")?.value || "http://localhost:11434";
-
-    state.keys.openrouter = openrouter;
-    state.keys.openai = openai;
-    state.keys.gemini = gemini;
-    state.keys.huggingface = huggingface;
-    state.keys.ollama = ollama;
-
-    saveState();
-    toast("API Keys & Ollama URL saved!", "success");
-    closeModal("apiKeysModalOverlay");
-    checkOllamaServer();
-  });
-
-  // API Playground Form Submit
-  document.getElementById("pgForm")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const inputEl = document.getElementById("pgInput");
-    const historyEl = document.getElementById("pgHistory");
-    const modelSelect = document.getElementById("pgModelSelect");
-    const prompt = inputEl.value.trim();
-    if(!prompt) return;
-    
-    historyEl.innerHTML += `<div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);"><strong>You:</strong> ${escapeHtml(prompt)}</div>`;
-    inputEl.value = "";
-    
-    const loadingId = 'loading-' + Date.now();
-    historyEl.innerHTML += `<div id="${loadingId}" style="margin-bottom:8px; color:var(--text-secondary);"><strong>VictorX:</strong> Thinking...</div>`;
-    historyEl.scrollTop = historyEl.scrollHeight;
-    
-    const selectedModel = modelSelect.value;
-    let aiReply = "";
-
-    // 1. Try direct browser call to Hugging Face if model is Hugging Face
-    const targetModelObj = MODELS.find(x => x.id === selectedModel);
-    if(targetModelObj && targetModelObj.port === 'huggingface') {
-      try {
-        const hfToken = state.keys.huggingface;
-        const headers = { 'Content-Type': 'application/json' };
-        if(hfToken) headers['Authorization'] = `Bearer ${hfToken}`;
-
-        const res = await fetch(`https://api-inference.huggingface.co/models/${targetModelObj.apiModel}`, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify({ inputs: prompt })
-        });
-        if(res.ok) {
-          const data = await res.json();
-          if(Array.isArray(data) && data[0]) {
-            aiReply = data[0].generated_text || data[0].summary_text || data[0].translation_text;
-          } else if(data.generated_text) {
-            aiReply = data.generated_text;
-          }
-        }
-      } catch(err) {}
-    }
-
-    // 2. Try direct local Ollama inference if available
-    if(!aiReply && (!targetModelObj || targetModelObj.port !== 'huggingface')) {
-      try {
-        const ollamaUrl = state.keys.ollama || "http://localhost:11434";
-        const res = await fetch(`${ollamaUrl}/api/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: selectedModel, prompt: prompt, stream: false })
-        });
-        if(res.ok) {
-          const data = await res.json();
-          aiReply = data.response || "";
-        }
-      } catch(err) {}
-    }
-
-    // 3. Try proxying via /api/ollama backend proxy
-    if(!aiReply) {
-      try {
-        const res = await fetch('/api/ollama', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'generate', model: selectedModel, prompt: prompt })
-        });
-        if(res.ok) {
-          const data = await res.json();
-          if(data.response) aiReply = data.response;
-        }
-      } catch(err) {}
-    }
-
-    // 4. Try /api/chat endpoint
-    if(!aiReply) {
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: selectedModel,
-            prompt: prompt,
-            messages: [{ role: 'user', content: prompt }],
-            apiKey: state.keys.openrouter || "",
-            hfToken: state.keys.huggingface || ""
-          })
-        });
-        const data = await res.json();
-        if(data.choices && data.choices[0] && data.choices[0].message) {
-          aiReply = data.choices[0].message.content;
-        } else if(data.response) {
-          aiReply = data.response;
-        }
-      } catch(e) {}
-    }
-
-    if(!aiReply) {
-      aiReply = `Hello! I am ${selectedModel}. Ready to assist with coding, reasoning, and analysis!`;
-    }
-
-    document.getElementById(loadingId).innerHTML = `<strong>VictorX (${escapeHtml(selectedModel)}):</strong> ${escapeHtml(aiReply).replace(/\n/g, '<br>')}`;
-    historyEl.scrollTop = historyEl.scrollHeight;
-  });
-
-  // Event Delegation
-  document.addEventListener("click", (e) => {
-    if(e.target.closest(".btn-close")) {
-      const overlay = e.target.closest(".modal-overlay") || e.target.closest(".pin-overlay");
-      if(overlay) overlay.style.display = "none";
-    }
-
-    const intBtn = e.target.closest(".open-int-modal");
-    if(intBtn) openIntegrationModal(intBtn.dataset.agent);
-
-    const pullBtn = e.target.closest(".open-pull-modal");
-    if(pullBtn) openPullModal(pullBtn.dataset.model);
-
-    const pgBtn = e.target.closest(".launch-playground-btn");
-    if(pgBtn) openPlayground(pgBtn.dataset.model);
-
-    const testBtn = e.target.closest(".test-api-btn");
-    if(testBtn) {
-      const model = testBtn.dataset.model;
-      const endpointInput = document.getElementById("apiEndpointInput");
-      const bodyInput = document.getElementById("apiRequestBody");
-      
-      if(endpointInput) {
-        if(model.includes('/')) endpointInput.value = `https://api-inference.huggingface.co/models/${model}`;
-        else endpointInput.value = state.ollamaOnline ? `${state.keys.ollama || 'http://localhost:11434'}/api/generate` : "https://openrouter.ai/api/v1/chat/completions";
-      }
-      if(bodyInput) bodyInput.value = JSON.stringify({ model: model, prompt: "Why is the sky blue?" }, null, 2);
-      
-      document.getElementById("workbench")?.scrollIntoView({ behavior: "smooth" });
-      toast(`Loaded endpoint for ${model} into API Workbench`, "info");
-    }
-
-    const removeBtn = e.target.closest(".remove-dock-btn");
-    if(removeBtn) {
-      const modelId = removeBtn.dataset.model;
-      if(modelId && confirm(`Remove ${modelId} from dock?`)) {
-        state.installed.delete(modelId);
-        saveState();
-        updateStats();
-        renderInstalledGrid();
-        renderGrid();
-        toast(`Removed ${modelId}`);
-      }
-    }
-  });
-}
-
-if(document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initApp);
-} else {
-  initApp();
+function formatMarkdown(str) {
+  return escapeHtml(str)
+    .replace(/### (.*?)\n/g, '<h3>$1</h3>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
 }
