@@ -409,19 +409,54 @@ function escapeHtml(str) {
   return String(str || "").replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
 }
 
+let codeBlockCounter = 0;
+window.codeBlockStorage = {};
+
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.classList.contains("copy-code-inline")) {
+    const blockId = e.target.getAttribute("data-blockid");
+    const code = window.codeBlockStorage[blockId] || "";
+    if (code) {
+      navigator.clipboard.writeText(code);
+      toast("Code copied to clipboard!", "success");
+    }
+  }
+});
+
 function formatMarkdown(str) {
   if (!str) return "";
   let html = str;
+
   html = html.replace(/```([a-z]*)\n([\s\S]*?)```/g, (match, lang, code) => {
-    return `<div class="msg-code-block"><div class="code-block-header"><span>${lang ? lang.toUpperCase() : 'CODE'}</span><button class="copy-code-inline" onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`')}\`); toast('Copied!', 'success')">📋 Copy</button></div><pre><code>${escapeHtml(code.trim())}</code></pre></div>`;
+    codeBlockCounter++;
+    const blockId = "code_block_" + codeBlockCounter;
+    window.codeBlockStorage[blockId] = code.trim();
+
+    return `<div class="msg-code-block">
+      <div class="code-block-header">
+        <span>${lang ? lang.toUpperCase() : 'CODE'}</span>
+        <button class="copy-code-inline" data-blockid="${blockId}">📋 Copy</button>
+      </div>
+      <pre><code>${escapeHtml(code.trim())}</code></pre>
+    </div>`;
   });
-  return escapeHtmlExceptTags(html).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+
+  return escapeHtmlExceptTags(html)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/### (.*?)\n/g, '<h3 style="margin:0.5rem 0;">$1</h3>')
+    .replace(/\n/g, '<br>');
 }
 
 function escapeHtmlExceptTags(str) {
   const blocks = [];
-  str = str.replace(/<div class="msg-code-block">[\s\S]*?<\/div>/g, (m) => { blocks.push(m); return `__CODE_${blocks.length - 1}__`; });
+  str = str.replace(/<div class="msg-code-block">[\s\S]*?<\/div>/g, (m) => {
+    blocks.push(m);
+    return `__CODE_BLOCK_${blocks.length - 1}__`;
+  });
+
   str = escapeHtml(str);
-  blocks.forEach((b, idx) => { str = str.replace(`__CODE_${idx}__`, b); });
+  blocks.forEach((b, idx) => {
+    str = str.replace(`__CODE_BLOCK_${idx}__`, b);
+  });
   return str;
 }
