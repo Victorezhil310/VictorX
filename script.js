@@ -352,6 +352,7 @@ function initOpenArtStudio() {
    5. PRIVATE ADMIN MODAL
    ========================================================================== */
 function initModals() {
+  // 1. ADMIN MODAL
   const adminBtn = document.getElementById("openAdminModalBtn");
   const adminModal = document.getElementById("adminModal");
   const verifyAdminBtn = document.getElementById("verifyAdminPinBtn");
@@ -362,9 +363,6 @@ function initModals() {
 
   if (adminBtn && adminModal) {
     adminBtn.addEventListener("click", () => adminModal.classList.remove("hidden"));
-    adminModal.querySelectorAll('[data-close="adminModal"]').forEach(b => {
-      b.addEventListener("click", () => adminModal.classList.add("hidden"));
-    });
   }
 
   if (verifyAdminBtn && pinInput) {
@@ -385,10 +383,80 @@ function initModals() {
     saveAdminBtn.addEventListener("click", () => {
       state.keys.fastapi = document.getElementById("adminFastApiUrl").value;
       saveState();
-      adminModal.classList.add("hidden");
+      if (adminModal) adminModal.classList.add("hidden");
       toast("Admin Directives Saved!", "success");
     });
   }
+
+  // 2. DONATE / UPI PAYMENT MODAL (arasu9629hf@okhdfcbank)
+  const donateBtn = document.getElementById("donateUpiBtn");
+  const paymentModal = document.getElementById("paymentModal");
+  const payNowBtn = document.getElementById("payNowUpiBtn");
+  const customAmountInput = document.getElementById("customAmountInput");
+
+  if (donateBtn && paymentModal) {
+    donateBtn.addEventListener("click", () => paymentModal.classList.remove("hidden"));
+  }
+
+  document.querySelectorAll(".amount-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".amount-chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      const val = chip.getAttribute("data-amount");
+      if (customAmountInput) customAmountInput.value = val;
+    });
+  });
+
+  if (payNowBtn) {
+    payNowBtn.addEventListener("click", () => {
+      const amt = customAmountInput ? customAmountInput.value || "50" : "50";
+      const upiUrl = `upi://pay?pa=arasu9629hf@okhdfcbank&pn=VictorX%20AI&am=${amt}&cu=INR`;
+      window.location.href = upiUrl;
+      toast(`🚀 Launching UPI App for ₹${amt} Payment to arasu9629hf@okhdfcbank...`, "success");
+    });
+  }
+
+  // 3. SUBSCRIPTION MODAL
+  const upgradeBtn = document.getElementById("upgradePlanBtn");
+  const subscriptionModal = document.getElementById("subscriptionModal");
+  if (upgradeBtn && subscriptionModal) {
+    upgradeBtn.addEventListener("click", () => subscriptionModal.classList.remove("hidden"));
+  }
+
+  // 4. AUTH / LOGIN MODAL
+  const loginBtn = document.getElementById("loginModalBtn");
+  const authModal = document.getElementById("authModal");
+  const submitAuthBtn = document.getElementById("submitAuthBtn");
+
+  if (loginBtn && authModal) {
+    loginBtn.addEventListener("click", () => authModal.classList.remove("hidden"));
+  }
+
+  if (submitAuthBtn) {
+    submitAuthBtn.addEventListener("click", () => {
+      const email = document.getElementById("authEmailInput").value.trim() || "victor@example.com";
+      toast(`✔ Successfully Signed In as ${email}!`, "success");
+      if (authModal) authModal.classList.add("hidden");
+    });
+  }
+
+  // CLOSE ALL MODALS ON CLICKING CLOSE BUTTON
+  document.querySelectorAll(".close-modal-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const modalId = btn.getAttribute("data-close");
+      const target = document.getElementById(modalId);
+      if (target) target.classList.add("hidden");
+    });
+  });
+}
+
+function openUpiPaymentForPlan(amount) {
+  const customAmountInput = document.getElementById("customAmountInput");
+  if (customAmountInput) customAmountInput.value = amount;
+  const subscriptionModal = document.getElementById("subscriptionModal");
+  const paymentModal = document.getElementById("paymentModal");
+  if (subscriptionModal) subscriptionModal.classList.add("hidden");
+  if (paymentModal) paymentModal.classList.remove("hidden");
 }
 
 /* ==========================================================================

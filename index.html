@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="google9b3c772b30ea79bb.html">
-    <title>Victor Platform 2 — AI App Builder & Multimodal Media Suite</title>
+    <title>Victor Platform 2 — AI App Builder & Multimodal Suite</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -23,11 +23,11 @@
     <!-- APP SHELL CONTAINER -->
     <div id="appShell" class="app-shell">
 
-        <!-- TOP HEADER BAR (EMERGENT & OPENART STYLE) -->
+        <!-- TOP HEADER BAR -->
         <header class="app-top-bar">
             <div class="bar-left">
                 <button id="toggleSidebarBtn" class="sidebar-toggle-btn" title="Toggle Menu">☰</button>
-                <div class="project-pill-dropdown">
+                <div class="project-pill-dropdown" id="aboutPlatformBtn">
                     <span class="pulse-green"></span>
                     <strong id="activeProjectTitle">Victor's Project</strong>
                     <span class="arrow-down">▾</span>
@@ -42,10 +42,15 @@
             </nav>
 
             <div class="bar-right">
+                <!-- DONATE UPI BUTTON -->
+                <button id="donateUpiBtn" class="donate-btn-neon">☕ Donate ₹50</button>
+
                 <div id="tokenPill" class="token-pill-top" title="24/7 Daily Tokens">
                     <span>🎟️ <strong id="tokenCountText">50,000 / 50,000</strong></span>
                 </div>
-                <button id="upgradePlanBtn" class="upgrade-btn-neon">Upgrade Plan ⚡</button>
+                
+                <button id="upgradePlanBtn" class="upgrade-btn-neon">Subscription ⚡</button>
+                <button id="loginModalBtn" class="auth-btn-pill">🔑 Sign In</button>
                 <button id="openAdminModalBtn" class="header-icon-btn" title="Private Admin">👑</button>
             </div>
         </header>
@@ -80,11 +85,11 @@
                     <button class="side-btn" data-subview="lipsync"><span class="icon">👄</span> Lip-Sync AI</button>
                 </div>
 
-                <div class="sidebar-user-footer">
-                    <div class="user-avatar-badge">VE</div>
+                <div class="sidebar-user-footer" id="sidebarUserFooter">
+                    <div class="user-avatar-badge" id="userAvatarText">VE</div>
                     <div class="user-details">
-                        <strong>Victor Ezhil</strong>
-                        <span>India AI Creator</span>
+                        <strong id="userNameText">Victor Ezhil</strong>
+                        <span id="userStatusText">India AI Pro Member</span>
                     </div>
                     <button id="sidebarSettingsBtn" class="icon-btn-sm">⚙️</button>
                 </div>
@@ -102,7 +107,7 @@
                         <button class="type-tab" data-type="landing">📑 Landing Page</button>
                     </div>
 
-                    <!-- PROMPT CARD BOX (MATCHING EMERGENT.SH SCREENSHOT) -->
+                    <!-- PROMPT CARD BOX -->
                     <div class="builder-prompt-card">
                         <textarea id="builderPromptInput" rows="3" placeholder="Build me an e-commerce platform with WebRTC live stream, shopping cart, and FastAPI backend..."></textarea>
                         
@@ -130,7 +135,7 @@
                         <button class="sug-pill" data-prompt="Build an AI Word of the Day vocabulary app.">📖 Word of the Day</button>
                     </div>
 
-                    <!-- MY APPS SECTION (MATCHING EMERGENT.SH SCREENSHOT) -->
+                    <!-- MY APPS SECTION -->
                     <div class="my-apps-section">
                         <div class="section-tabs-bar">
                             <button class="sec-tab active">:: My Apps (1)</button>
@@ -246,7 +251,110 @@
         </div>
     </div>
 
-    <!-- PRIVATE ADMIN CONTROL CENTER MODAL -->
+    <!-- MODAL 1: DONATE & UPI PAYMENT MODAL (arasu9629hf@okhdfcbank) -->
+    <div id="paymentModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>☕ Donate / Pay via UPI</h3>
+                <button class="close-modal-btn" data-close="paymentModal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-2">Support Victor Platform 2 — India's Premier Frontier AI Engine</p>
+                
+                <div class="upi-box-card">
+                    <span class="upi-label">Verified Official UPI ID</span>
+                    <strong class="upi-id-text">arasu9629hf@okhdfcbank</strong>
+                    <button class="copy-upi-btn" onclick="navigator.clipboard.writeText('arasu9629hf@okhdfcbank'); toast('UPI ID Copied!', 'success')">📋 Copy UPI</button>
+                </div>
+
+                <div class="amount-chips-row my-3">
+                    <button class="amount-chip active" data-amount="50">₹50 (Min)</button>
+                    <button class="amount-chip" data-amount="100">₹100</button>
+                    <button class="amount-chip" data-amount="500">₹500</button>
+                    <button class="amount-chip" data-amount="1000">₹1,000</button>
+                </div>
+
+                <div class="field-group text-left mb-3">
+                    <label>Or Enter Custom Amount (INR / USD / EUR)</label>
+                    <input type="number" id="customAmountInput" class="clean-input" value="50" min="50">
+                </div>
+
+                <button id="payNowUpiBtn" class="btn-create-pink full-w">🚀 Pay via GPay / PhonePe / Paytm / BHIM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SUBSCRIPTION PLANS MODAL -->
+    <div id="subscriptionModal" class="modal-backdrop hidden">
+        <div class="modal-card modal-wide">
+            <div class="modal-header">
+                <h3>⚡ Victor Platform 2 Subscription Plans</h3>
+                <button class="close-modal-btn" data-close="subscriptionModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="plans-grid">
+                    <div class="plan-card">
+                        <h4>Starter AI</h4>
+                        <div class="price-text">₹0 <span>/ month</span></div>
+                        <ul class="plan-features">
+                            <li>✔ 50,000 Daily Tokens</li>
+                            <li>✔ Basic AI App Builder</li>
+                            <li>✔ Community Support</li>
+                        </ul>
+                        <button class="plan-btn outline" onclick="toast('Current Active Plan', 'info')">Current Plan</button>
+                    </div>
+
+                    <div class="plan-card featured">
+                        <span class="popular-tag">MOST POPULAR</span>
+                        <h4>VictorX Pro</h4>
+                        <div class="price-text">₹499 <span>/ month</span></div>
+                        <ul class="plan-features">
+                            <li>✔ Unlimited Daily Tokens</li>
+                            <li>✔ Full-Stack Code Export</li>
+                            <li>✔ Kling 3.0 4K Video Generation</li>
+                            <li>✔ 100% Zero-Leak Encrypted Storage</li>
+                        </ul>
+                        <button class="btn-create-pink full-w" onclick="openUpiPaymentForPlan(499)">Subscribe via UPI (arasu9629hf@okhdfcbank)</button>
+                    </div>
+
+                    <div class="plan-card">
+                        <h4>Enterprise AI</h4>
+                        <div class="price-text">₹1,999 <span>/ month</span></div>
+                        <ul class="plan-features">
+                            <li>✔ Dedicated PyTorch CUDA GPU</li>
+                            <li>✔ Custom MoE Model Training</li>
+                            <li>✔ 24/7 Dedicated Support</li>
+                        </ul>
+                        <button class="plan-btn" onclick="openUpiPaymentForPlan(1999)">Subscribe via UPI</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: LOGIN / REGISTER AUTHENTICATION MODAL -->
+    <div id="authModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="authModalTitle">🔑 Sign In to Victor Platform 2</h3>
+                <button class="close-modal-btn" data-close="authModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="field-group mb-2">
+                    <label>Email Address / Username</label>
+                    <input type="email" id="authEmailInput" class="clean-input" placeholder="victor@example.com">
+                </div>
+                <div class="field-group mb-3">
+                    <label>Password</label>
+                    <input type="password" id="authPasswordInput" class="clean-input" placeholder="••••••••">
+                </div>
+                <button id="submitAuthBtn" class="btn-create-pink full-w mb-2">Sign In</button>
+                <div class="text-center text-dim text-sm cursor-pointer" id="toggleAuthModeBtn">Don't have an account? Register now</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: PRIVATE ADMIN CONTROL CENTER -->
     <div id="adminModal" class="modal-backdrop hidden">
         <div class="modal-card">
             <div class="modal-header">
