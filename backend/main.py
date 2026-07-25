@@ -29,11 +29,11 @@ app.add_middleware(
 )
 
 # Include Routers
-app.include_router(chat.router, prefix="/api/v1", tags=["Chat"])
-app.include_router(image.router, prefix="/api/v1", tags=["Image"])
-app.include_router(video.router, prefix="/api/v1", tags=["Video"])
-app.include_router(code.router, prefix="/api/v1", tags=["Code"])
-app.include_router(system.router, prefix="/api/v1", tags=["System"])
+app.include_router(chat.router, prefix="/api/v1")
+app.include_router(image.router)
+app.include_router(video.router)
+app.include_router(code.router)
+app.include_router(system.router)
 
 @app.get("/health")
 def health_check():
