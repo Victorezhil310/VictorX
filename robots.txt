@@ -1,0 +1,13 @@
+# robots.txt for Victor Platform 2 (https://victor-x.vercel.app/)
+# UTF-8 Encoded Standard Search Engine Crawler Directive
+
+User-agent: *
+Allow: /
+
+# Disallow Private Internal Endpoints
+Disallow: /api/v1/admin
+Disallow: /backend/
+
+# Host & Sitemap Location
+Host: https://victor-x.vercel.app
+Sitemap: https://victor-x.vercel.app/sitemap.xml
